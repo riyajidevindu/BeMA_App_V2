@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "518969593507",
+    "project_id": "bema-8f7d2",
+    "storage_bucket": "bema-8f7d2.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:518969593507:android:5a918725d084dc0bb7b916",
+        "android_client_info": {
+          "package_name": "com.example.bema_application"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAw8-sml1xtMkX8HC45GZmwesHF_brCd9M"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
