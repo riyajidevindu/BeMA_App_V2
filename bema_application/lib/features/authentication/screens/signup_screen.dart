@@ -1,8 +1,10 @@
 import 'package:bema_application/common/widgets/snackbar%20messages/snackbar_message.dart';
 import 'package:bema_application/features/authentication/data/models/login_result.dart';
 import 'package:bema_application/features/authentication/providers/authentication_provider.dart';
+import 'package:bema_application/routes/route_names.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart'; // For Google icon
 
 class SignupScreen extends StatefulWidget {
@@ -252,7 +254,29 @@ class _SignupScreenState extends State<SignupScreen> {
                     style: TextStyle(color: Colors.black),
                   ),
                 ),
-                SizedBox(height: screenHeight * 0.02), // Add space at the bottom
+                SizedBox(height: screenHeight * 0.02), 
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Text(
+                      'Already have an account ? ',
+                      style: TextStyle(color: Colors.black, fontSize: 16),
+                    ),
+                    GestureDetector(
+                      onTap: () {
+                        context.goNamed(RouteNames.loginScreen);
+                      },
+                      child: const Text(
+                        'Login',
+                        style: TextStyle(
+                            color: Colors.black,
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold
+                            )
+                        ),
+                    )
+                  ],
+                )
               ],
             ),
           ),
