@@ -1,5 +1,9 @@
+import 'package:bema_application/common/widgets/snackbar%20messages/snackbar_message.dart';
+import 'package:bema_application/features/authentication/data/models/login_result.dart';
+import 'package:bema_application/features/authentication/providers/authentication_provider.dart';
 import 'package:flutter/material.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart'; // For Google icon
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:provider/provider.dart'; // For Google icon
 
 class SignupScreen extends StatefulWidget {
   const SignupScreen({super.key});
@@ -14,39 +18,63 @@ class _SignupScreenState extends State<SignupScreen> {
   final TextEditingController _passwordController = TextEditingController();
   final TextEditingController _confirmPasswordController = TextEditingController();
 
-  // For managing form validation
-  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
-
   // For managing loading state during sign-up
   bool _isLoading = false;
 
+  @override
+  void dispose() {
+    _usernameController.dispose();
+    _emailController.dispose();
+    _passwordController.dispose();
+    _confirmPasswordController.dispose();
+
+    super.dispose();
+  }
+  // For managing form validation
+  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
+
+
   // Simulate sign-up logic
-  void _signup() {
+  void _signup() async {
+
+    setState(() {
+      _isLoading = true;
+    });
+    
     if (_formKey.currentState!.validate()) {
-      setState(() {
-        _isLoading = true;
-      });
+     
+      if (_passwordController.text != _confirmPasswordController.text) {
+        showErrorSnackBarMessage(
+            context, 'Password does not match');
+        return;
+      }
 
-      // Simulate a network request
-      Future.delayed(const Duration(seconds: 2), () {
-        setState(() {
-          _isLoading = false;
-        });
-
-        // Add your sign-up logic here (e.g., authentication with server or Firebase)
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Sign-up Successful')),
+      AuthResult result = await Provider.of<AuthenticationProvider>
+      (context,listen:false)
+        .signUp(
+          name: _usernameController.text, 
+          email: _emailController.text, 
+          password: _passwordController.text, 
+          confirmPassword: _confirmPasswordController.text
         );
+
+      if (result.isSuccess) {
+        //context.goNamed(RouteNames.wrapper);
+        showSuccessSnackBarMessage(context, result.message);
+      } else {
+        showErrorSnackBarMessage(context, result.message);
+      }
+
+      setState(() {
+        _isLoading = false;
       });
     }
   }
 
   // Simulate Google sign-up logic
-  void _googleSignup() {
+  void _googleSignup() async {
     // Add your Google sign-up logic here (e.g., Firebase Google authentication)
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Google Sign-up Successful')),
-    );
+    showSuccessSnackBarMessage(context, 'Google Sign-up Successful');
   }
 
   @override

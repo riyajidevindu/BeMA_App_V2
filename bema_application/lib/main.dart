@@ -1,13 +1,20 @@
+import 'package:bema_application/features/authentication/providers/authentication_provider.dart';
 import 'package:bema_application/features/authentication/screens/login_screen.dart';
 import 'package:bema_application/features/authentication/screens/signup_screen.dart';
 import 'package:bema_application/firebase_options.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
-  runApp(const MyApp());
+  await Firebase.initializeApp();
+  runApp(MultiProvider(
+    providers: [
+      ChangeNotifierProvider(create: (_) => AuthenticationProvider()),
+    ],
+    child: const MyApp(),
+  ));
 }
 
 class MyApp extends StatelessWidget {
@@ -21,7 +28,7 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
       ),
-      home: const SignupScreen(),  // Show Login Screen when app loads
+      home: const SignupScreen(), // Show Login Screen when app loads
     );
   }
 }
