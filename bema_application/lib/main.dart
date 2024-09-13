@@ -1,4 +1,5 @@
 import 'package:bema_application/features/authentication/screens/login_screen.dart';
+import 'package:bema_application/features/authentication/screens/signup_screen.dart';
 import 'package:bema_application/firebase_options.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
@@ -20,7 +21,7 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
       ),
-      home: const LoginScreen(),  // Show Login Screen when app loads
+      home: const SignupScreen(),  // Show Login Screen when app loads
     );
   }
 }
