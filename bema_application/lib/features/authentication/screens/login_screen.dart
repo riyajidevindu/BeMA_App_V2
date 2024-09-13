@@ -1,4 +1,6 @@
 import 'package:bema_application/common/config/colors.dart';
+import 'package:bema_application/common/widgets/snackbar%20messages/snackbar_message.dart';
+import 'package:bema_application/features/authentication/providers/authentication_provider.dart';
 import 'package:bema_application/routes/route_names.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
@@ -12,34 +14,48 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
-  final TextEditingController _usernameController = TextEditingController();
+  final auth = AuthenticationProvider();
+
+  final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
-  
+
   // For managing form validation
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
-  
+
   // For managing loading state during login
   bool _isLoading = false;
 
+  @override
+  void dispose() {
+    _emailController.dispose();
+    _passwordController.dispose();
+    super.dispose();
+  }
+
   // Simulate login logic
-  void _login() {
+  void _login() async {
+    setState(() {
+      _isLoading = true;
+    });
+
     if (_formKey.currentState!.validate()) {
-      setState(() {
-        _isLoading = true;
-      });
+      final result = await auth.signInWithEmailAndPassword(
+        _emailController.text, 
+        _passwordController.text
+      );
 
-      // Simulate a network request
-      Future.delayed(const Duration(seconds: 2), () {
-        setState(() {
-          _isLoading = false;
-        });
+      if (result.isSuccess) {
+        //context.goNamed(RouteNames.wrapper);
+        showSuccessSnackBarMessage(context, result.message);
+      } else {
+        showErrorSnackBarMessage(context, result.message);
+      }
 
-        // Add your login logic here (e.g., authentication with server or Firebase)
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Login Successful')),
-        );
-      });
     }
+
+    setState(() {
+      _isLoading = false;
+    });
   }
 
   // Simulate Google login logic
@@ -60,7 +76,7 @@ class _LoginScreenState extends State<LoginScreen> {
       body: SingleChildScrollView(
         child: Padding(
           padding: EdgeInsets.symmetric(
-            horizontal: screenWidth * 0.08,  // Responsive padding
+            horizontal: screenWidth * 0.08, // Responsive padding
             vertical: screenHeight * 0.02,
           ),
           child: Form(
@@ -83,9 +99,9 @@ class _LoginScreenState extends State<LoginScreen> {
 
                 // Username Field
                 TextFormField(
-                  controller: _usernameController,
+                  controller: _emailController,
                   decoration: InputDecoration(
-                    labelText: 'Username',
+                    labelText: 'Email',
                     labelStyle: const TextStyle(color: Colors.grey),
                     fillColor: const Color(0xFFFFFFFF),
                     filled: true,
@@ -95,7 +111,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                   validator: (value) {
                     if (value == null || value.isEmpty) {
-                      return 'Please enter your username';
+                      return 'Please enter your email';
                     }
                     return null;
                   },
@@ -126,10 +142,12 @@ class _LoginScreenState extends State<LoginScreen> {
 
                 // Login Button with Loading Indicator
                 ElevatedButton(
-                  onPressed: _isLoading ? null : _login, // Disable button if loading
+                  onPressed:
+                      _isLoading ? null : _login, // Disable button if loading
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFF0098FF), // primaryColor
-                    padding: EdgeInsets.symmetric(vertical: screenHeight * 0.025),
+                    padding:
+                        EdgeInsets.symmetric(vertical: screenHeight * 0.025),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(8),
                     ),
@@ -158,10 +176,13 @@ class _LoginScreenState extends State<LoginScreen> {
 
                 // Google Login Button
                 ElevatedButton.icon(
-                  onPressed: _isLoading ? null : _googleLogin, // Disable button if loading
+                  onPressed: _isLoading
+                      ? null
+                      : _googleLogin, // Disable button if loading
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.white,
-                    padding: EdgeInsets.symmetric(vertical: screenHeight * 0.025),
+                    padding:
+                        EdgeInsets.symmetric(vertical: screenHeight * 0.025),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(8),
                       side: const BorderSide(color: Colors.grey),
@@ -222,7 +243,8 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                   ],
                 ),
-                SizedBox(height: screenHeight * 0.02), // Add space at the bottom
+                SizedBox(
+                    height: screenHeight * 0.02), // Add space at the bottom
               ],
             ),
           ),
