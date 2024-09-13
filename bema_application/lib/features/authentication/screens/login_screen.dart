@@ -1,5 +1,8 @@
+import 'package:bema_application/common/config/colors.dart';
+import 'package:bema_application/routes/route_names.dart';
 import 'package:flutter/material.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart'; // For Google icon
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:go_router/go_router.dart'; // For Google icon
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -141,8 +144,8 @@ class _LoginScreenState extends State<LoginScreen> {
                 SizedBox(height: screenHeight * 0.03),
 
                 // OR Divider
-                Row(
-                  children: const [
+                const Row(
+                  children: [
                     Expanded(child: Divider(thickness: 1)),
                     Padding(
                       padding: EdgeInsets.symmetric(horizontal: 8.0),
@@ -175,15 +178,49 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
                 SizedBox(height: screenHeight * 0.02),
 
-                // Forgot Password Link
-                TextButton(
-                  onPressed: () {
-                    // Add forgot password logic here
-                  },
-                  child: const Text(
-                    'Forgot Password?',
-                    style: TextStyle(color: Color(0xFF6A6A6A)), // secondaryTextColor
-                  ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Text(
+                      'If you don\'t have an account ',
+                      style: TextStyle(color: secondaryTextColor, fontSize: 16),
+                    ),
+                    GestureDetector(
+                      onTap: () {
+                        context.goNamed(RouteNames.registerScreen);
+                      },
+                      child: const Text(
+                        'Register',
+                        style: TextStyle(
+                          color: secondaryTextColor,
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Text(
+                      'Forget your password ? ',
+                      style: TextStyle(color: secondaryTextColor, fontSize: 16),
+                    ),
+                    GestureDetector(
+                      onTap: () {
+                        context.goNamed(RouteNames.loginScreen);
+                      },
+                      child: const Text(
+                        'Click',
+                        style: TextStyle(
+                          color: secondaryTextColor,
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
                 SizedBox(height: screenHeight * 0.02), // Add space at the bottom
               ],
