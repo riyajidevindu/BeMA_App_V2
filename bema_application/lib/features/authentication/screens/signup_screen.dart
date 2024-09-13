@@ -1,48 +1,64 @@
-import 'package:bema_application/common/config/colors.dart';
 import 'package:bema_application/common/widgets/snackbar%20messages/snackbar_message.dart';
+import 'package:bema_application/features/authentication/data/models/login_result.dart';
 import 'package:bema_application/features/authentication/providers/authentication_provider.dart';
 import 'package:bema_application/routes/route_names.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:go_router/go_router.dart'; // For Google icon
+import 'package:go_router/go_router.dart';
+import 'package:provider/provider.dart'; // For Google icon
 
-class LoginScreen extends StatefulWidget {
-  const LoginScreen({super.key});
+class SignupScreen extends StatefulWidget {
+  const SignupScreen({super.key});
 
   @override
-  State<LoginScreen> createState() => _LoginScreenState();
+  State<SignupScreen> createState() => _SignupScreenState();
 }
 
-class _LoginScreenState extends State<LoginScreen> {
-  final auth = AuthenticationProvider();
-
+class _SignupScreenState extends State<SignupScreen> {
+  final TextEditingController _usernameController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
+  final TextEditingController _confirmPasswordController = TextEditingController();
 
-  // For managing form validation
-  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
-
-  // For managing loading state during login
+  // For managing loading state during sign-up
   bool _isLoading = false;
 
   @override
   void dispose() {
+    _usernameController.dispose();
     _emailController.dispose();
     _passwordController.dispose();
+    _confirmPasswordController.dispose();
+
     super.dispose();
   }
+  // For managing form validation
+  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
 
-  // Simulate login logic
-  void _login() async {
+
+  // Simulate sign-up logic
+  void _signup() async {
+
     setState(() {
       _isLoading = true;
     });
-
+    
     if (_formKey.currentState!.validate()) {
-      final result = await auth.signInWithEmailAndPassword(
-        _emailController.text, 
-        _passwordController.text
-      );
+     
+      if (_passwordController.text != _confirmPasswordController.text) {
+        showErrorSnackBarMessage(
+            context, 'Password does not match');
+        return;
+      }
+
+      AuthResult result = await Provider.of<AuthenticationProvider>
+      (context,listen:false)
+        .signUp(
+          name: _usernameController.text, 
+          email: _emailController.text, 
+          password: _passwordController.text, 
+          confirmPassword: _confirmPasswordController.text
+        );
 
       if (result.isSuccess) {
         //context.goNamed(RouteNames.wrapper);
@@ -51,19 +67,16 @@ class _LoginScreenState extends State<LoginScreen> {
         showErrorSnackBarMessage(context, result.message);
       }
 
+      setState(() {
+        _isLoading = false;
+      });
     }
-
-    setState(() {
-      _isLoading = false;
-    });
   }
 
-  // Simulate Google login logic
-  void _googleLogin() {
-    // Add your Google login logic here (e.g., Firebase Google authentication)
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Google Login Successful')),
-    );
+  // Simulate Google sign-up logic
+  void _googleSignup() async {
+    // Add your Google sign-up logic here (e.g., Firebase Google authentication)
+    showSuccessSnackBarMessage(context, 'Google Sign-up Successful');
   }
 
   @override
@@ -76,7 +89,7 @@ class _LoginScreenState extends State<LoginScreen> {
       body: SingleChildScrollView(
         child: Padding(
           padding: EdgeInsets.symmetric(
-            horizontal: screenWidth * 0.08, // Responsive padding
+            horizontal: screenWidth * 0.08,  // Responsive padding
             vertical: screenHeight * 0.02,
           ),
           child: Form(
@@ -87,7 +100,7 @@ class _LoginScreenState extends State<LoginScreen> {
               children: [
                 SizedBox(height: screenHeight * 0.1), // Responsive spacing
                 const Text(
-                  'Login',
+                  'Sign Up',
                   style: TextStyle(
                     fontSize: 28,
                     fontWeight: FontWeight.bold,
@@ -98,6 +111,27 @@ class _LoginScreenState extends State<LoginScreen> {
                 SizedBox(height: screenHeight * 0.05),
 
                 // Username Field
+                TextFormField(
+                  controller: _usernameController,
+                  decoration: InputDecoration(
+                    labelText: 'Username',
+                    labelStyle: const TextStyle(color: Colors.grey),
+                    fillColor: const Color(0xFFFFFFFF),
+                    filled: true,
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                  ),
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Please enter your username';
+                    }
+                    return null;
+                  },
+                ),
+                SizedBox(height: screenHeight * 0.02),
+
+                // Email Field
                 TextFormField(
                   controller: _emailController,
                   decoration: InputDecoration(
@@ -112,6 +146,9 @@ class _LoginScreenState extends State<LoginScreen> {
                   validator: (value) {
                     if (value == null || value.isEmpty) {
                       return 'Please enter your email';
+                    }
+                    if (!RegExp(r'^[^@]+@[^@]+\.[^@]+').hasMatch(value)) {
+                      return 'Please enter a valid email';
                     }
                     return null;
                   },
@@ -140,14 +177,37 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
                 SizedBox(height: screenHeight * 0.02),
 
-                // Login Button with Loading Indicator
+                // Confirm Password Field
+                TextFormField(
+                  controller: _confirmPasswordController,
+                  decoration: InputDecoration(
+                    labelText: 'Confirm Password',
+                    labelStyle: const TextStyle(color: Colors.grey),
+                    fillColor: const Color(0xFFFFFFFF),
+                    filled: true,
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                  ),
+                  obscureText: true,
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Please confirm your password';
+                    }
+                    if (value != _passwordController.text) {
+                      return 'Passwords do not match';
+                    }
+                    return null;
+                  },
+                ),
+                SizedBox(height: screenHeight * 0.02),
+
+                // Sign-up Button with Loading Indicator
                 ElevatedButton(
-                  onPressed:
-                      _isLoading ? null : _login, // Disable button if loading
+                  onPressed: _isLoading ? null : _signup, // Disable button if loading
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFF0098FF), // primaryColor
-                    padding:
-                        EdgeInsets.symmetric(vertical: screenHeight * 0.025),
+                    padding: EdgeInsets.symmetric(vertical: screenHeight * 0.025),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(8),
                     ),
@@ -155,7 +215,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   child: _isLoading
                       ? const CircularProgressIndicator(color: Colors.white)
                       : const Text(
-                          'Login',
+                          'Sign Up',
                           style: TextStyle(color: Colors.white),
                         ),
                 ),
@@ -174,15 +234,12 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
                 SizedBox(height: screenHeight * 0.03),
 
-                // Google Login Button
+                // Google Sign-up Button
                 ElevatedButton.icon(
-                  onPressed: _isLoading
-                      ? null
-                      : _googleLogin, // Disable button if loading
+                  onPressed: _isLoading ? null : _googleSignup, // Disable button if loading
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.white,
-                    padding:
-                        EdgeInsets.symmetric(vertical: screenHeight * 0.025),
+                    padding: EdgeInsets.symmetric(vertical: screenHeight * 0.025),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(8),
                       side: const BorderSide(color: Colors.grey),
@@ -193,58 +250,33 @@ class _LoginScreenState extends State<LoginScreen> {
                     color: Colors.red,
                   ),
                   label: const Text(
-                    'Sign in with Google',
+                    'Sign up with Google',
                     style: TextStyle(color: Colors.black),
                   ),
                 ),
-                SizedBox(height: screenHeight * 0.02),
-
+                SizedBox(height: screenHeight * 0.02), 
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     const Text(
-                      'If you don\'t have an account ',
-                      style: TextStyle(color: secondaryTextColor, fontSize: 16),
-                    ),
-                    GestureDetector(
-                      onTap: () {
-                        context.goNamed(RouteNames.registerScreen);
-                      },
-                      child: const Text(
-                        'Register',
-                        style: TextStyle(
-                          color: secondaryTextColor,
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    const Text(
-                      'Forget your password ? ',
-                      style: TextStyle(color: secondaryTextColor, fontSize: 16),
+                      'Already have an account ? ',
+                      style: TextStyle(color: Colors.black, fontSize: 16),
                     ),
                     GestureDetector(
                       onTap: () {
                         context.goNamed(RouteNames.loginScreen);
                       },
                       child: const Text(
-                        'Click',
+                        'Login',
                         style: TextStyle(
-                          color: secondaryTextColor,
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
+                            color: Colors.black,
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold
+                            )
                         ),
-                      ),
-                    ),
+                    )
                   ],
-                ),
-                SizedBox(
-                    height: screenHeight * 0.02), // Add space at the bottom
+                )
               ],
             ),
           ),
