@@ -1,3 +1,5 @@
+import 'package:bema_application/common/config/colors.dart';
+import 'package:bema_application/common/widgets/app_bar.dart';
 import 'package:bema_application/common/widgets/snackbar%20messages/snackbar_message.dart';
 import 'package:bema_application/features/authentication/data/models/login_result.dart';
 import 'package:bema_application/features/authentication/providers/authentication_provider.dart';
@@ -15,6 +17,11 @@ class UserWelcomeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+       backgroundColor: backgroundColor,
+      appBar: AppBar(
+        backgroundColor: backgroundColor,
+        title: const CustomAppBar(),
+      ),
       body: Center(
         child: Padding(
           padding: const EdgeInsets.all(20.0),

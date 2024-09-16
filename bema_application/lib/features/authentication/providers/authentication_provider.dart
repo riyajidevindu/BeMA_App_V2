@@ -119,4 +119,11 @@ class AuthenticationProvider extends ChangeNotifier {
     await _auth.signOut();
     notifyListeners();
   }
+
+  // Sign out
+  Future<void> signOut() async {
+    await _auth.signOut();
+    firebaseUser = null; // Reset user to null on sign out
+    notifyListeners(); // Notify listeners about user change
+  }
 }
