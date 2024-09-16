@@ -8,9 +8,54 @@ import 'package:bema_application/routes/route_names.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:go_router/go_router.dart';
+import 'package:flutter/services.dart';
 
-class QuestionScreen2 extends StatelessWidget {
+class QuestionScreen2 extends StatefulWidget {
   const QuestionScreen2({super.key});
+
+  @override
+  _QuestionScreen2State createState() => _QuestionScreen2State();
+}
+
+class _QuestionScreen2State extends State<QuestionScreen2> {
+  final FocusNode _focusNode = FocusNode();
+  final TextEditingController _ageController = TextEditingController();
+  String _formattedAge = '';
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      FocusScope.of(context).requestFocus(_focusNode);
+    });
+  }
+
+  @override
+  void dispose() {
+    _focusNode.dispose();
+    _ageController.dispose();
+    super.dispose();
+  }
+
+  void _updateAge() {
+    final age = int.tryParse(_ageController.text) ?? 0;
+    if (age > 100) {
+      // Show an error or prevent update
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Age cannot be greater than 100.'),
+        ),
+      );
+      _ageController.clear();
+      setState(() {
+        _formattedAge = '';
+      });
+    } else {
+      setState(() {
+        _formattedAge = age > 0 ? '$age years old' : '';
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -37,14 +82,34 @@ class QuestionScreen2 extends StatelessWidget {
             ),
             const SizedBox(height: 20), // Padding after heading
             TextFormField(
+              controller: _ageController,
+              focusNode: _focusNode,
               decoration: InputDecoration(
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
                 ),
+                hintText: 'Enter your age',
               ),
               keyboardType: TextInputType.number,
+              inputFormatters: [
+                FilteringTextInputFormatter.digitsOnly, // Only allow digits
+              ],
+              onChanged: (value) {
+                // Validate and format age
+                _updateAge();
+              },
             ),
             const SizedBox(height: 20), // Padding after input field
+            if (_formattedAge.isNotEmpty) ...[
+              Text(
+                _formattedAge,
+                style: const TextStyle(
+                  fontSize: 16,
+                  color: Colors.black,
+                ),
+              ),
+              const SizedBox(height: 20), // Padding after formatted age
+            ],
             const Text(
               "We'd love to know your age so we can better understand your journey!",
               textAlign: TextAlign.center,
