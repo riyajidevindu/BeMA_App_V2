@@ -1,4 +1,5 @@
 import 'package:bema_application/common/config/colors.dart';
+import 'package:bema_application/common/widgets/buttons/custom_elevation_buttons.dart';
 import 'package:bema_application/common/widgets/snackbar%20messages/snackbar_message.dart';
 import 'package:bema_application/features/authentication/providers/authentication_provider.dart';
 import 'package:bema_application/routes/route_names.dart';
@@ -23,7 +24,7 @@ class _LoginScreenState extends State<LoginScreen> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
 
   // For managing loading state during login
-  bool _isLoading = false;
+  bool isSubmitting = false;
 
   @override
   void dispose() {
@@ -35,7 +36,7 @@ class _LoginScreenState extends State<LoginScreen> {
   // Simulate login logic
   void _login() async {
     setState(() {
-      _isLoading = true;
+      isSubmitting = true;
     });
 
     if (_formKey.currentState!.validate()) {
@@ -54,7 +55,7 @@ class _LoginScreenState extends State<LoginScreen> {
     }
 
     setState(() {
-      _isLoading = false;
+      isSubmitting = false;
     });
   }
 
@@ -141,24 +142,30 @@ class _LoginScreenState extends State<LoginScreen> {
                 SizedBox(height: screenHeight * 0.02),
 
                 // Login Button with Loading Indicator
-                ElevatedButton(
-                  onPressed:
-                      _isLoading ? null : _login, // Disable button if loading
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF0098FF), // primaryColor
-                    padding:
-                        EdgeInsets.symmetric(vertical: screenHeight * 0.025),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
-                    ),
+                     CustomElevationBtn(
+                    buttonName: 'Login',
+                    onClick: () async {
+                      setState(() {
+                        isSubmitting = true;
+                      });
+                      if (_formKey.currentState!.validate()) {
+                        final result = await auth.signInWithEmailAndPassword(
+                          _emailController.text,
+                          _passwordController.text,
+                        );
+                        if (result.isSuccess) {
+                          context.goNamed(RouteNames.userWelcomeScreen);
+                          showSuccessSnackBarMessage(context, result.message);
+                        } else {
+                          showErrorSnackBarMessage(context, result.message);
+                        }
+                      }
+                      setState(() {
+                        isSubmitting = false;
+                      });
+                    },
+                    isSubmitting: isSubmitting,
                   ),
-                  child: _isLoading
-                      ? const CircularProgressIndicator(color: Colors.white)
-                      : const Text(
-                          'Login',
-                          style: TextStyle(color: Colors.white),
-                        ),
-                ),
                 SizedBox(height: screenHeight * 0.03),
 
                 // OR Divider
@@ -176,7 +183,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
                 // Google Login Button
                 ElevatedButton.icon(
-                  onPressed: _isLoading
+                  onPressed: isSubmitting
                       ? null
                       : _googleLogin, // Disable button if loading
                   style: ElevatedButton.styleFrom(

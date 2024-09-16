@@ -1,4 +1,5 @@
 import 'package:bema_application/features/authentication/screens/login_screen.dart';
+import 'package:bema_application/features/authentication/screens/question_screens/welcome_question_screen.dart';
 import 'package:bema_application/features/authentication/screens/signup_screen.dart';
 import 'package:bema_application/routes/authendication_wrapper.dart';
 import 'package:bema_application/routes/route_names.dart';
@@ -27,6 +28,13 @@ final goRouter = GoRouter(
       name: RouteNames.loginScreen,
       pageBuilder: (context, state) => const MaterialPage(
         child: LoginScreen(),
+      ),
+    ),
+       GoRoute(
+      path: '/${RouteNames.userWelcomeScreen}',
+      name: RouteNames.userWelcomeScreen,
+      pageBuilder: (context, state) => const MaterialPage(
+        child: UserWelcomeScreen(),
       ),
     ),
   ]
