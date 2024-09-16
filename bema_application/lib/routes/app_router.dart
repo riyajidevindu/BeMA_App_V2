@@ -1,4 +1,5 @@
 import 'package:bema_application/features/authentication/screens/login_screen.dart';
+import 'package:bema_application/features/authentication/screens/profile_screen.dart';
 import 'package:bema_application/features/authentication/screens/question_screens/welcome_question_screen.dart';
 import 'package:bema_application/features/authentication/screens/signup_screen.dart';
 import 'package:bema_application/routes/authendication_wrapper.dart';
@@ -33,9 +34,17 @@ final goRouter = GoRouter(
        GoRoute(
       path: '/${RouteNames.userWelcomeScreen}',
       name: RouteNames.userWelcomeScreen,
-      pageBuilder: (context, state) => const MaterialPage(
+      pageBuilder: (context, state) => MaterialPage(
         child: UserWelcomeScreen(),
       ),
     ),
+      GoRoute(
+        path: '/${RouteNames.profileScreen}',
+        name: RouteNames.profileScreen,
+        pageBuilder: (context, state) {
+          return const MaterialPage(
+            child: ProfileViewScreen(),
+          );
+      }),
   ]
 );
