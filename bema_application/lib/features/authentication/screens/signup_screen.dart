@@ -1,6 +1,7 @@
 import 'package:bema_application/common/widgets/snackbar%20messages/snackbar_message.dart';
 import 'package:bema_application/features/authentication/data/models/login_result.dart';
 import 'package:bema_application/features/authentication/providers/authentication_provider.dart';
+import 'package:bema_application/common/widgets/buttons/custom_elevation_buttons.dart';
 import 'package:bema_application/routes/route_names.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
@@ -18,10 +19,11 @@ class _SignupScreenState extends State<SignupScreen> {
   final TextEditingController _usernameController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
-  final TextEditingController _confirmPasswordController = TextEditingController();
+  final TextEditingController _confirmPasswordController =
+      TextEditingController();
 
   // For managing loading state during sign-up
-  bool _isLoading = false;
+  bool isSubmitting = false;
 
   @override
   void dispose() {
@@ -29,49 +31,45 @@ class _SignupScreenState extends State<SignupScreen> {
     _emailController.dispose();
     _passwordController.dispose();
     _confirmPasswordController.dispose();
-
     super.dispose();
   }
+
   // For managing form validation
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
 
-
   // Simulate sign-up logic
-  void _signup() async {
+  // void _signup() async {
+  //   if (_formKey.currentState!.validate()) {
+  //     if (_passwordController.text != _confirmPasswordController.text) {
+  //       showErrorSnackBarMessage(context, 'Password does not match');
+  //       return;
+  //     }
 
-    setState(() {
-      _isLoading = true;
-    });
-    
-    if (_formKey.currentState!.validate()) {
-     
-      if (_passwordController.text != _confirmPasswordController.text) {
-        showErrorSnackBarMessage(
-            context, 'Password does not match');
-        return;
-      }
+  //     setState(() {
+  //       isSubmitting = true;
+  //     });
 
-      AuthResult result = await Provider.of<AuthenticationProvider>
-      (context,listen:false)
-        .signUp(
-          name: _usernameController.text, 
-          email: _emailController.text, 
-          password: _passwordController.text, 
-          confirmPassword: _confirmPasswordController.text
-        );
+  //     AuthResult result =
+  //         await Provider.of<AuthenticationProvider>(context, listen: false)
+  //             .signUp(
+  //       name: _usernameController.text,
+  //       email: _emailController.text,
+  //       password: _passwordController.text,
+  //       confirmPassword: _confirmPasswordController.text,
+  //     );
 
-      if (result.isSuccess) {
-        //context.goNamed(RouteNames.wrapper);
-        showSuccessSnackBarMessage(context, result.message);
-      } else {
-        showErrorSnackBarMessage(context, result.message);
-      }
+  //     if (result.isSuccess) {
+  //       context.goNamed(RouteNames.wrapper);
+  //       showSuccessSnackBarMessage(context, result.message);
+  //     } else {
+  //       showErrorSnackBarMessage(context, result.message);
+  //     }
 
-      setState(() {
-        _isLoading = false;
-      });
-    }
-  }
+  //     setState(() {
+  //       isSubmitting = false;
+  //     });
+  //   }
+  // }
 
   // Simulate Google sign-up logic
   void _googleSignup() async {
@@ -89,7 +87,7 @@ class _SignupScreenState extends State<SignupScreen> {
       body: SingleChildScrollView(
         child: Padding(
           padding: EdgeInsets.symmetric(
-            horizontal: screenWidth * 0.08,  // Responsive padding
+            horizontal: screenWidth * 0.08, // Responsive padding
             vertical: screenHeight * 0.02,
           ),
           child: Form(
@@ -190,35 +188,57 @@ class _SignupScreenState extends State<SignupScreen> {
                     ),
                   ),
                   obscureText: true,
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Please confirm your password';
-                    }
-                    if (value != _passwordController.text) {
-                      return 'Passwords do not match';
-                    }
-                    return null;
-                  },
+                  // validator: (value) {
+                  //   if (value == null || value.isEmpty) {
+                  //     return 'Please confirm your password';
+                  //   }
+                  //   if (value != _passwordController.text) {
+                  //     return 'Passwords do not match';
+                  //   }
+                  //   return null;
+                  // },
                 ),
                 SizedBox(height: screenHeight * 0.02),
 
                 // Sign-up Button with Loading Indicator
-                ElevatedButton(
-                  onPressed: _isLoading ? null : _signup, // Disable button if loading
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF0098FF), // primaryColor
-                    padding: EdgeInsets.symmetric(vertical: screenHeight * 0.025),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
-                    ),
+                CustomElevationBtn(
+                    buttonName: 'Sign Up',
+                    onClick: () async {
+                      setState(() {
+                        isSubmitting = true;
+                      });
+                     if (_passwordController.text !=
+                          _confirmPasswordController.text) {
+                        showErrorSnackBarMessage(
+                            context, 'Password does not match');
+                        return;
+                      }
+                      if (_formKey.currentState!.validate()) {
+                        if (!context.mounted) return;
+                        AuthResult result = await Provider.of<
+                                AuthenticationProvider>(context, listen: false)
+                            .signUp(
+                                name: _usernameController.text,
+                                email: _emailController.text,
+                                password: _passwordController.text,
+                                confirmPassword: _confirmPasswordController.text,
+                            );
+
+                        if (result.isSuccess) {
+                          context.goNamed(RouteNames.wrapper);
+                          showSuccessSnackBarMessage(context, result.message);
+                        } else {
+                          showErrorSnackBarMessage(context, result.message);
+                        }
+                      }
+
+                      setState(() {
+                        isSubmitting = false;
+                      });
+                    },
+                    isSubmitting: isSubmitting,
                   ),
-                  child: _isLoading
-                      ? const CircularProgressIndicator(color: Colors.white)
-                      : const Text(
-                          'Sign Up',
-                          style: TextStyle(color: Colors.white),
-                        ),
-                ),
+
                 SizedBox(height: screenHeight * 0.03),
 
                 // OR Divider
@@ -236,10 +256,13 @@ class _SignupScreenState extends State<SignupScreen> {
 
                 // Google Sign-up Button
                 ElevatedButton.icon(
-                  onPressed: _isLoading ? null : _googleSignup, // Disable button if loading
+                  onPressed: isSubmitting
+                      ? null
+                      : _googleSignup, // Disable button if loading
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.white,
-                    padding: EdgeInsets.symmetric(vertical: screenHeight * 0.025),
+                    padding:
+                        EdgeInsets.symmetric(vertical: screenHeight * 0.025),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(8),
                       side: const BorderSide(color: Colors.grey),
@@ -254,12 +277,15 @@ class _SignupScreenState extends State<SignupScreen> {
                     style: TextStyle(color: Colors.black),
                   ),
                 ),
-                SizedBox(height: screenHeight * 0.02), 
+
+                SizedBox(height: screenHeight * 0.02),
+
+                // Login Link
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     const Text(
-                      'Already have an account ? ',
+                      'Already have an account? ',
                       style: TextStyle(color: Colors.black, fontSize: 16),
                     ),
                     GestureDetector(
@@ -269,14 +295,14 @@ class _SignupScreenState extends State<SignupScreen> {
                       child: const Text(
                         'Login',
                         style: TextStyle(
-                            color: Colors.black,
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold
-                            )
+                          color: Colors.black,
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
                         ),
-                    )
+                      ),
+                    ),
                   ],
-                )
+                ),
               ],
             ),
           ),
