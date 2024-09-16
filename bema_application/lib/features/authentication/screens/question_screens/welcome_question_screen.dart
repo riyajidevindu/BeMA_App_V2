@@ -2,53 +2,18 @@ import 'package:bema_application/common/config/colors.dart';
 import 'package:bema_application/common/widgets/app_bar.dart';
 import 'package:bema_application/common/widgets/snackbar%20messages/snackbar_message.dart';
 import 'package:bema_application/features/authentication/data/models/login_result.dart';
-import 'package:bema_application/features/authentication/data/models/profile_service.dart';
-import 'package:bema_application/features/authentication/data/models/user_model.dart';
 import 'package:bema_application/features/authentication/providers/authentication_provider.dart';
 import 'package:bema_application/common/widgets/buttons/custom_elevation_buttons.dart';
 import 'package:bema_application/routes/route_names.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:go_router/go_router.dart';
 
-class UserWelcomeScreen extends StatefulWidget {
-  const UserWelcomeScreen({super.key});
+class UserWelcomeScreen extends StatelessWidget {
+  final String userName = "Devindu";
 
-  @override
-  State<UserWelcomeScreen> createState() => _UserWelcomeScreenState();
-}
-
-class _UserWelcomeScreenState extends State<UserWelcomeScreen> {
-  final profileService = ProfileService();
-  String userName = '';
-  bool isLoading = true;  // Track loading state
-
-  @override
-  void initState() {
-    super.initState();
-    getUser();  // Fetch user details when the screen loads
-  }
-
-  Future<void> getUser() async {
-    UserModel? user =
-        await profileService.getUser(FirebaseAuth.instance.currentUser!.uid);
-
-    // Debug the fetched user details
-    debugPrint('Fetched user: ${user?.name}');
-
-    if (user != null && user.name.isNotEmpty) {
-      setState(() {
-        userName = user.name;
-        isLoading = false;  // Set loading to false once name is fetched
-      });
-    } else {
-      setState(() {
-        userName = 'User';  // Set a default name if none is available
-        isLoading = false;
-      });
-    }
-  }
+  const UserWelcomeScreen(
+      {super.key}); // You can replace it with Firebase Auth name.
 
   @override
   Widget build(BuildContext context) {
@@ -64,14 +29,11 @@ class _UserWelcomeScreenState extends State<UserWelcomeScreen> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              if (isLoading)
-                const CircularProgressIndicator()  // Display loader while fetching data
-              else
-                Text(
-                  "👋 Hi, $userName!",  // Display userName
-                  style: const TextStyle(
-                      fontSize: 24, fontWeight: FontWeight.bold),
-                ),
+              Text(
+                "👋 Hi, $userName!",
+                style:
+                    const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+              ),
               const SizedBox(height: 20),
               const Text(
                 "Tell us about you!",
@@ -85,12 +47,12 @@ class _UserWelcomeScreenState extends State<UserWelcomeScreen> {
               const SizedBox(height: 50),
               ElevatedButton(
                 onPressed: () {
-                  // Handle next action
+                  context.goNamed(RouteNames.questionScreen2);
                 },
-                child: const Text("Continue"),
+                child: Text("Continue"),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.blue,
-                  minimumSize: const Size(double.infinity, 50),
+                  minimumSize: Size(double.infinity, 50),
                 ),
               ),
             ],
