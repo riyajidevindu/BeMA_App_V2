@@ -1,5 +1,3 @@
-import 'package:bema_application/common/config/colors.dart';
-import 'package:bema_application/common/widgets/buttons/custom_elevation_buttons.dart';
 import 'package:bema_application/common/widgets/buttons/custom_outline_buttons.dart';
 import 'package:bema_application/routes/route_names.dart';
 import 'package:flutter/material.dart';

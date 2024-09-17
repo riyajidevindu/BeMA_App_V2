@@ -1,4 +1,3 @@
-import 'dart:io';
 
 import 'package:bema_application/common/widgets/api_results.dart';
 import 'package:bema_application/features/authentication/data/models/user_model.dart';

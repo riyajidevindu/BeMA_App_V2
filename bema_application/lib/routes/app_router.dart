@@ -34,7 +34,7 @@ final goRouter = GoRouter(
        GoRoute(
       path: '/${RouteNames.userWelcomeScreen}',
       name: RouteNames.userWelcomeScreen,
-      pageBuilder: (context, state) => MaterialPage(
+      pageBuilder: (context, state) => const MaterialPage(
         child: UserWelcomeScreen(),
       ),
     ),

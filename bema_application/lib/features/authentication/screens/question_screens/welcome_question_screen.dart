@@ -87,11 +87,11 @@ class _UserWelcomeScreenState extends State<UserWelcomeScreen> {
                 onPressed: () {
                   // Handle next action
                 },
-                child: const Text("Continue"),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.blue,
                   minimumSize: const Size(double.infinity, 50),
                 ),
+                child: const Text("Continue"),
               ),
             ],
           ),
