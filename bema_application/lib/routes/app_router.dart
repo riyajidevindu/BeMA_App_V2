@@ -42,52 +42,59 @@ final goRouter = GoRouter(
       GoRoute(
         path: '/${RouteNames.profileScreen}',
         name: RouteNames.profileScreen,
-        pageBuilder: (context, state) {
-          return const MaterialPage(
+        pageBuilder: (context, state) => const MaterialPage(
             child: ProfileViewScreen(),
-          );
-final goRouter = GoRouter(initialLocation: '/${RouteNames.wrapper}', routes: [
-  GoRoute(
-    path: '/${RouteNames.wrapper}',
-    name: RouteNames.wrapper,
-    pageBuilder: (context, builder) => const MaterialPage(
-      child: AuthenticationWrapper(),
-    ),
-  ),
-  GoRoute(
-    path: '/${RouteNames.registerScreen}',
-    name: RouteNames.registerScreen,
-    pageBuilder: (context, state) => const MaterialPage(
-      child: SignupScreen(),
-    ),
-  ),
-  GoRoute(
-    path: '/${RouteNames.loginScreen}',
-    name: RouteNames.loginScreen,
-    pageBuilder: (context, state) => const MaterialPage(
-      child: LoginScreen(),
-    ),
-  ),
-  GoRoute(
-    path: '/${RouteNames.userWelcomeScreen}',
-    name: RouteNames.userWelcomeScreen,
-    pageBuilder: (context, state) => MaterialPage(
-      child: UserWelcomeScreen(),
-    ),
-  ),
-  GoRoute(
-      path: '/${RouteNames.profileScreen}',
-      name: RouteNames.profileScreen,
-      pageBuilder: (context, state) {
-        return const MaterialPage(
-          child: ProfileViewScreen(),
-        );
-      }),
-  GoRoute(
-    path: '/${RouteNames.questionScreen2}',
-    name: RouteNames.questionScreen2,
-    pageBuilder: (context, state) => const MaterialPage(
-      child: QuestionScreen2(),
-    ),
-  ),
+          ),
+      ),
+       GoRoute(
+        path: '/${RouteNames.questionScreen2}',
+        name: RouteNames.questionScreen2,
+        pageBuilder: (context, state) => const MaterialPage(
+          child: QuestionScreen2(),
+        ),
+      ),
+// final goRouter = GoRouter(initialLocation: '/${RouteNames.wrapper}', routes: [
+//   GoRoute(
+//     path: '/${RouteNames.wrapper}',
+//     name: RouteNames.wrapper,
+//     pageBuilder: (context, builder) => const MaterialPage(
+//       child: AuthenticationWrapper(),
+//     ),
+//   ),
+//   GoRoute(
+//     path: '/${RouteNames.registerScreen}',
+//     name: RouteNames.registerScreen,
+//     pageBuilder: (context, state) => const MaterialPage(
+//       child: SignupScreen(),
+//     ),
+//   ),
+//   GoRoute(
+//     path: '/${RouteNames.loginScreen}',
+//     name: RouteNames.loginScreen,
+//     pageBuilder: (context, state) => const MaterialPage(
+//       child: LoginScreen(),
+//     ),
+//   ),
+//   GoRoute(
+//     path: '/${RouteNames.userWelcomeScreen}',
+//     name: RouteNames.userWelcomeScreen,
+//     pageBuilder: (context, state) => MaterialPage(
+//       child: UserWelcomeScreen(),
+//     ),
+//   ),
+//   GoRoute(
+//       path: '/${RouteNames.profileScreen}',
+//       name: RouteNames.profileScreen,
+//       pageBuilder: (context, state) {
+//         return const MaterialPage(
+//           child: ProfileViewScreen(),
+//         );
+//       }),
+//   GoRoute(
+//     path: '/${RouteNames.questionScreen2}',
+//     name: RouteNames.questionScreen2,
+//     pageBuilder: (context, state) => const MaterialPage(
+//       child: QuestionScreen2(),
+//     ),
+//   ),
 ]);
