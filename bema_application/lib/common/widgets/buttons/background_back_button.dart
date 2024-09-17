@@ -19,7 +19,7 @@ class Background extends StatelessWidget {
         ),
         Container(
           height: MediaQuery.of(context).size.height,
-          color: backgroundColor.withOpacity(0.6),
+          color: backgroundColor.withOpacity(0.75),
         ),
         //back button
         isBackButton
