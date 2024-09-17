@@ -1,5 +1,6 @@
 import 'package:bema_application/common/config/colors.dart';
 import 'package:bema_application/common/widgets/app_bar.dart';
+import 'package:bema_application/common/widgets/buttons/background_back_button.dart';
 import 'package:bema_application/common/widgets/snackbar%20messages/snackbar_message.dart';
 import 'package:bema_application/features/authentication/data/models/login_result.dart';
 import 'package:bema_application/features/authentication/data/models/profile_service.dart';
@@ -22,12 +23,12 @@ class UserWelcomeScreen extends StatefulWidget {
 class _UserWelcomeScreenState extends State<UserWelcomeScreen> {
   final profileService = ProfileService();
   String userName = '';
-  bool isLoading = true;  // Track loading state
+  bool isLoading = true; // Track loading state
 
   @override
   void initState() {
     super.initState();
-    getUser();  // Fetch user details when the screen loads
+    getUser(); // Fetch user details when the screen loads
   }
 
   Future<void> getUser() async {
@@ -40,16 +41,16 @@ class _UserWelcomeScreenState extends State<UserWelcomeScreen> {
     if (user != null && user.name.isNotEmpty) {
       setState(() {
         userName = user.name;
-        isLoading = false;  // Set loading to false once name is fetched
+        isLoading = false; // Set loading to false once name is fetched
       });
     } else {
       setState(() {
-        userName = 'User';  // Set a default name if none is available
+        userName = 'User'; // Set a default name if none is available
         isLoading = false;
       });
     }
   }
-  
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -58,41 +59,80 @@ class _UserWelcomeScreenState extends State<UserWelcomeScreen> {
         backgroundColor: backgroundColor,
         title: const CustomAppBar(),
       ),
-      body: Center(
-        child: Padding(
-          padding: const EdgeInsets.all(20.0),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text(
-                "👋 Hi, $userName!",
-                style:
-                    const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+      body: Stack(
+        children: [
+          const Background(
+              isBackButton: true), // Background widget with 'const'
+          Center(
+            child: Padding(
+              padding: const EdgeInsets.all(20.0),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Text(
+                    "👋",
+                    style: TextStyle(fontSize: 50),
+                  ),
+                  Text(
+                    "Hi, $userName!", // Make sure 'userName' is defined
+                    style: const TextStyle(
+                        fontSize: 30, fontWeight: FontWeight.bold),
+                  ),
+                const Text(
+              'Tell us about you!',
+              style: TextStyle(
+                fontSize: 24,
+                fontWeight: FontWeight.w500,
+                color: Colors.black,
               ),
-              const SizedBox(height: 20),
+            ),
+             const SizedBox(height: 30),
+               const Text(
+                    "👊",
+                    style: TextStyle(fontSize: 40),
+                  ),
+            const SizedBox(height: 30),
               const Text(
-                "Tell us about you!",
-                style: TextStyle(fontSize: 20),
+              'Let\'s become\nfriends',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 24,
+                fontWeight: FontWeight.w500,
+                color: Colors.black,
               ),
-              const SizedBox(height: 20),
-              const Text(
-                "Let's become friends 😜",
-                style: TextStyle(fontSize: 20),
-              ),
-              const SizedBox(height: 50),
-              ElevatedButton(
-                onPressed: () {
-                  context.goNamed(RouteNames.questionScreen2);
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.blue,
-                  minimumSize: Size(double.infinity, 50),
+            ),
+            const SizedBox(height: 10),
+             const Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(
+                  '🫂', // Friends emoji
+                  style: TextStyle(fontSize: 40),
                 ),
-                child: const Text("Continue"),
+                SizedBox(width: 10),
+                Text(
+                  '😜', // Smiling emoji
+                  style: TextStyle(fontSize: 40),
+                ),
+              ],
+            ),
+            const SizedBox(height: 50),
+                  ElevatedButton(
+                    onPressed: () {
+                      context.goNamed(RouteNames.questionScreen2);
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.blue,
+                      minimumSize:
+                          const Size(double.infinity, 50), // Use 'const'
+                    ),
+                    child: const Text("Continue"),
+                  ),
+                ],
               ),
-            ],
+            ),
           ),
-        ),
+        ],
       ),
     );
   }
