@@ -102,10 +102,16 @@ BeMA includes a feedback system:
 
 You can view our Figma design here: [BeMA Figma Design](https://www.figma.com/design/UmLbhzpPvPWPexRwt8lRSg/Main-Mobile-UI?node-id=191-2540&node-type=frame&t=w0IHJdAzCTintH7K-0)
 
-## Notion Documentation
+## Project Setup Instructions
 
-You can access the project's documentation on Notion: [BeMA Notion Workspace](https://www.notion.so/appsdev/Health-Life-Behaviour-Monitoring-App-a8c105c1210c462f941a8d87ef13b17a)
+### Prerequisites
 
----
+Before starting, ensure you have the following installed on your machine:
+
+- [Flutter SDK](https://flutter.dev/docs/get-started/install)
+- [Dart SDK](https://dart.dev/get-dart)
+- Android Studio / VSCode (or any IDE supporting Flutter)
+- Xcode (for iOS development)
+
 
 © 2024 BeMA. All rights reserved.
