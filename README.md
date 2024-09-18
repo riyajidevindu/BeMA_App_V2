@@ -1,4 +1,13 @@
-# BeMA - Behavioural Monitoring App
+# 
+
+<h1>
+  <div  align="center">
+  <a  href="https://github.com/Apps-Technologies-AI-Labs/bema-ai-snm">
+      <img  src="https://github.com/Apps-Technologies-AI-Labs/bema-ai-snm/blob/main/bema_application/assets/logo.png"  alt="Logo" >
+  </a>
+</h1>
+<p align=center>BeMA - Behavioural Monitoring App</p>
+<br>
 
 ## Project Overview
 
