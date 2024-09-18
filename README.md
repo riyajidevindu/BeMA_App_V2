@@ -3,7 +3,7 @@
 <h1>
   <div align="center">
     <a href="https://github.com/Apps-Technologies-AI-Labs/bema-ai-snm">
-      <img src="https://github.com/Apps-Technologies-AI-Labs/bema-ai-snm/blob/main/bema_application/assets/logo.png" alt="Logo" width="200" />
+      <img src="https://github.com/Apps-Technologies-AI-Labs/bema-ai-snm/blob/main/bema_application/assets/logo.png" alt="Logo" width="100" />
     </a>
   </div>
 </h1>
