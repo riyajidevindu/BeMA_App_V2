@@ -114,6 +114,20 @@ Before starting, ensure you have the following installed on your machine:
 
 ### Step 1: Clone the Repository
 
+### Step 2: Install Dependencies
+
+```bash
+npm run dev
+# or
+yarn dev
+# or
+pnpm dev
+# or
+bun dev
+```
+
+
+
 
 
 © 2024 BeMA. All rights reserved.
