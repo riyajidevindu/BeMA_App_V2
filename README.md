@@ -1,12 +1,14 @@
 # 
 
 <h1>
-  <div  align="center">
-  <a  href="https://github.com/Apps-Technologies-AI-Labs/bema-ai-snm">
-      <img  src="https://github.com/Apps-Technologies-AI-Labs/bema-ai-snm/blob/main/bema_application/assets/logo.png"  alt="Logo" >
-  </a>
+  <div align="center">
+    <a href="https://github.com/Apps-Technologies-AI-Labs/bema-ai-snm">
+      <img src="https://github.com/Apps-Technologies-AI-Labs/bema-ai-snm/blob/main/bema_application/assets/logo.png" alt="Logo" width="200" />
+    </a>
+  </div>
 </h1>
-<p align=center>BeMA - Behavioural Monitoring App</p>
+<p align="center">BeMA - Behavioural Monitoring App</p>
+
 <br>
 
 ## Project Overview
