@@ -113,5 +113,8 @@ Before starting, ensure you have the following installed on your machine:
 - Android Studio / VSCode (or any IDE supporting Flutter)
 - Xcode (for iOS development)
 
+### Step 1: Clone the Repository
+
+
 
 © 2024 BeMA. All rights reserved.
