@@ -111,7 +111,6 @@ Before starting, ensure you have the following installed on your machine:
 - [Flutter SDK](https://flutter.dev/docs/get-started/install)
 - [Dart SDK](https://dart.dev/get-dart)
 - Android Studio / VSCode (or any IDE supporting Flutter)
-- Xcode (for iOS development)
 
 ### Step 1: Clone the Repository
 
