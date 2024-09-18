@@ -100,11 +100,11 @@ BeMA includes a feedback system:
 
 ## Figma Design
 
-You can view our Figma design here: [BeMA Figma Design](https://www.figma.com/link-placeholder)
+You can view our Figma design here: [BeMA Figma Design](https://www.figma.com/design/UmLbhzpPvPWPexRwt8lRSg/Main-Mobile-UI?node-id=191-2540&node-type=frame&t=w0IHJdAzCTintH7K-0)
 
 ## Notion Documentation
 
-You can access the project's documentation on Notion: [BeMA Notion Workspace](https://www.notion.so/link-placeholder)
+You can access the project's documentation on Notion: [BeMA Notion Workspace](https://www.notion.so/appsdev/Health-Life-Behaviour-Monitoring-App-a8c105c1210c462f941a8d87ef13b17a)
 
 ---
 
