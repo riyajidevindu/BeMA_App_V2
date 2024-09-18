@@ -79,7 +79,7 @@ class _CustomAppBarState extends State<CustomAppBar> {
                       onSelected: (value) {
                         if (value == 'profile') {
                           // Navigate to the Profile screen
-                          // context.push('/${RouteNames.profileScreen}');
+                          context.push('/${RouteNames.profileScreen}');
                         } else if (value == 'signOut') {
                           // Perform Sign Out
                           final authProvider = Provider.of<AuthenticationProvider>(context, listen: false);
