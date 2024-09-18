@@ -119,9 +119,10 @@ Before starting, ensure you have the following installed on your machine:
 ```bash
 flutter pub get
 ```
+### Step 3: Running the App
 
-
-
-
+```bash
+flutter run
+```
 
 © 2024 BeMA. All rights reserved.
