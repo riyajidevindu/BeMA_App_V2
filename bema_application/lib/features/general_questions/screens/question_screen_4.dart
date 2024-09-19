@@ -31,7 +31,7 @@ class _QuestionScreen4State extends State<QuestionScreen4> {
           children: [
             SizedBox(height: screenHeight * 0.05), // 5% of screen height padding to push content down
             const LinearProgressIndicator(
-              value: 0.75, // 75% progress
+              value: 0.18, // 75% progress
               backgroundColor: Colors.grey,
               color: Colors.blue, // Blue progress
             ),

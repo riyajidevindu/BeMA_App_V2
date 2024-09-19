@@ -39,7 +39,7 @@ class _QuestionScreen5State extends State<QuestionScreen5> {
             children: [
               const SizedBox(height: 50), // Padding
               const LinearProgressIndicator(
-                value: 0.9, // Progress (90%)
+                value: 0.24, // Progress (90%)
                 backgroundColor: Colors.grey,
                 color: Colors.blue, // Progress bar color
               ),
