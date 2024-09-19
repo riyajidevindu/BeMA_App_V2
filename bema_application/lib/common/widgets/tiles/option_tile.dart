@@ -3,27 +3,27 @@ import 'package:flutter/material.dart';
 class OptionTile extends StatelessWidget {
   final String emoji;
   final String label;
-  final String gender;
-  final String? selectedGender;
+  final String option;
+  final String? selectedOption;
   final double emojiSize;
-  final VoidCallback onSelect; // Callback function for selecting a gender
+  final VoidCallback onSelect; // Callback function for selecting a option
 
   const OptionTile({
     Key? key,
     required this.emoji,
     required this.label,
-    required this.gender,
-    required this.selectedGender,
+    required this.option,
+    required this.selectedOption,
     required this.emojiSize,
     required this.onSelect,
   }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    bool isSelected = selectedGender == gender;
+    bool isSelected = selectedOption == option;
 
     return GestureDetector(
-      onTap: onSelect, // Calls the function to update the selected gender
+      onTap: onSelect, // Calls the function to update the selected option
       child: Column(
         children: [
           Container(
@@ -36,7 +36,7 @@ class OptionTile extends StatelessWidget {
               borderRadius: BorderRadius.circular(12), // Rounded corners
             ),
             child: Opacity(
-              opacity: isSelected || selectedGender == null ? 1.0 : 0.3, // Blur unselected
+              opacity: isSelected || selectedOption == null ? 1.0 : 0.3, // Blur unselected
               child: Text(
                 emoji,
                 style: TextStyle(fontSize: emojiSize), // Responsive emoji size

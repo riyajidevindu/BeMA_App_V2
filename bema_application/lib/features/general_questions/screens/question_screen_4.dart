@@ -1,5 +1,7 @@
 import 'package:bema_application/common/widgets/tiles/option_tile.dart';
+import 'package:bema_application/routes/route_names.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
 class QuestionScreen4 extends StatefulWidget {
   const QuestionScreen4({super.key});
@@ -9,7 +11,7 @@ class QuestionScreen4 extends StatefulWidget {
 }
 
 class _QuestionScreen4State extends State<QuestionScreen4> {
-  String? _selectedGender; // Stores the selected gender
+  String? _selectedGender; // Stores the selected option
 
   @override
   Widget build(BuildContext context) {
@@ -76,8 +78,8 @@ class _QuestionScreen4State extends State<QuestionScreen4> {
                 OptionTile(
                   emoji: "👨",
                   label: "I'm male",
-                  gender: 'male',
-                  selectedGender: _selectedGender,
+                  option: 'male',
+                  selectedOption: _selectedGender,
                   emojiSize: emojiSize,
                   onSelect: () {
                     setState(() {
@@ -88,8 +90,8 @@ class _QuestionScreen4State extends State<QuestionScreen4> {
                 OptionTile(
                   emoji: "👩",
                   label: "I'm female",
-                  gender: 'female',
-                  selectedGender: _selectedGender,
+                  option: 'female',
+                  selectedOption: _selectedGender,
                   emojiSize: emojiSize,
                   onSelect: () {
                     setState(() {
@@ -106,8 +108,8 @@ class _QuestionScreen4State extends State<QuestionScreen4> {
                 OptionTile(
                   emoji: "🧑",
                   label: "I'm non-binary",
-                  gender: 'non-binary',
-                  selectedGender: _selectedGender,
+                  option: 'non-binary',
+                  selectedOption: _selectedGender,
                   emojiSize: emojiSize,
                   onSelect: () {
                     setState(() {
@@ -118,8 +120,8 @@ class _QuestionScreen4State extends State<QuestionScreen4> {
                 OptionTile(
                   emoji: "❓",
                   label: "Prefer not to say",
-                  gender: 'prefer-not',
-                  selectedGender: _selectedGender,
+                  option: 'prefer-not',
+                  selectedOption: _selectedGender,
                   emojiSize: emojiSize,
                   onSelect: () {
                     setState(() {
@@ -133,9 +135,9 @@ class _QuestionScreen4State extends State<QuestionScreen4> {
             ElevatedButton(
               onPressed: _selectedGender != null
                   ? () {
-                      // Navigate to the next screen
+                      context.goNamed(RouteNames.questionScreen5);
                     }
-                  : null, // Disable button if no gender selected
+                  : null, // Disable button if no option selected
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.blue, // Blue button color
                 minimumSize: Size(double.infinity, screenHeight * 0.07), // Responsive button height
@@ -155,13 +157,13 @@ class _QuestionScreen4State extends State<QuestionScreen4> {
     );
   }
 
-  // Helper method to create gender option widgets with a border
-  Widget _genderOption(String emoji, String label, String gender, double emojiSize) {
-    bool isSelected = _selectedGender == gender;
+  // Helper method to create option option widgets with a border
+  Widget _genderOption(String emoji, String label, String option, double emojiSize) {
+    bool isSelected = _selectedGender == option;
     return GestureDetector(
       onTap: () {
         setState(() {
-          _selectedGender = gender; // Set selected gender
+          _selectedGender = option; // Set selected option
         });
       },
       child: Column(
