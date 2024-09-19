@@ -125,7 +125,7 @@ class _QuestionScreen2State extends State<QuestionScreen2> {
             const Spacer(), // Push button to the bottom
             ElevatedButton(
               onPressed: () {
-                context.goNamed(RouteNames.questionScreen4);
+                context.goNamed(RouteNames.questionScreen2);
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.blue, // Blue button color
