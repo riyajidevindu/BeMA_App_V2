@@ -50,7 +50,13 @@ class _QuestionScreen6State extends State<QuestionScreen6> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            const SizedBox(height: 50), // Padding at the top
+            const SizedBox(height: 50), // Padding
+            const LinearProgressIndicator(
+              value: 0.3, 
+              backgroundColor: Colors.grey,
+              color: Colors.blue, // Progress bar color
+            ),
+            const SizedBox(height: 30),
             Text(
               "Hey Mr. ${userName}", // Greet the user by name from widget
               textAlign: TextAlign.center,
