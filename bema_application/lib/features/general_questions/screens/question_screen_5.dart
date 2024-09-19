@@ -1,5 +1,7 @@
 import 'package:bema_application/common/widgets/tiles/option_tile.dart';
+import 'package:bema_application/routes/route_names.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
 class QuestionScreen5 extends StatefulWidget {
   const QuestionScreen5({super.key});
@@ -164,12 +166,13 @@ class _QuestionScreen5State extends State<QuestionScreen5> {
               ElevatedButton(
                 onPressed: _isContinueButtonActive
                     ? () {
-                        // Navigate to the next screen
+                        context.goNamed(RouteNames.questionScreen6);
                       }
                     : null, // Disable button if neither emoji nor text is selected
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.blue, // Blue button color
-                  minimumSize: const Size(double.infinity, 50), // Full-width button
+                  minimumSize:
+                      const Size(double.infinity, 50), // Full-width button
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
                   ),

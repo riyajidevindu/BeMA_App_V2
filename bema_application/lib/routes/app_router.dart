@@ -5,6 +5,7 @@ import 'package:bema_application/features/authentication/screens/signup_screen.d
 import 'package:bema_application/features/general_questions/screens/question_screen_2.dart';
 import 'package:bema_application/features/general_questions/screens/question_screen_4.dart';
 import 'package:bema_application/features/general_questions/screens/question_screen_5.dart';
+import 'package:bema_application/features/general_questions/screens/question_screen_6.dart';
 import 'package:bema_application/routes/authendication_wrapper.dart';
 import 'package:bema_application/routes/route_names.dart';
 import 'package:flutter/material.dart';
@@ -67,6 +68,13 @@ final goRouter = GoRouter(
         name: RouteNames.questionScreen5,
         pageBuilder: (context, state) => const MaterialPage(
           child: QuestionScreen5(),
+        ),
+      ),
+      GoRoute(
+        path: '/${RouteNames.questionScreen6}',
+        name: RouteNames.questionScreen6,
+        pageBuilder: (context, state) => const MaterialPage(
+          child: QuestionScreen6(),
         ),
       ),
 // final goRouter = GoRouter(initialLocation: '/${RouteNames.wrapper}', routes: [
