@@ -1,3 +1,4 @@
+import 'package:bema_application/common/widgets/tiles/option_tile.dart';
 import 'package:flutter/material.dart';
 
 class QuestionScreen4 extends StatefulWidget {
@@ -68,20 +69,64 @@ class _QuestionScreen4State extends State<QuestionScreen4> {
             ),
             SizedBox(height: screenHeight * 0.05), // 5% of screen height padding after description
 
-            // Gender options using emojis
+            // Gender options using OptionTile widget
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
-                _genderOption("👨", "I'm male", 'male', emojiSize),
-                _genderOption("👩", "I'm female", 'female', emojiSize),
+                OptionTile(
+                  emoji: "👨",
+                  label: "I'm male",
+                  gender: 'male',
+                  selectedGender: _selectedGender,
+                  emojiSize: emojiSize,
+                  onSelect: () {
+                    setState(() {
+                      _selectedGender = 'male';
+                    });
+                  },
+                ),
+                OptionTile(
+                  emoji: "👩",
+                  label: "I'm female",
+                  gender: 'female',
+                  selectedGender: _selectedGender,
+                  emojiSize: emojiSize,
+                  onSelect: () {
+                    setState(() {
+                      _selectedGender = 'female';
+                    });
+                  },
+                ),
               ],
             ),
             SizedBox(height: spacing), // Responsive padding between rows
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
-                _genderOption("🧑", "I'm non-binary", 'non-binary', emojiSize),
-                _genderOption("❓", "Prefer not to say", 'prefer-not', emojiSize),
+                OptionTile(
+                  emoji: "🧑",
+                  label: "I'm non-binary",
+                  gender: 'non-binary',
+                  selectedGender: _selectedGender,
+                  emojiSize: emojiSize,
+                  onSelect: () {
+                    setState(() {
+                      _selectedGender = 'non-binary';
+                    });
+                  },
+                ),
+                OptionTile(
+                  emoji: "❓",
+                  label: "Prefer not to say",
+                  gender: 'prefer-not',
+                  selectedGender: _selectedGender,
+                  emojiSize: emojiSize,
+                  onSelect: () {
+                    setState(() {
+                      _selectedGender = 'prefer-not';
+                    });
+                  },
+                ),
               ],
             ),
             const Spacer(), // Push button to the bottom
