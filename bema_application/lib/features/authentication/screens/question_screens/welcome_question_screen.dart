@@ -71,7 +71,7 @@ class _UserWelcomeScreenState extends State<UserWelcomeScreen> {
                 children: [
                   const Text(
                     "👋",
-                    style: TextStyle(fontSize: 50),
+                    style: TextStyle(fontSize: 40),
                   ),
                   Text(
                     "Hi, $userName!", // Make sure 'userName' is defined
@@ -86,12 +86,12 @@ class _UserWelcomeScreenState extends State<UserWelcomeScreen> {
                 color: Colors.black,
               ),
             ),
-             const SizedBox(height: 30),
+             const SizedBox(height: 25),
                const Text(
                     "👊",
-                    style: TextStyle(fontSize: 40),
+                    style: TextStyle(fontSize: 30),
                   ),
-            const SizedBox(height: 30),
+            const SizedBox(height: 25),
               const Text(
               'Let\'s become\nfriends',
               textAlign: TextAlign.center,
@@ -107,16 +107,16 @@ class _UserWelcomeScreenState extends State<UserWelcomeScreen> {
               children: [
                 Text(
                   '🫂', // Friends emoji
-                  style: TextStyle(fontSize: 40),
+                  style: TextStyle(fontSize: 35),
                 ),
                 SizedBox(width: 10),
                 Text(
                   '😜', // Smiling emoji
-                  style: TextStyle(fontSize: 40),
+                  style: TextStyle(fontSize: 35),
                 ),
               ],
             ),
-            const SizedBox(height: 50),
+            const SizedBox(height: 40),
                   ElevatedButton(
                     onPressed: () {
                       context.goNamed(RouteNames.questionScreen2);
