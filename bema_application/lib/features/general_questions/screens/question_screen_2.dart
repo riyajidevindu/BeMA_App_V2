@@ -1,14 +1,7 @@
-import 'package:bema_application/common/config/colors.dart';
-import 'package:bema_application/common/widgets/app_bar.dart';
-import 'package:bema_application/common/widgets/snackbar%20messages/snackbar_message.dart';
-import 'package:bema_application/features/authentication/data/models/login_result.dart';
-import 'package:bema_application/features/authentication/providers/authentication_provider.dart';
-import 'package:bema_application/common/widgets/buttons/custom_elevation_buttons.dart';
 import 'package:bema_application/routes/route_names.dart';
 import 'package:flutter/material.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:go_router/go_router.dart';
 import 'package:flutter/services.dart';
+import 'package:go_router/go_router.dart';
 
 class QuestionScreen2 extends StatefulWidget {
   const QuestionScreen2({super.key});
@@ -68,7 +61,7 @@ class _QuestionScreen2State extends State<QuestionScreen2> {
           children: [
             const SizedBox(height: 50), // Add padding to push content down
             const LinearProgressIndicator(
-              value: 0.5, // 50% progress (adjust as needed)
+              value: 0.06, // 50% progress (adjust as needed)
               backgroundColor: Colors.grey,
               color: Colors.blue, // Blue progress
             ),
@@ -132,7 +125,7 @@ class _QuestionScreen2State extends State<QuestionScreen2> {
             const Spacer(), // Push button to the bottom
             ElevatedButton(
               onPressed: () {
-                // Navigate to the next screen
+                context.goNamed(RouteNames.questionScreen4);
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.blue, // Blue button color
