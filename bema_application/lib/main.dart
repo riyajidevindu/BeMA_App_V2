@@ -25,7 +25,7 @@ class MyApp extends StatelessWidget {
       title: 'BeMA',
       routerConfig: goRouter,
       theme: ThemeData(
-        scaffoldBackgroundColor: backgroundColor,
+        scaffoldBackgroundColor:backgroundColor,
         primaryColor: primaryColor,
       ),
     );

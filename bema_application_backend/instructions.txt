@@ -1,0 +1,5 @@
+create a virtual env  - python -m venv .venv
+activate env - .venv\Scripts\Activate.ps1
+install fastapi - pip install fastapi[standard]
+install packages - pip install -r requirements.txt
+run fast api - fastapi dev main.py
