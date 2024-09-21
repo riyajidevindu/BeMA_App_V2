@@ -2,14 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:bema_application/routes/route_names.dart';
 
-class QuestionScreen7 extends StatefulWidget {
-  const QuestionScreen7({super.key});
+class QuestionScreen8 extends StatefulWidget {
+  const QuestionScreen8({super.key});
 
   @override
-  _QuestionScreen7State createState() => _QuestionScreen7State();
+  _QuestionScreen8State createState() => _QuestionScreen8State();
 }
 
-class _QuestionScreen7State extends State<QuestionScreen7> {
+class _QuestionScreen8State extends State<QuestionScreen8> {
   bool? _hasDiabetes; // Tracks user's diabetes response (true, false, or null)
   final TextEditingController _yearsController = TextEditingController();
 
@@ -46,13 +46,21 @@ class _QuestionScreen7State extends State<QuestionScreen7> {
             children: [
               const SizedBox(height: 50), // Padding
               const LinearProgressIndicator(
-                value: 0.36, // Progress (next step)
+                value: 0.42, 
                 backgroundColor: Colors.grey,
                 color: Colors.blue, // Progress bar color
               ),
               SizedBox(height: screenHeight*0.05),
               const Text(
-                "Do you have diabetes?",
+                "Do you have hypertension?",
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const Text(
+                "(High Blood Pressure)",
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontSize: 24,
@@ -112,7 +120,15 @@ class _QuestionScreen7State extends State<QuestionScreen7> {
                SizedBox(height: screenHeight*0.075), // Padding after options
 
               const Text(
-                "If yes, how long have you been on medication? (In years)",
+                "If yes, how long have you been on medication?",
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 16,
+                  color: Colors.grey,
+                ),
+              ),
+              const Text(
+                "(In years)",
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontSize: 16,
@@ -151,7 +167,7 @@ class _QuestionScreen7State extends State<QuestionScreen7> {
               ElevatedButton(
                 onPressed: _isContinueButtonActive
                     ? () {
-                        context.goNamed(RouteNames.questionScreen8);
+                        //context.goNamed(RouteNames.questionScreen8);
                       }
                     : null, // Disable button if conditions are not met
                 style: ElevatedButton.styleFrom(

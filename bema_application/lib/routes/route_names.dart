@@ -9,4 +9,5 @@ class RouteNames {
   static const questionScreen5 = 'questionScreen5';
   static const questionScreen6 = 'questionScreen6';
   static const questionScreen7 = 'questionScreen7';
+  static const questionScreen8 = 'questionScreen8';
 }
