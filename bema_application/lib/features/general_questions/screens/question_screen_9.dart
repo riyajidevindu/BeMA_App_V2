@@ -42,12 +42,41 @@ class _QuestionScreen9State extends State<QuestionScreen9> {
         children: [
           const SizedBox(height: 50),
           // Fixed progress bar at the top
-          const Padding(
-            padding: EdgeInsets.symmetric(vertical: 20.0, horizontal: 20.0),
-            child: LinearProgressIndicator(
-              value: 0.54, // Progress (next step)
-              backgroundColor: Colors.grey,
-              color: Colors.blue, // Progress bar color
+          // Row for Back button and Progress bar
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20.0),
+            child: Row(
+              children: [
+                // Back button inside a transparent circle
+                GestureDetector(
+                  onTap: () {
+                    context.goNamed(RouteNames.questionScreen8);
+                  },
+                  child: Container(
+                    padding: const EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: Colors.black.withOpacity(0.2), // Transparent background
+                    ),
+                    child: const Icon(
+                      Icons.arrow_back,
+                      color: Colors.white, // White arrow color
+                    ),
+                  ),
+                ),
+
+                SizedBox(width: screenWidth * 0.025), // Space between back button and progress bar
+
+                // Progress bar with increased width
+                const Expanded(
+                  child: LinearProgressIndicator(
+                    value: 0.48, // Progress (next step)
+                    backgroundColor: Colors.grey,
+                    color: Colors.blue, // Progress bar color
+                    //minHeight: 8, // Slightly increase the height of the progress bar
+                  ),
+                ),
+              ],
             ),
           ),
           

@@ -45,94 +45,143 @@ class _QuestionScreen6State extends State<QuestionScreen6> {
 
   @override
   Widget build(BuildContext context) {
+
+    final double screenWidth = MediaQuery.of(context).size.width;
+    final double screenHeight = MediaQuery.of(context).size.height;
+    final double emojiSize = screenWidth * 0.1;
+
     return Scaffold(
       backgroundColor: const Color(0xFFE6F0FF), // Light blue background
-      body: Padding(
-        padding: const EdgeInsets.all(20.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            const SizedBox(height: 50), // Padding
-            const LinearProgressIndicator(
-              value: 0.3,
-              backgroundColor: Colors.grey,
-              color: Colors.blue, // Progress bar color
+      body: Column(
+        children: [          
+ 
+          const SizedBox(height: 50),
+          
+          // Row for Back button and Progress bar
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20.0),
+            child: Row(
+              children: [
+                // Back button inside a transparent circle
+                GestureDetector(
+                  onTap: () {
+                    context.goNamed(RouteNames.questionScreen5);
+                  },
+                  child: Container(
+                    padding: const EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: Colors.black.withOpacity(0.2), // Transparent background
+                    ),
+                    child: const Icon(
+                      Icons.arrow_back,
+                      color: Colors.white, // White arrow color
+                    ),
+                  ),
+                ),
+
+                SizedBox(width: screenWidth * 0.025), // Space between back button and progress bar
+
+                // Progress bar with increased width
+                const Expanded(
+                  child: LinearProgressIndicator(
+                    value: 0.30, // Progress (next step)
+                    backgroundColor: Colors.grey,
+                    color: Colors.blue, // Progress bar color
+                    //minHeight: 8, // Slightly increase the height of the progress bar
+                  ),
+                ),
+              ],
             ),
-            const SizedBox(height: 30),
-            Text(
-              "Hey Mr. ${userName}", // Greet the user by name from widget
-              textAlign: TextAlign.center,
-              style: const TextStyle(
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            const SizedBox(height: 20), // Padding after the greeting
-            const Text(
-              "👋", // Waving hand emoji
-              style: TextStyle(fontSize: 50), // Emoji size
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 20), // Padding after the emoji
-            const Text(
-              "We're friends now!",
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            const SizedBox(height: 20), // Padding after the text
-            const Text(
-              "😊", // Smiling face emoji
-              style: TextStyle(fontSize: 50), // Emoji size
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 20), // Padding after the emoji
-            const Text(
-              "Let's take the next step and gather some medical info to help you better.",
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 18,
-                color: Colors.grey,
-              ),
-            ),
-            const SizedBox(height: 20), // Padding after the text
-            const Text(
-              "🩺", // Stethoscope emoji
-              style: TextStyle(fontSize: 50), // Emoji size
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 20), // Padding after the emoji
-            const Text(
-              "Ready? Let's do it!",
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            const Spacer(), // Push button to the bottom
-            ElevatedButton(
-              onPressed: () {
-                context.goNamed(RouteNames.questionScreen7);
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.blue, // Blue button color
-                minimumSize:
-                    const Size(double.infinity, 50), // Full-width button
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
+          ),
+
+          Expanded(
+            child: SingleChildScrollView(
+              child: Padding(
+                padding: const EdgeInsets.all(20.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    const Text(
+                      "👋", // Waving hand emoji
+                      style: TextStyle(fontSize: 50), // Emoji size
+                      textAlign: TextAlign.center,
+                    ),
+                    SizedBox(height: screenHeight * 0.03),
+                    Text(
+                      "Hey Mr. ${userName}", // Greet the user by name from widget
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    SizedBox(height: screenHeight * 0.02),
+
+                    const Text(
+                      "We're friends now!",
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    SizedBox(height: screenHeight * 0.03),
+                    const Text(
+                      "😊", // Smiling face emoji
+                      style: TextStyle(fontSize: 50), // Emoji size
+                      textAlign: TextAlign.center,
+                    ),
+                    SizedBox(height: screenHeight * 0.02),
+                    const Text(
+                      "Let's take the next step and gather some medical info to help you better.",
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontSize: 18,
+                        color: Colors.grey,
+                      ),
+                    ),
+                    SizedBox(height: screenHeight * 0.02),
+                    const Text(
+                      "🩺", // Stethoscope emoji
+                      style: TextStyle(fontSize: 50), // Emoji size
+                      textAlign: TextAlign.center,
+                    ),
+                    SizedBox(height: screenHeight * 0.04),
+                    const Text(
+                      "Ready? Let's do it!",
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    SizedBox(height: screenHeight * 0.05),
+                    ElevatedButton(
+                      onPressed: () {
+                        context.goNamed(RouteNames.questionScreen7);
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.blue, // Blue button color
+                        minimumSize:
+                            const Size(double.infinity, 50), // Full-width button
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      child: const Text(
+                        "Continue",
+                        style: TextStyle(fontSize: 18),
+                      ),
+                    ),
+
+                  ],
                 ),
               ),
-              child: const Text(
-                "Continue",
-                style: TextStyle(fontSize: 18),
-              ),
             ),
-            const SizedBox(height: 20), // Padding after button
-          ],
-        ),
+          ),
+                 
+        ],
       ),
     );
   }
