@@ -38,154 +38,165 @@ class _QuestionScreen8State extends State<QuestionScreen8> {
 
     return Scaffold(
       backgroundColor: const Color(0xFFE6F0FF), // Same light blue background
-      body: SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.all(20.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              const SizedBox(height: 50), // Padding
-              const LinearProgressIndicator(
-                value: 0.42, 
-                backgroundColor: Colors.grey,
-                color: Colors.blue, // Progress bar color
-              ),
-              SizedBox(height: screenHeight*0.05),
-              const Text(
-                "Do you have hypertension?",
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: 24,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              const Text(
-                "(High Blood Pressure)",
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: 24,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              SizedBox(height: screenHeight*0.05),
-
-              // Emoji buttons for Yes and No options
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  GestureDetector(
-                    onTap: () {
-                      setState(() {
-                        _hasDiabetes = true;
-                      });
-                    },
-                    child: Container(
-                      padding: const EdgeInsets.all(20),
-                      decoration: BoxDecoration(
-                        color: Colors.green.withOpacity(_hasDiabetes == true ? 1.0 : 0.3),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: Text(
-                        "✅",
-                        style: TextStyle(
-                          fontSize: emojiSize,
-                        ),
-                      ),
-                    ),
-                  ),
-                   SizedBox(width: screenWidth*0.15),
-                  GestureDetector(
-                    onTap: () {
-                      setState(() {
-                        _hasDiabetes = false;
-                        _yearsController.clear(); // Clear the years input if No is selected
-                      });
-                    },
-                    child: Container(
-                      padding: const EdgeInsets.all(20),
-                      decoration: BoxDecoration(
-                        color: Colors.green.withOpacity(_hasDiabetes == false ? 1.0 : 0.3),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: Text(
-                        "❌",
-                        style: TextStyle(
-                          fontSize: emojiSize,
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-               SizedBox(height: screenHeight*0.075), // Padding after options
-
-              const Text(
-                "If yes, how long have you been on medication?",
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: 16,
-                  color: Colors.grey,
-                ),
-              ),
-              const Text(
-                "(In years)",
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: 16,
-                  color: Colors.grey,
-                ),
-              ),
-              SizedBox(height: screenHeight*0.05),
-              Text(
-                "💊",
-                style: TextStyle(fontSize: emojiSize*1.5),
-                textAlign: TextAlign.center,
-              ),
-
-               SizedBox(height: screenHeight*0.05),
-
-              TextFormField(
-                controller: _yearsController,
-                keyboardType: TextInputType.number,
-                enabled: _hasDiabetes == true, // Active only if Yes is selected
-                decoration: InputDecoration(
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  hintText: 'In Years',
-                ),
-                onChanged: (value) {
-                  setState(() {
-                    // State is updated whenever input changes
-                  });
-                },
-              ),
-
-              SizedBox(height: screenHeight*0.075),
-
-              // Continue button
-              ElevatedButton(
-                onPressed: _isContinueButtonActive
-                    ? () {
-                        //context.goNamed(RouteNames.questionScreen8);
-                      }
-                    : null, // Disable button if conditions are not met
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.blue, // Blue button color
-                  minimumSize: const Size(double.infinity, 50), // Full-width button
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                ),
-                child: const Text(
-                  "Continue",
-                  style: TextStyle(fontSize: 18),
-                ),
-              ),
-              const SizedBox(height: 20), // Padding after button
-            ],
+      body: Column(
+        children: [
+          const SizedBox(height: 50),
+          // Fixed progress bar at the top
+          const Padding(
+            padding: EdgeInsets.symmetric(vertical: 20.0, horizontal: 20.0),
+            child: LinearProgressIndicator(
+              value: 0.42, // Progress (next step)
+              backgroundColor: Colors.grey,
+              color: Colors.blue, // Progress bar color
+            ),
           ),
-        ),
+          
+          // Scrollable content below the progress bar
+          Expanded(
+            child: SingleChildScrollView(
+              child: Padding(
+                padding: const EdgeInsets.all(20.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    
+                    const Text(
+                      "Do you have hypertension?",
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const Text(
+                      "(High Blood Pressure)",
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    SizedBox(height: screenHeight * 0.05),
+              
+                    // Emoji buttons for Yes and No options
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        GestureDetector(
+                          onTap: () {
+                            setState(() {
+                              _hasDiabetes = true;
+                            });
+                          },
+                          child: Container(
+                            padding: const EdgeInsets.all(20),
+                            decoration: BoxDecoration(
+                              color: Colors.green.withOpacity(_hasDiabetes == true ? 1.0 : 0.3),
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: Text(
+                              "✅",
+                              style: TextStyle(
+                                fontSize: emojiSize,
+                              ),
+                            ),
+                          ),
+                        ),
+                        SizedBox(width: screenWidth * 0.15),
+                        GestureDetector(
+                          onTap: () {
+                            setState(() {
+                              _hasDiabetes = false;
+                              _yearsController.clear(); // Clear the years input if No is selected
+                            });
+                          },
+                          child: Container(
+                            padding: const EdgeInsets.all(20),
+                            decoration: BoxDecoration(
+                              color: Colors.green.withOpacity(_hasDiabetes == false ? 1.0 : 0.3),
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: Text(
+                              "❌",
+                              style: TextStyle(
+                                fontSize: emojiSize,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    SizedBox(height: screenHeight * 0.05), // Padding after options
+
+                    const Text(
+                      "If yes, how long have you been on medication?",
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontSize: 16,
+                        color: Colors.grey,
+                      ),
+                    ),
+                    const Text(
+                      "(In years)",
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontSize: 16,
+                        color: Colors.grey,
+                      ),
+                    ),
+                    SizedBox(height: screenHeight * 0.04),
+                    Text(
+                      "💊",
+                      style: TextStyle(fontSize: emojiSize * 1.5),
+                      textAlign: TextAlign.center,
+                    ),
+                    SizedBox(height: screenHeight * 0.04),
+
+                    TextFormField(
+                      controller: _yearsController,
+                      keyboardType: TextInputType.number,
+                      enabled: _hasDiabetes == true, // Active only if Yes is selected
+                      decoration: InputDecoration(
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        hintText: 'In Years',
+                      ),
+                      onChanged: (value) {
+                        setState(() {
+                          // State is updated whenever input changes
+                        });
+                      },
+                    ),
+
+                    SizedBox(height: screenHeight * 0.05),
+
+                    // Continue button
+                    ElevatedButton(
+                      onPressed: _isContinueButtonActive
+                          ? () {
+                              context.goNamed(RouteNames.questionScreen8);
+                            }
+                          : null, // Disable button if conditions are not met
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.blue, // Blue button color
+                        minimumSize: const Size(double.infinity, 50), // Full-width button
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      child: const Text(
+                        "Continue",
+                        style: TextStyle(fontSize: 18),
+                      ),
+                    ),
+                    const SizedBox(height: 20), // Padding after button
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
