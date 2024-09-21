@@ -1,7 +1,9 @@
 import 'package:bema_application/features/authentication/data/models/profile_service.dart';
 import 'package:bema_application/features/authentication/data/models/user_model.dart';
+import 'package:bema_application/routes/route_names.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
 class QuestionScreen6 extends StatefulWidget {
   const QuestionScreen6({super.key});
@@ -52,7 +54,7 @@ class _QuestionScreen6State extends State<QuestionScreen6> {
           children: [
             const SizedBox(height: 50), // Padding
             const LinearProgressIndicator(
-              value: 0.3, 
+              value: 0.3,
               backgroundColor: Colors.grey,
               color: Colors.blue, // Progress bar color
             ),
@@ -113,7 +115,7 @@ class _QuestionScreen6State extends State<QuestionScreen6> {
             const Spacer(), // Push button to the bottom
             ElevatedButton(
               onPressed: () {
-                // Navigate to the next screen
+                context.goNamed(RouteNames.questionScreen7);
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.blue, // Blue button color
