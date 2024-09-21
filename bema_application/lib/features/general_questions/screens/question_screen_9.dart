@@ -2,14 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:bema_application/routes/route_names.dart';
 
-class QuestionScreen8 extends StatefulWidget {
-  const QuestionScreen8({super.key});
+class QuestionScreen9 extends StatefulWidget {
+  const QuestionScreen9({super.key});
 
   @override
-  _QuestionScreen8State createState() => _QuestionScreen8State();
+  _QuestionScreen9State createState() => _QuestionScreen9State();
 }
 
-class _QuestionScreen8State extends State<QuestionScreen8> {
+class _QuestionScreen9State extends State<QuestionScreen9> {
   bool? _hasDiabetes; // Tracks user's diabetes response (true, false, or null)
   final TextEditingController _yearsController = TextEditingController();
 
@@ -61,7 +61,7 @@ class _QuestionScreen8State extends State<QuestionScreen8> {
                   children: [
                     
                     const Text(
-                      "Do you have hypertension?",
+                      "Do you have high",
                       textAlign: TextAlign.center,
                       style: TextStyle(
                         fontSize: 24,
@@ -69,7 +69,7 @@ class _QuestionScreen8State extends State<QuestionScreen8> {
                       ),
                     ),
                     const Text(
-                      "(High Blood Pressure)",
+                      "cholesterol?",
                       textAlign: TextAlign.center,
                       style: TextStyle(
                         fontSize: 24,
@@ -175,7 +175,7 @@ class _QuestionScreen8State extends State<QuestionScreen8> {
                     ElevatedButton(
                       onPressed: _isContinueButtonActive
                           ? () {
-                              context.goNamed(RouteNames.questionScreen9);
+                              //context.goNamed(RouteNames.QuestionScreen9);
                             }
                           : null, // Disable button if conditions are not met
                       style: ElevatedButton.styleFrom(
