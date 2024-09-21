@@ -45,7 +45,7 @@ class _QuestionScreen9State extends State<QuestionScreen9> {
           const Padding(
             padding: EdgeInsets.symmetric(vertical: 20.0, horizontal: 20.0),
             child: LinearProgressIndicator(
-              value: 0.42, // Progress (next step)
+              value: 0.48, // Progress (next step)
               backgroundColor: Colors.grey,
               color: Colors.blue, // Progress bar color
             ),
