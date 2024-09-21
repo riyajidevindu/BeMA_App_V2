@@ -2,29 +2,29 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:bema_application/routes/route_names.dart';
 
-class QuestionScreen9 extends StatefulWidget {
-  const QuestionScreen9({super.key});
+class QuestionScreen10 extends StatefulWidget {
+  const QuestionScreen10({super.key});
 
   @override
-  _QuestionScreen9State createState() => _QuestionScreen9State();
+  _QuestionScreen10State createState() => _QuestionScreen10State();
 }
 
-class _QuestionScreen9State extends State<QuestionScreen9> {
-  bool? _hasDiabetes; // Tracks user's diabetes response (true, false, or null)
-  final TextEditingController _yearsController = TextEditingController();
+class _QuestionScreen10State extends State<QuestionScreen10> {
+  bool? _hasAllergies; // Tracks user's allergies response (true, false, or null)
+  final TextEditingController _allergyController = TextEditingController();
 
   @override
   void dispose() {
-    _yearsController.dispose();
+    _allergyController.dispose();
     super.dispose();
   }
 
   // Method to check if continue button should be active
   bool get _isContinueButtonActive {
-    if (_hasDiabetes == null) {
+    if (_hasAllergies == null) {
       return false;
-    } else if (_hasDiabetes == true) {
-      return _yearsController.text.isNotEmpty;
+    } else if (_hasAllergies == true) {
+      return _allergyController.text.isNotEmpty;
     } else {
       return true;
     }
@@ -41,16 +41,45 @@ class _QuestionScreen9State extends State<QuestionScreen9> {
       body: Column(
         children: [
           const SizedBox(height: 50),
-          // Fixed progress bar at the top
-          const Padding(
-            padding: EdgeInsets.symmetric(vertical: 20.0, horizontal: 20.0),
-            child: LinearProgressIndicator(
-              value: 0.54, // Progress (next step)
-              backgroundColor: Colors.grey,
-              color: Colors.blue, // Progress bar color
+          
+          // Row for Back button and Progress bar
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20.0),
+            child: Row(
+              children: [
+                // Back button inside a transparent circle
+                GestureDetector(
+                  onTap: () {
+                    context.goNamed(RouteNames.questionScreen9);
+                  },
+                  child: Container(
+                    padding: const EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: Colors.black.withOpacity(0.2), // Transparent background
+                    ),
+                    child: const Icon(
+                      Icons.arrow_back,
+                      color: Colors.white, // White arrow color
+                    ),
+                  ),
+                ),
+
+                SizedBox(width: screenWidth * 0.025), // Space between back button and progress bar
+
+                // Progress bar with increased width
+                const Expanded(
+                  child: LinearProgressIndicator(
+                    value: 0.48, // Progress (next step)
+                    backgroundColor: Colors.grey,
+                    color: Colors.blue, // Progress bar color
+                    //minHeight: 8, // Slightly increase the height of the progress bar
+                  ),
+                ),
+              ],
             ),
           ),
-          
+
           // Scrollable content below the progress bar
           Expanded(
             child: SingleChildScrollView(
@@ -59,9 +88,8 @@ class _QuestionScreen9State extends State<QuestionScreen9> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                    
                     const Text(
-                      "Do you have high",
+                      "Do you have any",
                       textAlign: TextAlign.center,
                       style: TextStyle(
                         fontSize: 24,
@@ -69,7 +97,7 @@ class _QuestionScreen9State extends State<QuestionScreen9> {
                       ),
                     ),
                     const Text(
-                      "cholesterol?",
+                      "allergies?",
                       textAlign: TextAlign.center,
                       style: TextStyle(
                         fontSize: 24,
@@ -77,7 +105,7 @@ class _QuestionScreen9State extends State<QuestionScreen9> {
                       ),
                     ),
                     SizedBox(height: screenHeight * 0.05),
-              
+
                     // Emoji buttons for Yes and No options
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
@@ -85,13 +113,13 @@ class _QuestionScreen9State extends State<QuestionScreen9> {
                         GestureDetector(
                           onTap: () {
                             setState(() {
-                              _hasDiabetes = true;
+                              _hasAllergies = true;
                             });
                           },
                           child: Container(
                             padding: const EdgeInsets.all(20),
                             decoration: BoxDecoration(
-                              color: Colors.green.withOpacity(_hasDiabetes == true ? 1.0 : 0.3),
+                              color: Colors.green.withOpacity(_hasAllergies == true ? 1.0 : 0.3),
                               borderRadius: BorderRadius.circular(12),
                             ),
                             child: Text(
@@ -106,14 +134,14 @@ class _QuestionScreen9State extends State<QuestionScreen9> {
                         GestureDetector(
                           onTap: () {
                             setState(() {
-                              _hasDiabetes = false;
-                              _yearsController.clear(); // Clear the years input if No is selected
+                              _hasAllergies = false;
+                              _allergyController.clear(); // Clear the input if No is selected
                             });
                           },
                           child: Container(
                             padding: const EdgeInsets.all(20),
                             decoration: BoxDecoration(
-                              color: Colors.green.withOpacity(_hasDiabetes == false ? 1.0 : 0.3),
+                              color: Colors.green.withOpacity(_hasAllergies == false ? 1.0 : 0.3),
                               borderRadius: BorderRadius.circular(12),
                             ),
                             child: Text(
@@ -129,7 +157,7 @@ class _QuestionScreen9State extends State<QuestionScreen9> {
                     SizedBox(height: screenHeight * 0.05), // Padding after options
 
                     const Text(
-                      "If yes, how long have you been on medication?",
+                      "If yes, could you share what",
                       textAlign: TextAlign.center,
                       style: TextStyle(
                         fontSize: 16,
@@ -137,7 +165,7 @@ class _QuestionScreen9State extends State<QuestionScreen9> {
                       ),
                     ),
                     const Text(
-                      "(In years)",
+                      "they are?",
                       textAlign: TextAlign.center,
                       style: TextStyle(
                         fontSize: 16,
@@ -145,22 +173,24 @@ class _QuestionScreen9State extends State<QuestionScreen9> {
                       ),
                     ),
                     SizedBox(height: screenHeight * 0.04),
+
+                    // Use allergy emoji
                     Text(
-                      "💊",
+                      "🤧", 
                       style: TextStyle(fontSize: emojiSize * 1.5),
                       textAlign: TextAlign.center,
                     ),
                     SizedBox(height: screenHeight * 0.04),
 
                     TextFormField(
-                      controller: _yearsController,
-                      keyboardType: TextInputType.number,
-                      enabled: _hasDiabetes == true, // Active only if Yes is selected
+                      controller: _allergyController,
+                      keyboardType: TextInputType.text,
+                      enabled: _hasAllergies == true, // Active only if Yes is selected
                       decoration: InputDecoration(
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
                         ),
-                        hintText: 'In Years',
+                        hintText: 'Specify your allergies',
                       ),
                       onChanged: (value) {
                         setState(() {
@@ -175,7 +205,7 @@ class _QuestionScreen9State extends State<QuestionScreen9> {
                     ElevatedButton(
                       onPressed: _isContinueButtonActive
                           ? () {
-                              context.goNamed(RouteNames.questionScreen10);
+                              //context.goNamed(RouteNames.questionScreen11);
                             }
                           : null, // Disable button if conditions are not met
                       style: ElevatedButton.styleFrom(

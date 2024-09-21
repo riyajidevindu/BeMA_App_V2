@@ -2,6 +2,7 @@ import 'package:bema_application/features/authentication/screens/login_screen.da
 import 'package:bema_application/features/authentication/screens/profile_screen.dart';
 import 'package:bema_application/features/authentication/screens/question_screens/welcome_question_screen.dart';
 import 'package:bema_application/features/authentication/screens/signup_screen.dart';
+import 'package:bema_application/features/general_questions/screens/question_screen_10.dart';
 import 'package:bema_application/features/general_questions/screens/question_screen_2.dart';
 import 'package:bema_application/features/general_questions/screens/question_screen_4.dart';
 import 'package:bema_application/features/general_questions/screens/question_screen_5.dart';
@@ -99,6 +100,13 @@ final goRouter = GoRouter(
         name: RouteNames.questionScreen9,
         pageBuilder: (context, state) => const MaterialPage(
           child: QuestionScreen9(),
+        ),
+      ),
+      GoRoute(
+        path: '/${RouteNames.questionScreen10}',
+        name: RouteNames.questionScreen10,
+        pageBuilder: (context, state) => const MaterialPage(
+          child: QuestionScreen10(),
         ),
       ),
 // final goRouter = GoRouter(initialLocation: '/${RouteNames.wrapper}', routes: [
