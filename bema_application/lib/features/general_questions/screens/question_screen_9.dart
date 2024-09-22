@@ -1,5 +1,7 @@
+import 'package:bema_application/features/general_questions/providers/questioneer_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:provider/provider.dart';
 import 'package:bema_application/routes/route_names.dart';
 
 class QuestionScreen9 extends StatefulWidget {
@@ -10,24 +12,22 @@ class QuestionScreen9 extends StatefulWidget {
 }
 
 class _QuestionScreen9State extends State<QuestionScreen9> {
-  bool? _hasDiabetes; // Tracks user's diabetes response (true, false, or null)
-  final TextEditingController _yearsController = TextEditingController();
+  late TextEditingController _yearsController;
+
+  @override
+  void initState() {
+    super.initState();
+    final questionnaireProvider = context.read<QuestionnaireProvider>();
+    // Initialize the controller with the value from the provider
+    _yearsController = TextEditingController(
+      text: questionnaireProvider.cholesterolDuration ?? '',
+    );
+  }
 
   @override
   void dispose() {
     _yearsController.dispose();
     super.dispose();
-  }
-
-  // Method to check if continue button should be active
-  bool get _isContinueButtonActive {
-    if (_hasDiabetes == null) {
-      return false;
-    } else if (_hasDiabetes == true) {
-      return _yearsController.text.isNotEmpty;
-    } else {
-      return true;
-    }
   }
 
   @override
@@ -36,13 +36,15 @@ class _QuestionScreen9State extends State<QuestionScreen9> {
     final double screenHeight = MediaQuery.of(context).size.height;
     final double emojiSize = screenWidth * 0.1; // Responsive emoji size
 
+    // Access the QuestionnaireProvider
+    final questionnaireProvider = Provider.of<QuestionnaireProvider>(context, listen: true);
+
     return Scaffold(
       backgroundColor: const Color(0xFFE6F0FF), // Same light blue background
       body: Column(
         children: [
           const SizedBox(height: 50),
           // Fixed progress bar at the top
-          // Row for Back button and Progress bar
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 20.0),
             child: Row(
@@ -64,7 +66,6 @@ class _QuestionScreen9State extends State<QuestionScreen9> {
                     ),
                   ),
                 ),
-
                 SizedBox(width: screenWidth * 0.025), // Space between back button and progress bar
 
                 // Progress bar with increased width
@@ -73,7 +74,6 @@ class _QuestionScreen9State extends State<QuestionScreen9> {
                     value: 0.48, // Progress (next step)
                     backgroundColor: Colors.grey,
                     color: Colors.blue, // Progress bar color
-                    //minHeight: 8, // Slightly increase the height of the progress bar
                   ),
                 ),
               ],
@@ -88,7 +88,6 @@ class _QuestionScreen9State extends State<QuestionScreen9> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                    
                     const Text(
                       "Do you have high",
                       textAlign: TextAlign.center,
@@ -113,14 +112,12 @@ class _QuestionScreen9State extends State<QuestionScreen9> {
                       children: [
                         GestureDetector(
                           onTap: () {
-                            setState(() {
-                              _hasDiabetes = true;
-                            });
+                            questionnaireProvider.setHasCholesterol(true);
                           },
                           child: Container(
                             padding: const EdgeInsets.all(20),
                             decoration: BoxDecoration(
-                              color: Colors.green.withOpacity(_hasDiabetes == true ? 1.0 : 0.3),
+                              color: Colors.green.withOpacity(questionnaireProvider.hasCholesterol == true ? 1.0 : 0.3),
                               borderRadius: BorderRadius.circular(12),
                             ),
                             child: Text(
@@ -134,15 +131,13 @@ class _QuestionScreen9State extends State<QuestionScreen9> {
                         SizedBox(width: screenWidth * 0.15),
                         GestureDetector(
                           onTap: () {
-                            setState(() {
-                              _hasDiabetes = false;
-                              _yearsController.clear(); // Clear the years input if No is selected
-                            });
+                            questionnaireProvider.setHasCholesterol(false);
+                            _yearsController.clear(); // Clear the text field when selecting No
                           },
                           child: Container(
                             padding: const EdgeInsets.all(20),
                             decoration: BoxDecoration(
-                              color: Colors.green.withOpacity(_hasDiabetes == false ? 1.0 : 0.3),
+                              color: Colors.green.withOpacity(questionnaireProvider.hasCholesterol == false ? 1.0 : 0.3),
                               borderRadius: BorderRadius.circular(12),
                             ),
                             child: Text(
@@ -184,7 +179,7 @@ class _QuestionScreen9State extends State<QuestionScreen9> {
                     TextFormField(
                       controller: _yearsController,
                       keyboardType: TextInputType.number,
-                      enabled: _hasDiabetes == true, // Active only if Yes is selected
+                      enabled: questionnaireProvider.hasCholesterol == true, // Active only if Yes is selected
                       decoration: InputDecoration(
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
@@ -192,9 +187,7 @@ class _QuestionScreen9State extends State<QuestionScreen9> {
                         hintText: 'In Years',
                       ),
                       onChanged: (value) {
-                        setState(() {
-                          // State is updated whenever input changes
-                        });
+                        questionnaireProvider.setCholesterolDuration(value);
                       },
                     ),
 
@@ -202,7 +195,7 @@ class _QuestionScreen9State extends State<QuestionScreen9> {
 
                     // Continue button
                     ElevatedButton(
-                      onPressed: _isContinueButtonActive
+                      onPressed: questionnaireProvider.isCholesterolContinueButtonActive
                           ? () {
                               context.goNamed(RouteNames.questionScreen10);
                             }
