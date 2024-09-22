@@ -87,6 +87,9 @@ class _CustomAppBarState extends State<CustomAppBar> {
                           // Navigate to the Sign-In screen or homepage
                           context.push('/${RouteNames.loginScreen}');
                         }
+                        else if (value == 'chat') {
+                          context.push('/${RouteNames.chatScreen}');
+                        }
                       },
                       itemBuilder: (BuildContext context) {
                         return [
@@ -97,6 +100,10 @@ class _CustomAppBarState extends State<CustomAppBar> {
                           const PopupMenuItem<String>(
                             value: 'signOut',
                             child: Text('Sign Out'),
+                          ),
+                             const PopupMenuItem<String>(
+                            value: 'chat',
+                            child: Text('Chat'),
                           ),
                         ];
                       },
