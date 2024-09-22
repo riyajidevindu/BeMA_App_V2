@@ -6,6 +6,7 @@ class QuestionnaireProvider with ChangeNotifier {
   bool? _hasDiabetes;
   String? _diabetesDuration;
   int? _age;
+  String? _selectedGender;
 
   // Getters
   bool? get hasAllergies => _hasAllergies;
@@ -13,6 +14,7 @@ class QuestionnaireProvider with ChangeNotifier {
   bool? get hasDiabetes => _hasDiabetes;
   String? get diabetesDuration => _diabetesDuration;
   int? get age => _age;
+  String? get selectedGender => _selectedGender;
 
   // Setters with notifyListeners to update UI when state changes
   void setHasAllergies(bool? value) {
@@ -39,4 +41,10 @@ class QuestionnaireProvider with ChangeNotifier {
     _age = value;
     notifyListeners();
   }
+
+  void setSelectedGender(String? value) {
+    _selectedGender = value;
+    notifyListeners(); 
+  }
+
 }
