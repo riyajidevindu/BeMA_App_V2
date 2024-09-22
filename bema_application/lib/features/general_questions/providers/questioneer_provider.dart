@@ -1,44 +1,36 @@
 import 'package:flutter/foundation.dart';
 
 class QuestionnaireProvider with ChangeNotifier {
-  bool? _hasAllergies;
-  String? _allergiesDescription;
-  bool? _hasDiabetes;
-  String? _diabetesDuration;
+
   int? _age;
   String? _selectedGender;
   String? _selectedOccupation;
   String? _customOccupation;
+  bool? _hasDiabetes;
+  String? _diabetesDuration;
   bool? _hasHypertension;
   String? _hypertensionDuration;
   bool? _hasCholesterol;
   String? _cholesterolDuration;
+  bool? _hasAllergies;
+  String? _allergiesDescription;
 
   // Getters
-  bool? get hasAllergies => _hasAllergies;
-  String? get allergiesDescription => _allergiesDescription;
-  bool? get hasDiabetes => _hasDiabetes;
-  String? get diabetesDuration => _diabetesDuration;
   int? get age => _age;
   String? get selectedGender => _selectedGender;
   String? get selectedOccupation => _selectedOccupation;
   String? get customOccupation => _customOccupation;
+  bool? get hasDiabetes => _hasDiabetes;
+  String? get diabetesDuration => _diabetesDuration;
   bool? get hasHypertension => _hasHypertension;
   String? get hypertensionDuration => _hypertensionDuration;
   bool? get hasCholesterol => _hasCholesterol;
   String? get cholesterolDuration => _cholesterolDuration;
+  bool? get hasAllergies => _hasAllergies;
+  String? get allergiesDescription => _allergiesDescription;
   
 
   // Setters with notifyListeners to update UI when state changes
-  void setHasAllergies(bool? value) {
-    _hasAllergies = value;
-    notifyListeners();
-  }
-
-  void setAllergiesDescription(String? value) {
-    _allergiesDescription = value;
-    notifyListeners();
-  }
 
   void setHasDiabetes(bool? value) {
     _hasDiabetes = value;
@@ -117,6 +109,27 @@ class QuestionnaireProvider with ChangeNotifier {
       return _cholesterolDuration != null && _cholesterolDuration!.isNotEmpty;
     } else {
       return true; // Continue is enabled when "No" is selected
+    }
+  }
+
+  void setHasAllergies(bool? value) {
+    _hasAllergies = value;
+    notifyListeners();
+  }
+
+  void setAllergiesDescription(String value) {
+    _allergiesDescription = value;
+    notifyListeners();
+  }
+
+  // Method to check if the continue button should be active
+  bool get isAllergiesContinueButtonActive {
+    if (_hasAllergies == null) {
+      return false;
+    } else if (_hasAllergies == true) {
+      return _allergiesDescription != null && _allergiesDescription!.isNotEmpty;
+    } else {
+      return true;
     }
   }
 
