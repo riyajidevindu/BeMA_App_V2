@@ -1,9 +1,11 @@
 class RouteNames {
   static const wrapper = 'wrapper';
+
   static const registerScreen = 'registerScreen';
   static const loginScreen = 'loginScreen';
   static const userWelcomeScreen = 'userWelcomeScreen';
   static const profileScreen = 'profileScreen';
+
   static const questionScreen2 = 'questionScreen2';
   static const questionScreen4 = 'questionScreen4';
   static const questionScreen5 = 'questionScreen5';
@@ -12,4 +14,6 @@ class RouteNames {
   static const questionScreen8 = 'questionScreen8';
   static const questionScreen9 = 'questionScreen9';
   static const questionScreen10 = 'questionScreen10';
+
+  static const chatScreen = 'chatScreen';
 }
