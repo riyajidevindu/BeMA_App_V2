@@ -1,6 +1,8 @@
+import 'package:bema_application/features/general_questions/providers/questioneer_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:bema_application/routes/route_names.dart';
+import 'package:provider/provider.dart';
 
 class QuestionScreen7 extends StatefulWidget {
   const QuestionScreen7({super.key});
@@ -10,21 +12,13 @@ class QuestionScreen7 extends StatefulWidget {
 }
 
 class _QuestionScreen7State extends State<QuestionScreen7> {
-  bool? _hasDiabetes; // Tracks user's diabetes response (true, false, or null)
-  final TextEditingController _yearsController = TextEditingController();
-
-  @override
-  void dispose() {
-    _yearsController.dispose();
-    super.dispose();
-  }
-
   // Method to check if continue button should be active
   bool get _isContinueButtonActive {
-    if (_hasDiabetes == null) {
+    final questionnaireProvider = Provider.of<QuestionnaireProvider>(context);
+    if (questionnaireProvider.hasDiabetes == null) {
       return false;
-    } else if (_hasDiabetes == true) {
-      return _yearsController.text.isNotEmpty;
+    } else if (questionnaireProvider.hasDiabetes == true) {
+      return questionnaireProvider.diabetesDuration?.isNotEmpty ?? false;
     } else {
       return true;
     }
@@ -35,6 +29,14 @@ class _QuestionScreen7State extends State<QuestionScreen7> {
     final double screenWidth = MediaQuery.of(context).size.width;
     final double screenHeight = MediaQuery.of(context).size.height;
     final double emojiSize = screenWidth * 0.1; // Responsive emoji size
+
+    // Access the QuestionnaireProvider
+    final questionnaireProvider = Provider.of<QuestionnaireProvider>(context);
+    
+    // Pre-fill the yearsController with the provider value
+    final TextEditingController _yearsController = TextEditingController(
+      text: questionnaireProvider.diabetesDuration ?? '',
+    );
 
     return Scaffold(
       backgroundColor: const Color(0xFFE6F0FF), // Same light blue background
@@ -63,7 +65,6 @@ class _QuestionScreen7State extends State<QuestionScreen7> {
                     ),
                   ),
                 ),
-
                 SizedBox(width: screenWidth * 0.025), // Space between back button and progress bar
 
                 // Progress bar with increased width
@@ -72,7 +73,6 @@ class _QuestionScreen7State extends State<QuestionScreen7> {
                     value: 0.36, // Progress (next step)
                     backgroundColor: Colors.grey,
                     color: Colors.blue, // Progress bar color
-                    //minHeight: 8, // Slightly increase the height of the progress bar
                   ),
                 ),
               ],
@@ -103,14 +103,13 @@ class _QuestionScreen7State extends State<QuestionScreen7> {
                       children: [
                         GestureDetector(
                           onTap: () {
-                            setState(() {
-                              _hasDiabetes = true;
-                            });
+                            // Update the provider when the user selects Yes
+                            questionnaireProvider.setHasDiabetes(true);
                           },
                           child: Container(
                             padding: const EdgeInsets.all(20),
                             decoration: BoxDecoration(
-                              color: Colors.green.withOpacity(_hasDiabetes == true ? 1.0 : 0.3),
+                              color: Colors.green.withOpacity(questionnaireProvider.hasDiabetes == true ? 1.0 : 0.3),
                               borderRadius: BorderRadius.circular(12),
                             ),
                             child: Text(
@@ -124,15 +123,15 @@ class _QuestionScreen7State extends State<QuestionScreen7> {
                         SizedBox(width: screenWidth * 0.15),
                         GestureDetector(
                           onTap: () {
-                            setState(() {
-                              _hasDiabetes = false;
-                              _yearsController.clear(); // Clear the years input if No is selected
-                            });
+                            // Update the provider when the user selects No
+                            questionnaireProvider.setHasDiabetes(false);
+                            questionnaireProvider.setDiabetesDuration(''); // Clear duration when selecting No
+                            _yearsController.clear();
                           },
                           child: Container(
                             padding: const EdgeInsets.all(20),
                             decoration: BoxDecoration(
-                              color: Colors.green.withOpacity(_hasDiabetes == false ? 1.0 : 0.3),
+                              color: Colors.green.withOpacity(questionnaireProvider.hasDiabetes == false ? 1.0 : 0.3),
                               borderRadius: BorderRadius.circular(12),
                             ),
                             child: Text(
@@ -174,7 +173,7 @@ class _QuestionScreen7State extends State<QuestionScreen7> {
                     TextFormField(
                       controller: _yearsController,
                       keyboardType: TextInputType.number,
-                      enabled: _hasDiabetes == true, // Active only if Yes is selected
+                      enabled: questionnaireProvider.hasDiabetes == true, // Active only if Yes is selected
                       decoration: InputDecoration(
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
@@ -182,9 +181,8 @@ class _QuestionScreen7State extends State<QuestionScreen7> {
                         hintText: 'In Years',
                       ),
                       onChanged: (value) {
-                        setState(() {
-                          // State is updated whenever input changes
-                        });
+                        // Update the provider whenever the text field changes
+                        questionnaireProvider.setDiabetesDuration(value);
                       },
                     ),
 
@@ -209,7 +207,6 @@ class _QuestionScreen7State extends State<QuestionScreen7> {
                         style: TextStyle(fontSize: 18),
                       ),
                     ),
-                    const SizedBox(height: 20), // Padding after button
                   ],
                 ),
               ),
@@ -220,3 +217,4 @@ class _QuestionScreen7State extends State<QuestionScreen7> {
     );
   }
 }
+
