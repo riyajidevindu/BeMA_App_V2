@@ -91,22 +91,50 @@ class _CustomAppBarState extends State<CustomAppBar> {
                           context.push('/${RouteNames.chatScreen}');
                         }
                       },
-                      itemBuilder: (BuildContext context) {
-                        return [
-                          const PopupMenuItem<String>(
-                            value: 'profile',
-                            child: Text('Profile'),
-                          ),
-                          const PopupMenuItem<String>(
-                            value: 'signOut',
-                            child: Text('Sign Out'),
-                          ),
-                             const PopupMenuItem<String>(
-                            value: 'chat',
-                            child: Text('Chat'),
-                          ),
-                        ];
-                      },
+               itemBuilder: (BuildContext context) {
+  return [
+    PopupMenuItem<String>(
+      value: 'profile',
+      child: Container(
+        width: 75, // Set a fixed width for all menu items
+        padding: const EdgeInsets.all(8.0),
+        decoration: BoxDecoration(
+          color: Colors.lightBlue.withOpacity(0.2), // Light blue background
+          borderRadius: BorderRadius.circular(8),   // Rounded corners
+          border: Border.all(color: Colors.lightBlue, width: 2), // Light blue border
+        ),
+        child: const Text('Profile', style: TextStyle(color: Colors.black)), // Text color black
+      ),
+    ),
+    PopupMenuItem<String>(
+      value: 'signOut',
+      child: Container(
+         width: 75,
+        padding: const EdgeInsets.all(8.0),
+        decoration: BoxDecoration(
+          color: Colors.lightBlue.withOpacity(0.2),
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(color: Colors.lightBlue, width: 2),
+        ),
+        child: const Text('Sign Out', style: TextStyle(color: Colors.black)),
+      ),
+    ),
+    PopupMenuItem<String>(
+      value: 'chat',
+      child: Container(
+         width: 75,
+        padding: const EdgeInsets.all(8.0),
+        decoration: BoxDecoration(
+          color: Colors.lightBlue.withOpacity(0.2),
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(color: Colors.lightBlue, width: 2),
+        ),
+        child: const Text('Chat', style: TextStyle(color: Colors.black)),
+      ),
+    ),
+  ];
+},
+
                     ),
                   ],
                 ),
