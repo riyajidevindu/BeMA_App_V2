@@ -1,7 +1,9 @@
 import 'package:bema_application/common/widgets/tiles/option_tile.dart';
+import 'package:bema_application/features/general_questions/providers/questioneer_provider.dart';
 import 'package:bema_application/routes/route_names.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:provider/provider.dart';
 
 class QuestionScreen4 extends StatefulWidget {
   const QuestionScreen4({super.key});
@@ -11,21 +13,25 @@ class QuestionScreen4 extends StatefulWidget {
 }
 
 class _QuestionScreen4State extends State<QuestionScreen4> {
-  String? _selectedGender; // Stores the selected option
-
   @override
   Widget build(BuildContext context) {
+    // Access the QuestionnaireProvider
+    final questionnaireProvider = Provider.of<QuestionnaireProvider>(context);
+
+    // Retrieve the selected gender from the provider
+    String? _selectedGender = questionnaireProvider.selectedGender;
+
     // Get the screen width and height for responsive design
     final screenWidth = MediaQuery.of(context).size.width;
     final screenHeight = MediaQuery.of(context).size.height;
     final emojiSize = screenWidth * 0.12; // 12% of screen width for emoji size
-   
+
     return Scaffold(
       backgroundColor: const Color(0xFFE6F0FF), // Light blue background
       body: Column(
         children: [
           const SizedBox(height: 50),
-          
+
           // Row for Back button and Progress bar
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 20.0),
@@ -34,7 +40,7 @@ class _QuestionScreen4State extends State<QuestionScreen4> {
                 // Back button inside a transparent circle
                 GestureDetector(
                   onTap: () {
-                    context.goNamed(RouteNames.questionScreen2);
+                    context.goNamed(RouteNames.questionScreen3);
                   },
                   child: Container(
                     padding: const EdgeInsets.all(10),
@@ -48,7 +54,6 @@ class _QuestionScreen4State extends State<QuestionScreen4> {
                     ),
                   ),
                 ),
-
                 SizedBox(width: screenWidth * 0.025), // Space between back button and progress bar
 
                 // Progress bar with increased width
@@ -57,14 +62,13 @@ class _QuestionScreen4State extends State<QuestionScreen4> {
                     value: 0.18, // Progress (next step)
                     backgroundColor: Colors.grey,
                     color: Colors.blue, // Progress bar color
-                    //minHeight: 8, // Slightly increase the height of the progress bar
                   ),
                 ),
               ],
             ),
           ),
 
-            Expanded(
+          Expanded(
             child: SingleChildScrollView(
               child: Padding(
                 padding: const EdgeInsets.all(20.0),
@@ -104,7 +108,7 @@ class _QuestionScreen4State extends State<QuestionScreen4> {
                         color: Colors.grey,
                       ),
                     ),
-                    SizedBox(height: screenHeight * 0.05), 
+                    SizedBox(height: screenHeight * 0.05),
 
                     // Gender options using OptionTile widget
                     Row(
@@ -118,7 +122,8 @@ class _QuestionScreen4State extends State<QuestionScreen4> {
                           emojiSize: emojiSize,
                           onSelect: () {
                             setState(() {
-                              _selectedGender = 'male';
+                              // Update the selected gender in the provider
+                              questionnaireProvider.setSelectedGender('male');
                             });
                           },
                         ),
@@ -130,7 +135,8 @@ class _QuestionScreen4State extends State<QuestionScreen4> {
                           emojiSize: emojiSize,
                           onSelect: () {
                             setState(() {
-                              _selectedGender = 'female';
+                              // Update the selected gender in the provider
+                              questionnaireProvider.setSelectedGender('female');
                             });
                           },
                         ),
@@ -148,7 +154,8 @@ class _QuestionScreen4State extends State<QuestionScreen4> {
                           emojiSize: emojiSize,
                           onSelect: () {
                             setState(() {
-                              _selectedGender = 'non-binary';
+                              // Update the selected gender in the provider
+                              questionnaireProvider.setSelectedGender('non-binary');
                             });
                           },
                         ),
@@ -160,7 +167,8 @@ class _QuestionScreen4State extends State<QuestionScreen4> {
                           emojiSize: emojiSize,
                           onSelect: () {
                             setState(() {
-                              _selectedGender = 'prefer-not';
+                              // Update the selected gender in the provider
+                              questionnaireProvider.setSelectedGender('prefer-not');
                             });
                           },
                         ),
@@ -189,47 +197,6 @@ class _QuestionScreen4State extends State<QuestionScreen4> {
                 ),
               ),
             ),
-          ),
-
-        ],
-
-      ),
-      
-    );
-  }
-
-  // Helper method to create option option widgets with a border
-  Widget _genderOption(String emoji, String label, String option, double emojiSize) {
-    bool isSelected = _selectedGender == option;
-    return GestureDetector(
-      onTap: () {
-        setState(() {
-          _selectedGender = option; // Set selected option
-        });
-      },
-      child: Column(
-        children: [
-          Container(
-            padding: const EdgeInsets.all(10),
-            decoration: BoxDecoration(
-              border: Border.all(
-                color: Colors.black, // Black border color
-                width: isSelected ? 4 : 2, // Thicker border if selected
-              ),
-              borderRadius: BorderRadius.circular(12), // Rounded corners
-            ),
-            child: Opacity(
-              opacity: isSelected || _selectedGender == null ? 1.0 : 0.3, // Blur unselected
-              child: Text(
-                emoji,
-                style: TextStyle(fontSize: emojiSize), // Responsive emoji size
-              ),
-            ),
-          ),
-          SizedBox(height: 10), // Fixed spacing between emoji and label
-          Text(
-            label,
-            style: const TextStyle(fontSize: 16),
           ),
         ],
       ),

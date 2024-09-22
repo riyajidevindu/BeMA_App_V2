@@ -1,5 +1,6 @@
 import 'package:bema_application/common/config/colors.dart';
 import 'package:bema_application/features/authentication/providers/authentication_provider.dart';
+import 'package:bema_application/features/general_questions/providers/questioneer_provider.dart';
 import 'package:bema_application/routes/app_router.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
@@ -14,12 +15,15 @@ Future<void> main() async {
 
   await Firebase.initializeApp();
   
-  runApp(MultiProvider(
-    providers: [
-      ChangeNotifierProvider(create: (_) => AuthenticationProvider()),
-    ],
-    child: const MyApp(),
-  ));
+  runApp(
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => AuthenticationProvider()), // Authentication
+        ChangeNotifierProvider(create: (_) => QuestionnaireProvider()),  // Add QuestionnaireProvider
+      ],
+      child: const MyApp(),
+    ),
+  );
 }
 
 class MyApp extends StatelessWidget {
@@ -29,9 +33,9 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp.router(
       title: 'BeMA',
-      routerConfig: goRouter,
+      routerConfig: goRouter,  // Your GoRouter configuration
       theme: ThemeData(
-        scaffoldBackgroundColor:backgroundColor,
+        scaffoldBackgroundColor: backgroundColor,
         primaryColor: primaryColor,
       ),
     );

@@ -1,5 +1,7 @@
+import 'package:bema_application/features/general_questions/providers/questioneer_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:provider/provider.dart';
 import 'package:bema_application/routes/route_names.dart';
 
 class QuestionScreen10 extends StatefulWidget {
@@ -10,8 +12,16 @@ class QuestionScreen10 extends StatefulWidget {
 }
 
 class _QuestionScreen10State extends State<QuestionScreen10> {
-  bool? _hasAllergies; // Tracks user's allergies response (true, false, or null)
-  final TextEditingController _allergyController = TextEditingController();
+  late TextEditingController _allergyController;
+
+  @override
+  void initState() {
+    super.initState();
+    final questionnaireProvider = context.read<QuestionnaireProvider>();
+    _allergyController = TextEditingController(
+      text: questionnaireProvider.allergiesDescription ?? '',
+    );
+  }
 
   @override
   void dispose() {
@@ -19,22 +29,14 @@ class _QuestionScreen10State extends State<QuestionScreen10> {
     super.dispose();
   }
 
-  // Method to check if continue button should be active
-  bool get _isContinueButtonActive {
-    if (_hasAllergies == null) {
-      return false;
-    } else if (_hasAllergies == true) {
-      return _allergyController.text.isNotEmpty;
-    } else {
-      return true;
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     final double screenWidth = MediaQuery.of(context).size.width;
     final double screenHeight = MediaQuery.of(context).size.height;
-    final double emojiSize = screenWidth * 0.1; // Responsive emoji size
+    final double emojiSize = screenWidth * 0.1;
+
+    // Access the QuestionnaireProvider
+    final questionnaireProvider = Provider.of<QuestionnaireProvider>(context, listen: true);
 
     return Scaffold(
       backgroundColor: const Color(0xFFE6F0FF), // Same light blue background
@@ -47,7 +49,6 @@ class _QuestionScreen10State extends State<QuestionScreen10> {
             padding: const EdgeInsets.symmetric(horizontal: 20.0),
             child: Row(
               children: [
-                // Back button inside a transparent circle
                 GestureDetector(
                   onTap: () {
                     context.goNamed(RouteNames.questionScreen9);
@@ -64,7 +65,6 @@ class _QuestionScreen10State extends State<QuestionScreen10> {
                     ),
                   ),
                 ),
-
                 SizedBox(width: screenWidth * 0.025), // Space between back button and progress bar
 
                 // Progress bar with increased width
@@ -73,7 +73,6 @@ class _QuestionScreen10State extends State<QuestionScreen10> {
                     value: 0.54, // Progress (next step)
                     backgroundColor: Colors.grey,
                     color: Colors.blue, // Progress bar color
-                    //minHeight: 8, // Slightly increase the height of the progress bar
                   ),
                 ),
               ],
@@ -112,14 +111,12 @@ class _QuestionScreen10State extends State<QuestionScreen10> {
                       children: [
                         GestureDetector(
                           onTap: () {
-                            setState(() {
-                              _hasAllergies = true;
-                            });
+                            questionnaireProvider.setHasAllergies(true);
                           },
                           child: Container(
                             padding: const EdgeInsets.all(20),
                             decoration: BoxDecoration(
-                              color: Colors.green.withOpacity(_hasAllergies == true ? 1.0 : 0.3),
+                              color: Colors.green.withOpacity(questionnaireProvider.hasAllergies == true ? 1.0 : 0.3),
                               borderRadius: BorderRadius.circular(12),
                             ),
                             child: Text(
@@ -133,15 +130,13 @@ class _QuestionScreen10State extends State<QuestionScreen10> {
                         SizedBox(width: screenWidth * 0.15),
                         GestureDetector(
                           onTap: () {
-                            setState(() {
-                              _hasAllergies = false;
-                              _allergyController.clear(); // Clear the input if No is selected
-                            });
+                            questionnaireProvider.setHasAllergies(false);
+                            _allergyController.clear(); // Clear the text field when selecting No
                           },
                           child: Container(
                             padding: const EdgeInsets.all(20),
                             decoration: BoxDecoration(
-                              color: Colors.green.withOpacity(_hasAllergies == false ? 1.0 : 0.3),
+                              color: Colors.green.withOpacity(questionnaireProvider.hasAllergies == false ? 1.0 : 0.3),
                               borderRadius: BorderRadius.circular(12),
                             ),
                             child: Text(
@@ -185,7 +180,7 @@ class _QuestionScreen10State extends State<QuestionScreen10> {
                     TextFormField(
                       controller: _allergyController,
                       keyboardType: TextInputType.text,
-                      enabled: _hasAllergies == true, // Active only if Yes is selected
+                      enabled: questionnaireProvider.hasAllergies == true, // Active only if Yes is selected
                       decoration: InputDecoration(
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
@@ -193,9 +188,7 @@ class _QuestionScreen10State extends State<QuestionScreen10> {
                         hintText: 'Specify your allergies',
                       ),
                       onChanged: (value) {
-                        setState(() {
-                          // State is updated whenever input changes
-                        });
+                        questionnaireProvider.setAllergiesDescription(value);
                       },
                     ),
 
@@ -203,7 +196,7 @@ class _QuestionScreen10State extends State<QuestionScreen10> {
 
                     // Continue button
                     ElevatedButton(
-                      onPressed: _isContinueButtonActive
+                      onPressed: questionnaireProvider.isAllergiesContinueButtonActive
                           ? () {
                               //context.goNamed(RouteNames.questionScreen11);
                             }
