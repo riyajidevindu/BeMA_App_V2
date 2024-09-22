@@ -8,24 +8,38 @@ class ChatMessage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      children: [
-        Container(
-          margin: const EdgeInsets.only(right: 16),
-          child: CircleAvatar(child: Text(sender[0]),),
-        ),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(sender, style: Theme.of(context).textTheme.bodyMedium,),
-              Container(
-                 margin: const EdgeInsets.only(top: 5),
-                 child:  Text(text),
-              )
-            ],
-          ))
-      ],
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 10.0),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Sender's avatar
+          Container(
+            margin: const EdgeInsets.only(right: 16.0),
+            child: CircleAvatar(
+              child: Text(sender[0]), // Display the first letter of the sender's name
+            ),
+          ),
+          // Chat message bubble
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Sender's name
+                Text(
+                  sender,
+                  style: Theme.of(context).textTheme.bodyMedium,
+                ),
+                // Message text
+                Container(
+                  margin: const EdgeInsets.only(top: 5.0),
+                  child: Text(text),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
