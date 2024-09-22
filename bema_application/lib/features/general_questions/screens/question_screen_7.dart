@@ -1,8 +1,8 @@
 import 'package:bema_application/features/general_questions/providers/questioneer_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:bema_application/routes/route_names.dart';
 import 'package:provider/provider.dart';
+import 'package:bema_application/routes/route_names.dart';
 
 class QuestionScreen7 extends StatefulWidget {
   const QuestionScreen7({super.key});
@@ -12,16 +12,22 @@ class QuestionScreen7 extends StatefulWidget {
 }
 
 class _QuestionScreen7State extends State<QuestionScreen7> {
-  // Method to check if continue button should be active
-  bool get _isContinueButtonActive {
-    final questionnaireProvider = Provider.of<QuestionnaireProvider>(context);
-    if (questionnaireProvider.hasDiabetes == null) {
-      return false;
-    } else if (questionnaireProvider.hasDiabetes == true) {
-      return questionnaireProvider.diabetesDuration?.isNotEmpty ?? false;
-    } else {
-      return true;
-    }
+  late TextEditingController _yearsController;
+
+  @override
+  void initState() {
+    super.initState();
+    final questionnaireProvider = context.read<QuestionnaireProvider>();
+    // Initialize the controller with the value from the provider
+    _yearsController = TextEditingController(
+      text: questionnaireProvider.diabetesDuration ?? '',
+    );
+  }
+
+  @override
+  void dispose() {
+    _yearsController.dispose(); // Clean up the controller when the widget is disposed
+    super.dispose();
   }
 
   @override
@@ -31,12 +37,7 @@ class _QuestionScreen7State extends State<QuestionScreen7> {
     final double emojiSize = screenWidth * 0.1; // Responsive emoji size
 
     // Access the QuestionnaireProvider
-    final questionnaireProvider = Provider.of<QuestionnaireProvider>(context);
-    
-    // Pre-fill the yearsController with the provider value
-    final TextEditingController _yearsController = TextEditingController(
-      text: questionnaireProvider.diabetesDuration ?? '',
-    );
+    final questionnaireProvider = Provider.of<QuestionnaireProvider>(context, listen: true);
 
     return Scaffold(
       backgroundColor: const Color(0xFFE6F0FF), // Same light blue background
@@ -48,7 +49,6 @@ class _QuestionScreen7State extends State<QuestionScreen7> {
             padding: const EdgeInsets.symmetric(horizontal: 20.0),
             child: Row(
               children: [
-                // Back button inside a transparent circle
                 GestureDetector(
                   onTap: () {
                     context.goNamed(RouteNames.questionScreen6);
@@ -67,7 +67,6 @@ class _QuestionScreen7State extends State<QuestionScreen7> {
                 ),
                 SizedBox(width: screenWidth * 0.025), // Space between back button and progress bar
 
-                // Progress bar with increased width
                 const Expanded(
                   child: LinearProgressIndicator(
                     value: 0.36, // Progress (next step)
@@ -103,7 +102,6 @@ class _QuestionScreen7State extends State<QuestionScreen7> {
                       children: [
                         GestureDetector(
                           onTap: () {
-                            // Update the provider when the user selects Yes
                             questionnaireProvider.setHasDiabetes(true);
                           },
                           child: Container(
@@ -123,10 +121,8 @@ class _QuestionScreen7State extends State<QuestionScreen7> {
                         SizedBox(width: screenWidth * 0.15),
                         GestureDetector(
                           onTap: () {
-                            // Update the provider when the user selects No
                             questionnaireProvider.setHasDiabetes(false);
-                            questionnaireProvider.setDiabetesDuration(''); // Clear duration when selecting No
-                            _yearsController.clear();
+                            _yearsController.clear(); // Clear the text field when selecting No
                           },
                           child: Container(
                             padding: const EdgeInsets.all(20),
@@ -181,7 +177,6 @@ class _QuestionScreen7State extends State<QuestionScreen7> {
                         hintText: 'In Years',
                       ),
                       onChanged: (value) {
-                        // Update the provider whenever the text field changes
                         questionnaireProvider.setDiabetesDuration(value);
                       },
                     ),
@@ -190,7 +185,7 @@ class _QuestionScreen7State extends State<QuestionScreen7> {
 
                     // Continue button
                     ElevatedButton(
-                      onPressed: _isContinueButtonActive
+                      onPressed: questionnaireProvider.isContinueButtonActive
                           ? () {
                               context.goNamed(RouteNames.questionScreen8);
                             }
@@ -217,4 +212,3 @@ class _QuestionScreen7State extends State<QuestionScreen7> {
     );
   }
 }
-
