@@ -11,7 +11,7 @@ Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   // Load the .env file before initializing Firebase
- await dotenv.load(fileName: ".env"); 
+//  await dotenv.load(fileName: ".env");
 
   await Firebase.initializeApp();
   
