@@ -3,6 +3,10 @@ import 'package:flutter/foundation.dart';
 class QuestionnaireProvider with ChangeNotifier {
 
   int? _age;
+  String? _heightValue;
+  String _heightUnit = 'cm'; // Default height unit is cm
+  String? _weightValue;
+  String _weightUnit = 'kg'; // Default weight unit is kg
   String? _selectedGender;
   String? _selectedOccupation;
   String? _customOccupation;
@@ -17,6 +21,10 @@ class QuestionnaireProvider with ChangeNotifier {
 
   // Getters
   int? get age => _age;
+  String? get heightValue => _heightValue;
+  String get heightUnit => _heightUnit;
+  String? get weightValue => _weightValue;
+  String get weightUnit => _weightUnit;
   String? get selectedGender => _selectedGender;
   String? get selectedOccupation => _selectedOccupation;
   String? get customOccupation => _customOccupation;
@@ -45,6 +53,31 @@ class QuestionnaireProvider with ChangeNotifier {
   void setAge(int? value) {
     _age = value;
     notifyListeners();
+  }
+
+  void setHeightValue(String value) {
+    _heightValue = value;
+    notifyListeners();
+  }
+
+  void setHeightUnit(String unit) {
+    _heightUnit = unit;
+    notifyListeners();
+  }
+
+  void setWeightValue(String value) {
+    _weightValue = value;
+    notifyListeners();
+  }
+
+  void setWeightUnit(String unit) {
+    _weightUnit = unit;
+    notifyListeners();
+  }
+
+  bool get isHeightWeightContinueButtonActive {
+    return (_heightValue != null && _heightValue!.isNotEmpty) &&
+           (_weightValue != null && _weightValue!.isNotEmpty);
   }
 
   void setSelectedGender(String? value) {

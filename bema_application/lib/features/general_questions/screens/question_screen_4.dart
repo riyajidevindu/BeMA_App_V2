@@ -40,7 +40,7 @@ class _QuestionScreen4State extends State<QuestionScreen4> {
                 // Back button inside a transparent circle
                 GestureDetector(
                   onTap: () {
-                    context.goNamed(RouteNames.questionScreen2);
+                    context.goNamed(RouteNames.questionScreen3);
                   },
                   child: Container(
                     padding: const EdgeInsets.all(10),

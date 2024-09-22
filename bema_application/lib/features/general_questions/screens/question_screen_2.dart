@@ -134,7 +134,7 @@ class _QuestionScreen2State extends State<QuestionScreen2> {
             ElevatedButton(
               onPressed: () {
                 if (age != null && age > 0) {
-                  context.goNamed(RouteNames.questionScreen4);
+                  context.goNamed(RouteNames.questionScreen3);
                 } else {
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(
