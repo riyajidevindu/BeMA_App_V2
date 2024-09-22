@@ -7,6 +7,10 @@ class QuestionnaireProvider with ChangeNotifier {
   String? _diabetesDuration;
   int? _age;
   String? _selectedGender;
+  String? _selectedOccupation;
+  String? _customOccupation;
+  String? get selectedOccupation => _selectedOccupation;
+  String? get customOccupation => _customOccupation;
 
   // Getters
   bool? get hasAllergies => _hasAllergies;
@@ -45,6 +49,24 @@ class QuestionnaireProvider with ChangeNotifier {
   void setSelectedGender(String? value) {
     _selectedGender = value;
     notifyListeners(); 
+  }
+
+  // Setters with notifyListeners to update UI when state changes
+  void setSelectedOccupation(String occupation) {
+    _selectedOccupation = occupation;
+    _customOccupation = null; // Reset custom occupation if preset is chosen
+    notifyListeners();
+  }
+
+  void setCustomOccupation(String occupation) {
+    _customOccupation = occupation;
+    _selectedOccupation = null; // Reset selected occupation if custom is entered
+    notifyListeners();
+  }
+
+  // Method to check if the continue button should be active
+  bool get isContinueButtonActive {
+    return _selectedOccupation != null || (_customOccupation?.isNotEmpty ?? false);
   }
 
 }
