@@ -21,6 +21,8 @@ class QuestionnaireProvider with ChangeNotifier {
   bool? _hasSurgeries;
   String? _surgeryYear;
   String? _surgeryType;
+  bool? _hasFamilyMedHis;
+  String? _familyMedHistory;
 
   // Getters
   int? get age => _age;
@@ -42,6 +44,8 @@ class QuestionnaireProvider with ChangeNotifier {
   bool? get hasSurgeries => _hasSurgeries;
   String? get surgeryYear => _surgeryYear;
   String? get surgeryType => _surgeryType;
+  bool? get hasFamilyMedHis => _hasFamilyMedHis;
+  String? get familyMedHistory => _familyMedHistory;
   
 
   // Setters with notifyListeners to update UI when state changes
@@ -161,7 +165,6 @@ class QuestionnaireProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  // Method to check if the continue button should be active
   bool get isAllergiesContinueButtonActive {
     if (_hasAllergies == null) {
       return false;
@@ -195,6 +198,26 @@ class QuestionnaireProvider with ChangeNotifier {
              (_surgeryType != null && _surgeryType!.isNotEmpty);
     } else {
       return true; 
+    }
+  }
+
+  void setHasFamilyMedHis(bool? value) {
+    _hasFamilyMedHis = value;
+    notifyListeners();
+  }
+
+  void setFamilyMedHistory(String value) {
+    _familyMedHistory = value;
+    notifyListeners();
+  }
+
+  bool get isFamMedHisContinueButtonActive {
+    if (_hasFamilyMedHis == null) {
+      return false;
+    } else if (_hasFamilyMedHis == true) {
+      return _familyMedHistory != null && _familyMedHistory!.isNotEmpty;
+    } else {
+      return true;
     }
   }
 
