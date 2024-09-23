@@ -3,3 +3,14 @@ activate env - .venv\Scripts\Activate.ps1
 install fastapi - pip install fastapi[standard]
 install packages - pip install -r requirements.txt
 run fast api - fastapi dev main.py
+run app using uvicron - uvicorn app.main:app --reload 
+
+
+before using change the data file path as of your local machine
+
+To use the route 
+
+http://127.0.0.1:8000/query/ - call this like with this json 
+{
+    query:"Your question"
+}
