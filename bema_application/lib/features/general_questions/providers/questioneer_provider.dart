@@ -18,6 +18,9 @@ class QuestionnaireProvider with ChangeNotifier {
   String? _cholesterolDuration;
   bool? _hasAllergies;
   String? _allergiesDescription;
+  bool? _hasSurgeries;
+  String? _surgeryYear;
+  String? _surgeryType;
 
   // Getters
   int? get age => _age;
@@ -36,6 +39,9 @@ class QuestionnaireProvider with ChangeNotifier {
   String? get cholesterolDuration => _cholesterolDuration;
   bool? get hasAllergies => _hasAllergies;
   String? get allergiesDescription => _allergiesDescription;
+  bool? get hasSurgeries => _hasSurgeries;
+  String? get surgeryYear => _surgeryYear;
+  String? get surgeryType => _surgeryType;
   
 
   // Setters with notifyListeners to update UI when state changes
@@ -163,6 +169,32 @@ class QuestionnaireProvider with ChangeNotifier {
       return _allergiesDescription != null && _allergiesDescription!.isNotEmpty;
     } else {
       return true;
+    }
+  }
+
+  void setHasSurgeries(bool? value) {
+    _hasSurgeries = value;
+    notifyListeners();
+  }
+
+  void setSurgeryYear(String value) {
+    _surgeryYear = value;
+    notifyListeners();
+  }
+
+  void setSurgeryType(String value) {
+    _surgeryType = value;
+    notifyListeners();
+  }
+
+  bool get isSurgeriesContinueButtonActive {
+    if (_hasSurgeries == null) {
+      return false;
+    } else if (_hasSurgeries == true) {
+      return (_surgeryYear != null && _surgeryYear!.isNotEmpty) &&
+             (_surgeryType != null && _surgeryType!.isNotEmpty);
+    } else {
+      return true; 
     }
   }
 

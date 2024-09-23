@@ -1,31 +1,36 @@
 import 'package:bema_application/features/general_questions/providers/questioneer_provider.dart';
+import 'package:bema_application/routes/route_names.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
-import 'package:bema_application/routes/route_names.dart';
 
-class QuestionScreen10 extends StatefulWidget {
-  const QuestionScreen10({super.key});
+class QuestionScreen11 extends StatefulWidget {
+  const QuestionScreen11({super.key});
 
   @override
-  _QuestionScreen10State createState() => _QuestionScreen10State();
+  _QuestionScreen11State createState() => _QuestionScreen11State();
 }
 
-class _QuestionScreen10State extends State<QuestionScreen10> {
-  late TextEditingController _allergyController;
+class _QuestionScreen11State extends State<QuestionScreen11> {
+  late TextEditingController _surgeryYearController;
+  late TextEditingController _surgeryTypeController;
 
   @override
   void initState() {
     super.initState();
     final questionnaireProvider = context.read<QuestionnaireProvider>();
-    _allergyController = TextEditingController(
-      text: questionnaireProvider.allergiesDescription ?? '',
+    _surgeryYearController = TextEditingController(
+      text: questionnaireProvider.surgeryYear ?? '',
+    );
+    _surgeryTypeController = TextEditingController(
+      text: questionnaireProvider.surgeryType ?? '',
     );
   }
 
   @override
   void dispose() {
-    _allergyController.dispose();
+    _surgeryYearController.dispose();
+    _surgeryTypeController.dispose();
     super.dispose();
   }
 
@@ -36,14 +41,15 @@ class _QuestionScreen10State extends State<QuestionScreen10> {
     final double emojiSize = screenWidth * 0.1;
 
     // Access the QuestionnaireProvider
-    final questionnaireProvider = Provider.of<QuestionnaireProvider>(context, listen: true);
+    final questionnaireProvider =
+        Provider.of<QuestionnaireProvider>(context, listen: true);
 
     return Scaffold(
-      backgroundColor: const Color(0xFFE6F0FF), // Same light blue background
+      backgroundColor: const Color(0xFFE6F0FF), // Light blue background
       body: Column(
         children: [
           const SizedBox(height: 50),
-          
+
           // Row for Back button and Progress bar
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 20.0),
@@ -51,13 +57,14 @@ class _QuestionScreen10State extends State<QuestionScreen10> {
               children: [
                 GestureDetector(
                   onTap: () {
-                    context.goNamed(RouteNames.questionScreen9);
+                    context.goNamed(RouteNames.questionScreen10);
                   },
                   child: Container(
                     padding: const EdgeInsets.all(10),
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
-                      color: Colors.black.withOpacity(0.2), // Transparent background
+                      color: Colors.black
+                          .withOpacity(0.2), // Transparent background
                     ),
                     child: const Icon(
                       Icons.arrow_back,
@@ -65,12 +72,14 @@ class _QuestionScreen10State extends State<QuestionScreen10> {
                     ),
                   ),
                 ),
-                SizedBox(width: screenWidth * 0.025), // Space between back button and progress bar
+                SizedBox(
+                    width: screenWidth *
+                        0.025), // Space between back button and progress bar
 
                 // Progress bar with increased width
                 const Expanded(
                   child: LinearProgressIndicator(
-                    value: 0.54, // Progress (next step)
+                    value: 0.60, // Progress (next step)
                     backgroundColor: Colors.grey,
                     color: Colors.blue, // Progress bar color
                   ),
@@ -88,7 +97,7 @@ class _QuestionScreen10State extends State<QuestionScreen10> {
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
                     const Text(
-                      "Do you have any",
+                      "Have you had any surgeries?",
                       textAlign: TextAlign.center,
                       style: TextStyle(
                         fontSize: 24,
@@ -96,33 +105,33 @@ class _QuestionScreen10State extends State<QuestionScreen10> {
                       ),
                     ),
                     const Text(
-                      "allergies?",
+                      "🏥", // X-ray emoji
+                      style: TextStyle(fontSize: 50),
                       textAlign: TextAlign.center,
-                      style: TextStyle(
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
-                      ),
                     ),
-                    SizedBox(height: screenHeight * 0.05),
+                    SizedBox(height: screenHeight * 0.03),
 
-                    // Emoji buttons for Yes and No options
+                    // Surgery Yes/No buttons
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         GestureDetector(
                           onTap: () {
-                            questionnaireProvider.setHasAllergies(true);
+                            questionnaireProvider.setHasSurgeries(true);
                           },
                           child: Container(
                             padding: const EdgeInsets.all(20),
                             decoration: BoxDecoration(
-                              color: Colors.green.withOpacity(questionnaireProvider.hasAllergies == true ? 1.0 : 0.3),
+                              color: Colors.green.withOpacity(
+                                  questionnaireProvider.hasSurgeries == true
+                                      ? 1.0
+                                      : 0.3),
                               borderRadius: BorderRadius.circular(12),
                             ),
                             child: Text(
                               "✅",
                               style: TextStyle(
-                                fontSize: emojiSize,
+                                fontSize: emojiSize
                               ),
                             ),
                           ),
@@ -130,80 +139,97 @@ class _QuestionScreen10State extends State<QuestionScreen10> {
                         SizedBox(width: screenWidth * 0.15),
                         GestureDetector(
                           onTap: () {
-                            questionnaireProvider.setHasAllergies(false);
-                            _allergyController.clear(); // Clear the text field when selecting No
+                            questionnaireProvider.setHasSurgeries(false);
+                            _surgeryYearController
+                                .clear(); // Clear the text fields when "No" is selected
+                            _surgeryTypeController.clear();
                           },
                           child: Container(
                             padding: const EdgeInsets.all(20),
                             decoration: BoxDecoration(
-                              color: Colors.green.withOpacity(questionnaireProvider.hasAllergies == false ? 1.0 : 0.3),
+                              color: Colors.green.withOpacity(
+                                  questionnaireProvider.hasSurgeries == false
+                                      ? 1.0
+                                      : 0.3),
                               borderRadius: BorderRadius.circular(12),
                             ),
                             child: Text(
                               "❌",
                               style: TextStyle(
-                                fontSize: emojiSize,
+                                fontSize: emojiSize
                               ),
                             ),
                           ),
                         ),
                       ],
                     ),
-                    SizedBox(height: screenHeight * 0.05), // Padding after options
+                    SizedBox(
+                        height: screenHeight * 0.05), // Padding after options
 
+                    // Hint text and input for surgery year
                     const Text(
-                      "If yes, could you share what",
+                      "If yes, when? (In years)",
                       textAlign: TextAlign.center,
                       style: TextStyle(
                         fontSize: 16,
                         color: Colors.grey,
                       ),
                     ),
-                    const Text(
-                      "they are?",
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        fontSize: 16,
-                        color: Colors.grey,
-                      ),
-                    ),
-                    SizedBox(height: screenHeight * 0.04),
-
-                    // Use allergy emoji
-                    Text(
-                      "🤧", 
-                      style: TextStyle(fontSize: emojiSize * 1.5),
-                      textAlign: TextAlign.center,
-                    ),
-                    SizedBox(height: screenHeight * 0.04),
-
+                    SizedBox(height: screenHeight * 0.02),
                     TextFormField(
-                      controller: _allergyController,
-                      keyboardType: TextInputType.text,
-                      enabled: questionnaireProvider.hasAllergies == true, // Active only if Yes is selected
+                      controller: _surgeryYearController,
+                      keyboardType: TextInputType.number,
+                      enabled: questionnaireProvider.hasSurgeries == true,
                       decoration: InputDecoration(
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
                         ),
-                        hintText: 'Specify your allergies',
+                        hintText: 'Enter the year of surgery',
                       ),
                       onChanged: (value) {
-                        questionnaireProvider.setAllergiesDescription(value);
+                        questionnaireProvider.setSurgeryYear(value);
                       },
                     ),
+                    SizedBox(height: screenHeight * 0.05),
 
+                    // Hint text and input for surgery type
+                    const Text(
+                      "and what kind?",
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontSize: 16,
+                        color: Colors.grey,
+                      ),
+                    ),
+                    SizedBox(height: screenHeight * 0.02),
+                    TextFormField(
+                      controller: _surgeryTypeController,
+                      keyboardType: TextInputType.text,
+                      enabled: questionnaireProvider.hasSurgeries == true,
+                      decoration: InputDecoration(
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        hintText: 'Enter the type of surgery',
+                      ),
+                      onChanged: (value) {
+                        questionnaireProvider.setSurgeryType(value);
+                      },
+                    ),
                     SizedBox(height: screenHeight * 0.05),
 
                     // Continue button
                     ElevatedButton(
-                      onPressed: questionnaireProvider.isAllergiesContinueButtonActive
+                      onPressed: questionnaireProvider
+                              .isSurgeriesContinueButtonActive
                           ? () {
-                              context.goNamed(RouteNames.questionScreen11);
+                              //context.goNamed(RouteNames.questionScreen12);
                             }
                           : null, // Disable button if conditions are not met
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.blue, // Blue button color
-                        minimumSize: const Size(double.infinity, 50), // Full-width button
+                        minimumSize: const Size(
+                            double.infinity, 50), // Full-width button
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12),
                         ),
