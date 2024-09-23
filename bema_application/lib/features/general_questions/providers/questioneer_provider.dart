@@ -23,6 +23,8 @@ class QuestionnaireProvider with ChangeNotifier {
   String? _surgeryType;
   bool? _hasFamilyMedHis;
   String? _familyMedHistory;
+  bool? _hasDisability;
+  String? _disabilityDescription;
 
   // Getters
   int? get age => _age;
@@ -46,6 +48,8 @@ class QuestionnaireProvider with ChangeNotifier {
   String? get surgeryType => _surgeryType;
   bool? get hasFamilyMedHis => _hasFamilyMedHis;
   String? get familyMedHistory => _familyMedHistory;
+  bool? get hasDisability => _hasDisability;
+  String? get disabilityDescription => _disabilityDescription;
   
 
   // Setters with notifyListeners to update UI when state changes
@@ -216,6 +220,26 @@ class QuestionnaireProvider with ChangeNotifier {
       return false;
     } else if (_hasFamilyMedHis == true) {
       return _familyMedHistory != null && _familyMedHistory!.isNotEmpty;
+    } else {
+      return true;
+    }
+  }
+
+  void setHasDisability(bool? value) {
+    _hasDisability = value;
+    notifyListeners();
+  }
+
+  void setDisabilityDescription(String value) {
+    _disabilityDescription = value;
+    notifyListeners();
+  }
+
+  bool get isDisabilityButtonActive {
+    if (_hasDisability == null) {
+      return false;
+    } else if (_hasDisability == true) {
+      return _disabilityDescription != null && _disabilityDescription!.isNotEmpty;
     } else {
       return true;
     }

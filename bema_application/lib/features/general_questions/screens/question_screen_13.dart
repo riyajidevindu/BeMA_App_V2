@@ -4,28 +4,28 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:bema_application/routes/route_names.dart';
 
-class QuestionScreen12 extends StatefulWidget {
-  const QuestionScreen12({super.key});
+class QuestionScreen13 extends StatefulWidget {
+  const QuestionScreen13({super.key});
 
   @override
-  _QuestionScreen12State createState() => _QuestionScreen12State();
+  _QuestionScreen13State createState() => _QuestionScreen13State();
 }
 
-class _QuestionScreen12State extends State<QuestionScreen12> {
-  late TextEditingController _famMedHisController;
+class _QuestionScreen13State extends State<QuestionScreen13> {
+  late TextEditingController _disabilityController;
 
   @override
   void initState() {
     super.initState();
     final questionnaireProvider = context.read<QuestionnaireProvider>();
-    _famMedHisController = TextEditingController(
-      text: questionnaireProvider.familyMedHistory ?? '',
+    _disabilityController = TextEditingController(
+      text: questionnaireProvider.disabilityDescription ?? '',
     );
   }
 
   @override
   void dispose() {
-    _famMedHisController.dispose();
+    _disabilityController.dispose();
     super.dispose();
   }
 
@@ -51,7 +51,7 @@ class _QuestionScreen12State extends State<QuestionScreen12> {
               children: [
                 GestureDetector(
                   onTap: () {
-                    context.goNamed(RouteNames.questionScreen11);
+                    context.goNamed(RouteNames.questionScreen12);
                   },
                   child: Container(
                     padding: const EdgeInsets.all(10),
@@ -70,7 +70,7 @@ class _QuestionScreen12State extends State<QuestionScreen12> {
                 // Progress bar with increased width
                 const Expanded(
                   child: LinearProgressIndicator(
-                    value: 0.66, // Progress (next step)
+                    value: 0.72, // Progress (next step)
                     backgroundColor: Colors.grey,
                     color: Colors.blue, // Progress bar color
                   ),
@@ -96,7 +96,7 @@ class _QuestionScreen12State extends State<QuestionScreen12> {
                       ),
                     ),
                     const Text(
-                      "family medical history to share?",
+                      "disabilities or special needs?",
                       textAlign: TextAlign.center,
                       style: TextStyle(
                         fontSize: 24,
@@ -111,12 +111,12 @@ class _QuestionScreen12State extends State<QuestionScreen12> {
                       children: [
                         GestureDetector(
                           onTap: () {
-                            questionnaireProvider.setHasFamilyMedHis(true);
+                            questionnaireProvider.setHasDisability(true);
                           },
                           child: Container(
                             padding: const EdgeInsets.all(20),
                             decoration: BoxDecoration(
-                              color: Colors.green.withOpacity(questionnaireProvider.hasFamilyMedHis == true ? 1.0 : 0.3),
+                              color: Colors.green.withOpacity(questionnaireProvider.hasDisability == true ? 1.0 : 0.3),
                               borderRadius: BorderRadius.circular(12),
                             ),
                             child: Text(
@@ -130,13 +130,13 @@ class _QuestionScreen12State extends State<QuestionScreen12> {
                         SizedBox(width: screenWidth * 0.15),
                         GestureDetector(
                           onTap: () {
-                            questionnaireProvider.setHasFamilyMedHis(false);
-                            _famMedHisController.clear(); // Clear the text field when selecting No
+                            questionnaireProvider.setHasDisability(false);
+                            _disabilityController.clear(); // Clear the text field when selecting No
                           },
                           child: Container(
                             padding: const EdgeInsets.all(20),
                             decoration: BoxDecoration(
-                              color: Colors.green.withOpacity(questionnaireProvider.hasFamilyMedHis == false ? 1.0 : 0.3),
+                              color: Colors.green.withOpacity(questionnaireProvider.hasDisability == false ? 1.0 : 0.3),
                               borderRadius: BorderRadius.circular(12),
                             ),
                             child: Text(
@@ -152,7 +152,7 @@ class _QuestionScreen12State extends State<QuestionScreen12> {
                     SizedBox(height: screenHeight * 0.05), // Padding after options
 
                     const Text(
-                      "For example, conditions like",
+                      "If yes, please let us know",
                       textAlign: TextAlign.center,
                       style: TextStyle(
                         fontSize: 16,
@@ -160,7 +160,7 @@ class _QuestionScreen12State extends State<QuestionScreen12> {
                       ),
                     ),
                     const Text(
-                      "diabetes,heart disease, etc.",
+                      "how we can assist you",
                       textAlign: TextAlign.center,
                       style: TextStyle(
                         fontSize: 16,
@@ -171,24 +171,24 @@ class _QuestionScreen12State extends State<QuestionScreen12> {
 
                     // Use allergy emoji
                     Text(
-                      "🧬", 
+                      "🫂", 
                       style: TextStyle(fontSize: emojiSize * 1.5),
                       textAlign: TextAlign.center,
                     ),
                     SizedBox(height: screenHeight * 0.04),
 
                     TextFormField(
-                      controller: _famMedHisController,
+                      controller: _disabilityController,
                       keyboardType: TextInputType.text,
-                      enabled: questionnaireProvider.hasFamilyMedHis == true, // Active only if Yes is selected
+                      enabled: questionnaireProvider.hasDisability == true, // Active only if Yes is selected
                       decoration: InputDecoration(
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
                         ),
-                        
+                    
                       ),
                       onChanged: (value) {
-                        questionnaireProvider.setFamilyMedHistory(value);
+                        questionnaireProvider.setDisabilityDescription(value);
                       },
                     ),
 
@@ -196,9 +196,9 @@ class _QuestionScreen12State extends State<QuestionScreen12> {
 
                     // Continue button
                     ElevatedButton(
-                      onPressed: questionnaireProvider.isFamMedHisContinueButtonActive
+                      onPressed: questionnaireProvider.isDisabilityButtonActive
                           ? () {
-                              context.goNamed(RouteNames.questionScreen13);
+                              //context.goNamed(RouteNames.questionScreen11);
                             }
                           : null, // Disable button if conditions are not met
                       style: ElevatedButton.styleFrom(
