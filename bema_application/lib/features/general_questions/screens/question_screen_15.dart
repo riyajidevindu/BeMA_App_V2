@@ -71,7 +71,7 @@ class _QuestionScreen15State extends State<QuestionScreen15> {
                 // Progress bar
                 const Expanded(
                   child: LinearProgressIndicator(
-                    value: 0.75, // Adjust progress value as needed
+                    value: 0.70, // Adjust progress value as needed
                     backgroundColor: Colors.grey,
                     color: Colors.blue,
                   ),
