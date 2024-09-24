@@ -36,7 +36,9 @@ class OptionTile extends StatelessWidget {
               borderRadius: BorderRadius.circular(12), // Rounded corners
             ),
             child: Opacity(
-              opacity: isSelected || selectedOption == null ? 1.0 : 0.3, // Blur unselected
+              opacity: isSelected || selectedOption == null
+                  ? 1.0
+                  : 0.3, // Blur unselected
               child: Text(
                 emoji,
                 style: TextStyle(fontSize: emojiSize), // Responsive emoji size
@@ -47,6 +49,7 @@ class OptionTile extends StatelessWidget {
           Text(
             label,
             style: const TextStyle(fontSize: 16),
+            textAlign: TextAlign.center,
           ),
         ],
       ),
