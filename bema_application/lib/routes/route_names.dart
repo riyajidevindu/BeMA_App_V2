@@ -19,6 +19,8 @@ class RouteNames {
   static const questionScreen12 = 'questionScreen12';
   static const questionScreen13 = 'questionScreen13';
   static const questionScreen14 = 'questionScreen14';
+  static const questionScreen15 = 'questionScreen15';
+  static const questionScreen16 = 'questionScreen16';
 
   static const chatScreen = 'chatScreen';
 }
