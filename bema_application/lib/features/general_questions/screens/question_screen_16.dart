@@ -5,14 +5,14 @@ import 'package:go_router/go_router.dart';
 import 'package:bema_application/routes/route_names.dart';
 import 'package:bema_application/common/widgets/tiles/option_tile.dart';
 
-class QuestionScreen15 extends StatefulWidget {
-  const QuestionScreen15({super.key});
+class QuestionScreen16 extends StatefulWidget {
+  const QuestionScreen16({super.key});
 
   @override
-  _QuestionScreen15State createState() => _QuestionScreen15State();
+  _QuestionScreen16State createState() => _QuestionScreen16State();
 }
 
-class _QuestionScreen15State extends State<QuestionScreen15> {
+class _QuestionScreen16State extends State<QuestionScreen16> {
 
   @override
   Widget build(BuildContext context) {
@@ -24,19 +24,17 @@ class _QuestionScreen15State extends State<QuestionScreen15> {
 
     // Smoking options
     final List<Map<String, String>> smokingOptions = [
-      {"label": "No. Never!", "emoji": "🚭", "option": "no_never"},
-      {"label": "Used to, but not anymore", "emoji": "💨", "option": "used_to"},
-      {"label": "Yes, occasionally", "emoji": "🚬", "option": "occasionally"},
-      {"label": "Yes, regularly", "emoji": "🔥", "option": "regularly"},
+      {"label": "A few times a week", "emoji": "📅", "option": "weekly"},
+      {"label": "Once a day", "emoji": "☀️", "option": "daily_one"},
+      {"label": "Several times a day", "emoji": "⏲️", "option": "daily_few"},
+      {"label": "Too many to count!", "emoji": "🔥", "option": "countless"},
     ];
 
     // Handle the selection and navigation logic
     void handleContinue() {
-      if (questionnaireProvider.smokingStatus == "no_never") {
-        context.goNamed(RouteNames.questionScreen17); // Navigate to the non-smoker page
-      } else {
-        context.goNamed(RouteNames.questionScreen16); // Navigate to the smoker page
-      }
+     
+      context.goNamed(RouteNames.questionScreen17); // Navigate to the non-smoker page
+      
     }
 
     return Scaffold(
@@ -52,7 +50,7 @@ class _QuestionScreen15State extends State<QuestionScreen15> {
               children: [
                 GestureDetector(
                   onTap: () {
-                    context.goNamed(RouteNames.questionScreen14);
+                    context.goNamed(RouteNames.questionScreen15);
                   },
                   child: Container(
                     padding: const EdgeInsets.all(10),
@@ -89,7 +87,7 @@ class _QuestionScreen15State extends State<QuestionScreen15> {
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
                     const Text(
-                      "Do you smoke?",
+                      "If you smoke, how often do you usually have a cigarette?",
                       textAlign: TextAlign.center,
                       style: TextStyle(
                         fontSize: 24,
@@ -120,7 +118,7 @@ class _QuestionScreen15State extends State<QuestionScreen15> {
                             emojiSize: emojiSize,
                             onSelect: () {
                               // Update the smoking status in provider
-                              questionnaireProvider.setSmokingStatus(option["option"]!);
+                              questionnaireProvider.setSmokingCount(option["option"]!);
                             },
                           ),
                         );
@@ -131,7 +129,7 @@ class _QuestionScreen15State extends State<QuestionScreen15> {
 
                     // Continue button
                     ElevatedButton(
-                      onPressed: questionnaireProvider.smokingStatus != null
+                      onPressed: questionnaireProvider.smokingCount != null
                           ? handleContinue
                           : null, // Disable button if no option is selected
                       style: ElevatedButton.styleFrom(

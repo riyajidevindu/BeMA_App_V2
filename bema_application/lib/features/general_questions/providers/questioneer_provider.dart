@@ -26,6 +26,7 @@ class QuestionnaireProvider with ChangeNotifier {
   bool? _hasDisability;
   String? _disabilityDescription;
   String? _smokingStatus;
+  String? _smokingCount;
   String? _alcoholStatus;
 
   // Getters
@@ -53,6 +54,7 @@ class QuestionnaireProvider with ChangeNotifier {
   bool? get hasDisability => _hasDisability;
   String? get disabilityDescription => _disabilityDescription;
   String? get smokingStatus => _smokingStatus;
+  String? get smokingCount => _smokingCount;
   String? get alcoholStatus => _alcoholStatus;
   
 
@@ -251,6 +253,11 @@ class QuestionnaireProvider with ChangeNotifier {
 
   void setSmokingStatus(String value) {
     _smokingStatus = value;
+    notifyListeners();
+  }
+
+  void setSmokingCount(String value) {
+    _smokingCount = value;
     notifyListeners();
   }
 
