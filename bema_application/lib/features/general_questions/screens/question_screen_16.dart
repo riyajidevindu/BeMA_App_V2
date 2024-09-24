@@ -114,7 +114,7 @@ class _QuestionScreen16State extends State<QuestionScreen16> {
                             emoji: option["emoji"]!,
                             label: option["label"]!,
                             option: option["option"]!,
-                            selectedOption: questionnaireProvider.smokingStatus,
+                            selectedOption: questionnaireProvider.smokingCount,
                             emojiSize: emojiSize,
                             onSelect: () {
                               // Update the smoking status in provider
