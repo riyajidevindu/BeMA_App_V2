@@ -1,7 +1,9 @@
+import 'package:bema_application/features/general_questions/providers/questioneer_provider.dart';
 import 'package:bema_application/routes/route_names.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
+import 'package:provider/provider.dart';
 
 class QuestionScreen2 extends StatefulWidget {
   const QuestionScreen2({super.key});
@@ -13,7 +15,6 @@ class QuestionScreen2 extends StatefulWidget {
 class _QuestionScreen2State extends State<QuestionScreen2> {
   final FocusNode _focusNode = FocusNode();
   final TextEditingController _ageController = TextEditingController();
-  String _formattedAge = '';
 
   @override
   void initState() {
@@ -30,28 +31,35 @@ class _QuestionScreen2State extends State<QuestionScreen2> {
     super.dispose();
   }
 
-  void _updateAge() {
+  // Method to update the age in the provider
+  void _updateAge(BuildContext context) {
+    final questionnaireProvider = Provider.of<QuestionnaireProvider>(context, listen: false);
     final age = int.tryParse(_ageController.text) ?? 0;
+
     if (age > 100) {
-      // Show an error or prevent update
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Age cannot be greater than 100.'),
         ),
       );
       _ageController.clear();
-      setState(() {
-        _formattedAge = '';
-      });
+      questionnaireProvider.setAge(null); // Reset age in provider if invalid
     } else {
-      setState(() {
-        _formattedAge = age > 0 ? '$age years old' : '';
-      });
+      questionnaireProvider.setAge(age); // Update age in the provider
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    // Access the provider to get the current age value (if previously entered)
+    final questionnaireProvider = Provider.of<QuestionnaireProvider>(context);
+    final age = questionnaireProvider.age;
+
+    // Pre-fill the age controller with the provider value if available
+    if (age != null) {
+      _ageController.text = age.toString();
+    }
+
     return Scaffold(
       backgroundColor: const Color(0xFFE6F0FF), // Light blue background
       body: Padding(
@@ -61,7 +69,7 @@ class _QuestionScreen2State extends State<QuestionScreen2> {
           children: [
             const SizedBox(height: 50), // Add padding to push content down
             const LinearProgressIndicator(
-              value: 0.06, // 50% progress (adjust as needed)
+              value: 0.05, 
               backgroundColor: Colors.grey,
               color: Colors.blue, // Blue progress
             ),
@@ -88,14 +96,14 @@ class _QuestionScreen2State extends State<QuestionScreen2> {
                 FilteringTextInputFormatter.digitsOnly, // Only allow digits
               ],
               onChanged: (value) {
-                // Validate and format age
-                _updateAge();
+                // Validate and update age in provider
+                _updateAge(context);
               },
             ),
             const SizedBox(height: 20), // Padding after input field
-            if (_formattedAge.isNotEmpty) ...[
+            if (age != null) ...[
               Text(
-                _formattedAge,
+                '$age years old',
                 style: const TextStyle(
                   fontSize: 16,
                   color: Colors.black,
@@ -125,7 +133,15 @@ class _QuestionScreen2State extends State<QuestionScreen2> {
             const Spacer(), // Push button to the bottom
             ElevatedButton(
               onPressed: () {
-                context.goNamed(RouteNames.questionScreen4);
+                if (age != null && age > 0) {
+                  context.goNamed(RouteNames.questionScreen3);
+                } else {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Please enter a valid age.'),
+                    ),
+                  );
+                }
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.blue, // Blue button color
