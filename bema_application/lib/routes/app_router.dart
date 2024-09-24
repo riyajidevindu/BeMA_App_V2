@@ -22,6 +22,7 @@ import 'package:bema_application/features/general_questions/screens/question_scr
 import 'package:bema_application/features/general_questions/screens/question_screen_7.dart';
 import 'package:bema_application/features/general_questions/screens/question_screen_8.dart';
 import 'package:bema_application/features/general_questions/screens/question_screen_9.dart';
+import 'package:bema_application/features/general_questions/screens/thank_you_screen.dart';
 import 'package:bema_application/routes/authendication_wrapper.dart';
 import 'package:bema_application/routes/route_names.dart';
 import 'package:flutter/material.dart';
@@ -196,6 +197,13 @@ final goRouter = GoRouter(
         name: RouteNames.questionScreen20,
         pageBuilder: (context, state) => const MaterialPage(
           child: QuestionScreen20(),
+        ),
+      ),
+      GoRoute(
+        path: '/${RouteNames.thankYouScreen}',
+        name: RouteNames.thankYouScreen,
+        pageBuilder: (context, state) => const MaterialPage(
+          child: ThankYouScreen(),
         ),
       ),
        GoRoute(

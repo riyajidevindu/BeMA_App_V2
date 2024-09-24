@@ -33,7 +33,7 @@ class _QuestionScreen19State extends State<QuestionScreen19> {
     void handleContinue() {
      
       if (questionnaireProvider.activeness == "inactive") {
-        //context.goNamed(RouteNames.questionScreen19); 
+        context.goNamed(RouteNames.thankYouScreen); 
       } else {
         context.goNamed(RouteNames.questionScreen20); 
       }

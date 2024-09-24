@@ -33,7 +33,7 @@ class _QuestionScreen20State extends State<QuestionScreen20> {
     // Handle the selection and navigation logic
     void handleContinue() {
      
-      //context.goNamed(RouteNames.questionScreen17); // Navigate to the non-smoker page
+      context.goNamed(RouteNames.thankYouScreen); // Navigate to the non-smoker page
       
     }
 
