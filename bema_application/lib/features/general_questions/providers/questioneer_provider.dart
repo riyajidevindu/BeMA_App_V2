@@ -26,6 +26,7 @@ class QuestionnaireProvider with ChangeNotifier {
   bool? _hasDisability;
   String? _disabilityDescription;
   String? _smokingStatus;
+  String? _alcoholStatus;
 
   // Getters
   int? get age => _age;
@@ -52,6 +53,7 @@ class QuestionnaireProvider with ChangeNotifier {
   bool? get hasDisability => _hasDisability;
   String? get disabilityDescription => _disabilityDescription;
   String? get smokingStatus => _smokingStatus;
+  String? get alcoholStatus => _alcoholStatus;
   
 
   // Setters with notifyListeners to update UI when state changes
@@ -255,5 +257,15 @@ class QuestionnaireProvider with ChangeNotifier {
   bool get isSmokingSelectionActive {
     return _smokingStatus != null;
   }
+
+  void setAlcoholStatus(String value) {
+    _alcoholStatus = value;
+    notifyListeners();
+  }
+
+  bool get isAlcoholSelectionActive {
+    return _alcoholStatus != null;
+  }
+
 
 }

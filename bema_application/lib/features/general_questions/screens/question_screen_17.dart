@@ -5,14 +5,14 @@ import 'package:go_router/go_router.dart';
 import 'package:bema_application/routes/route_names.dart';
 import 'package:bema_application/common/widgets/tiles/option_tile.dart';
 
-class QuestionScreen15 extends StatefulWidget {
-  const QuestionScreen15({super.key});
+class QuestionScreen17 extends StatefulWidget {
+  const QuestionScreen17({super.key});
 
   @override
-  _QuestionScreen15State createState() => _QuestionScreen15State();
+  _QuestionScreen17State createState() => _QuestionScreen17State();
 }
 
-class _QuestionScreen15State extends State<QuestionScreen15> {
+class _QuestionScreen17State extends State<QuestionScreen17> {
 
   @override
   Widget build(BuildContext context) {
@@ -22,18 +22,17 @@ class _QuestionScreen15State extends State<QuestionScreen15> {
     final double screenHeight = MediaQuery.of(context).size.height;
     final double emojiSize = screenWidth * 0.1; // Responsive emoji size
 
-    // Smoking options
-    final List<Map<String, String>> smokingOptions = [
-      {"label": "No. Never!", "emoji": "🚭", "option": "no_never"},
-      {"label": "Used to, but not anymore", "emoji": "💨", "option": "used_to"},
-      {"label": "Yes, occasionally", "emoji": "🚬", "option": "occasionally"},
-      {"label": "Yes, regularly", "emoji": "🔥", "option": "regularly"},
+    final List<Map<String, String>> alcoholOptions = [
+      {"label": "No, I don't drink", "emoji": "🚫", "option": "no_alcohol"},
+      {"label": "Used to, but not anymore", "emoji": "🍾", "option": "used_to_alcohol"},
+      {"label": "Yes, occasionally", "emoji": "🥂", "option": "occasionally_alcohol"},
+      {"label": "Yes, quite frequently", "emoji": "🍻", "option": "frequently_alcohol"},
     ];
 
     // Handle the selection and navigation logic
     void handleContinue() {
-      if (questionnaireProvider.smokingStatus == "no_never") {
-        context.goNamed(RouteNames.questionScreen17); // Navigate to the non-smoker page
+      if (questionnaireProvider.alcoholStatus == "no_alcohol") {
+        //context.goNamed(RouteNames.nonSmokerPage); // Navigate to the non-smoker page
       } else {
         //context.goNamed(RouteNames.smokerPage); // Navigate to the smoker page
       }
@@ -52,7 +51,7 @@ class _QuestionScreen15State extends State<QuestionScreen15> {
               children: [
                 GestureDetector(
                   onTap: () {
-                    context.goNamed(RouteNames.questionScreen14);
+                    context.goNamed(RouteNames.questionScreen15);
                   },
                   child: Container(
                     padding: const EdgeInsets.all(10),
@@ -89,7 +88,7 @@ class _QuestionScreen15State extends State<QuestionScreen15> {
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
                     const Text(
-                      "Do you smoke?",
+                      "How about alcohol? Do you drink?",
                       textAlign: TextAlign.center,
                       style: TextStyle(
                         fontSize: 24,
@@ -98,7 +97,7 @@ class _QuestionScreen15State extends State<QuestionScreen15> {
                     ),
                     SizedBox(height: screenHeight * 0.04),
                     const Text(
-                      "🚬", // Cigarette emoji
+                      "🍷", // Cigarette emoji
                       style: TextStyle(fontSize: 50),
                       textAlign: TextAlign.center,
                     ),
@@ -109,18 +108,18 @@ class _QuestionScreen15State extends State<QuestionScreen15> {
                       alignment: WrapAlignment.center,
                       spacing: screenWidth * 0.05, // Space between options
                       runSpacing: screenHeight * 0.02,
-                      children: smokingOptions.map((option) {
+                      children: alcoholOptions.map((option) {
                         return SizedBox(
                           width: screenWidth * 0.4, // Fixed width for consistency
                           child: OptionTile(
                             emoji: option["emoji"]!,
                             label: option["label"]!,
                             option: option["option"]!,
-                            selectedOption: questionnaireProvider.smokingStatus,
+                            selectedOption: questionnaireProvider.alcoholStatus,
                             emojiSize: emojiSize,
                             onSelect: () {
                               // Update the smoking status in provider
-                              questionnaireProvider.setSmokingStatus(option["option"]!);
+                              questionnaireProvider.setAlcoholStatus(option["option"]!);
                             },
                           ),
                         );
@@ -131,7 +130,7 @@ class _QuestionScreen15State extends State<QuestionScreen15> {
 
                     // Continue button
                     ElevatedButton(
-                      onPressed: questionnaireProvider.smokingStatus != null
+                      onPressed: questionnaireProvider.alcoholStatus != null
                           ? handleContinue
                           : null, // Disable button if no option is selected
                       style: ElevatedButton.styleFrom(
