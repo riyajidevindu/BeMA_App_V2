@@ -1,7 +1,6 @@
 import 'package:flutter/foundation.dart';
 
 class QuestionnaireProvider with ChangeNotifier {
-
   int? _age;
   String? _heightValue;
   String _heightUnit = 'cm'; // Default height unit is cm
@@ -29,6 +28,7 @@ class QuestionnaireProvider with ChangeNotifier {
   String? _smokingCount;
   String? _alcoholStatus;
   String? _alcoholCount;
+  String? _activeness;
 
   // Getters
   int? get age => _age;
@@ -58,7 +58,7 @@ class QuestionnaireProvider with ChangeNotifier {
   String? get smokingCount => _smokingCount;
   String? get alcoholStatus => _alcoholStatus;
   String? get alcoholCount => _alcoholCount;
-  
+  String? get activeness => _activeness;
 
   // Setters with notifyListeners to update UI when state changes
 
@@ -99,12 +99,12 @@ class QuestionnaireProvider with ChangeNotifier {
 
   bool get isHeightWeightContinueButtonActive {
     return (_heightValue != null && _heightValue!.isNotEmpty) &&
-           (_weightValue != null && _weightValue!.isNotEmpty);
+        (_weightValue != null && _weightValue!.isNotEmpty);
   }
 
   void setSelectedGender(String? value) {
     _selectedGender = value;
-    notifyListeners(); 
+    notifyListeners();
   }
 
   // Setters with notifyListeners to update UI when state changes
@@ -116,16 +116,18 @@ class QuestionnaireProvider with ChangeNotifier {
 
   void setCustomOccupation(String occupation) {
     _customOccupation = occupation;
-    _selectedOccupation = null; // Reset selected occupation if custom is entered
+    _selectedOccupation =
+        null; // Reset selected occupation if custom is entered
     notifyListeners();
   }
 
   // Method to check if the continue button should be active
   bool get isContinueButtonActive {
-    return _selectedOccupation != null || (_customOccupation?.isNotEmpty ?? false);
+    return _selectedOccupation != null ||
+        (_customOccupation?.isNotEmpty ?? false);
   }
 
-    void setHasHypertension(bool? value) {
+  void setHasHypertension(bool? value) {
     _hasHypertension = value;
     notifyListeners();
   }
@@ -207,9 +209,9 @@ class QuestionnaireProvider with ChangeNotifier {
       return false;
     } else if (_hasSurgeries == true) {
       return (_surgeryYear != null && _surgeryYear!.isNotEmpty) &&
-             (_surgeryType != null && _surgeryType!.isNotEmpty);
+          (_surgeryType != null && _surgeryType!.isNotEmpty);
     } else {
-      return true; 
+      return true;
     }
   }
 
@@ -247,7 +249,8 @@ class QuestionnaireProvider with ChangeNotifier {
     if (_hasDisability == null) {
       return false;
     } else if (_hasDisability == true) {
-      return _disabilityDescription != null && _disabilityDescription!.isNotEmpty;
+      return _disabilityDescription != null &&
+          _disabilityDescription!.isNotEmpty;
     } else {
       return true;
     }
@@ -281,5 +284,9 @@ class QuestionnaireProvider with ChangeNotifier {
     return _alcoholStatus != null;
   }
 
-
+  void setActiveness(String value) {
+    _activeness = value;
+    notifyListeners();
+  }
+ 
 }

@@ -32,7 +32,7 @@ class _QuestionScreen17State extends State<QuestionScreen17> {
     // Handle the selection and navigation logic
     void handleContinue() {
       if (questionnaireProvider.alcoholStatus == "no_alcohol") {
-        //context.goNamed(RouteNames.nonSmokerPage); // Navigate to the non-smoker page
+        context.goNamed(RouteNames.questionScreen19); // Navigate to the non-smoker page
       } else {
         context.goNamed(RouteNames.questionScreen18); // Navigate to the smoker page
       }

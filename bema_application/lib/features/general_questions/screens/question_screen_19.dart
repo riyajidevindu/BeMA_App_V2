@@ -5,14 +5,14 @@ import 'package:go_router/go_router.dart';
 import 'package:bema_application/routes/route_names.dart';
 import 'package:bema_application/common/widgets/tiles/option_tile.dart';
 
-class QuestionScreen18 extends StatefulWidget {
-  const QuestionScreen18({super.key});
+class QuestionScreen19 extends StatefulWidget {
+  const QuestionScreen19({super.key});
 
   @override
-  _QuestionScreen18State createState() => _QuestionScreen18State();
+  _QuestionScreen19State createState() => _QuestionScreen19State();
 }
 
-class _QuestionScreen18State extends State<QuestionScreen18> {
+class _QuestionScreen19State extends State<QuestionScreen19> {
 
   @override
   Widget build(BuildContext context) {
@@ -22,19 +22,17 @@ class _QuestionScreen18State extends State<QuestionScreen18> {
     final double screenHeight = MediaQuery.of(context).size.height;
     final double emojiSize = screenWidth * 0.1; // Responsive emoji size
 
-    // Smoking option
-    final List<Map<String, String>> alcoholOptions = [
-      {"label": "Just one", "emoji": "🍷", "option": "one"},
-      {"label": "A couple", "emoji": "🥂", "option": "couple"},
-      {"label": "More than a few", "emoji": "🍾", "option": "more_few"},
-      {"label": "I lost count!", "emoji": "🍻", "option": "lost_count"},
+    final List<Map<String, String>> exerciseOptions = [
+      {"label": "Not very active", "emoji": "🛋️", "option": "inactive"},
+      {"label": "I exercise a few times a week", "emoji": "🏋️", "option": "few_times_week"},
+      {"label": "I try to move a bit each day", "emoji": "🚶", "option": "daily_movement"},
+      {"label": "I'm super active", "emoji": "🏃", "option": "super_active"},
     ];
-
 
     // Handle the selection and navigation logic
     void handleContinue() {
      
-      context.goNamed(RouteNames.questionScreen19); // Navigate to the non-smoker page
+      //context.goNamed(RouteNames.questionScreen17); // Navigate to the non-smoker page
       
     }
 
@@ -51,7 +49,7 @@ class _QuestionScreen18State extends State<QuestionScreen18> {
               children: [
                 GestureDetector(
                   onTap: () {
-                    context.goNamed(RouteNames.questionScreen17);
+                    context.goNamed(RouteNames.questionScreen18);
                   },
                   child: Container(
                     padding: const EdgeInsets.all(10),
@@ -88,7 +86,15 @@ class _QuestionScreen18State extends State<QuestionScreen18> {
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
                     const Text(
-                      "When you drink, how many glasses do you typically have?",
+                      "Let's talk about exercise,",
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const Text(
+                      "How active are you on a daily basis?",
                       textAlign: TextAlign.center,
                       style: TextStyle(
                         fontSize: 24,
@@ -97,7 +103,7 @@ class _QuestionScreen18State extends State<QuestionScreen18> {
                     ),
                     SizedBox(height: screenHeight * 0.04),
                     const Text(
-                      "🥃", // Cigarette emoji
+                      "🏃‍♂️", // Cigarette emoji
                       style: TextStyle(fontSize: 50),
                       textAlign: TextAlign.center,
                     ),
@@ -108,18 +114,18 @@ class _QuestionScreen18State extends State<QuestionScreen18> {
                       alignment: WrapAlignment.center,
                       spacing: screenWidth * 0.05, // Space between options
                       runSpacing: screenHeight * 0.02,
-                      children: alcoholOptions.map((option) {
+                      children: exerciseOptions.map((option) {
                         return SizedBox(
                           width: screenWidth * 0.4, // Fixed width for consistency
                           child: OptionTile(
                             emoji: option["emoji"]!,
                             label: option["label"]!,
                             option: option["option"]!,
-                            selectedOption: questionnaireProvider.alcoholCount,
+                            selectedOption: questionnaireProvider.activeness,
                             emojiSize: emojiSize,
                             onSelect: () {
                               // Update the smoking status in provider
-                              questionnaireProvider.setAlcoholCount(option["option"]!);
+                              questionnaireProvider.setActiveness(option["option"]!);
                             },
                           ),
                         );
