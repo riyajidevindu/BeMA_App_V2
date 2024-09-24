@@ -53,7 +53,7 @@ class _QuestionScreen19State extends State<QuestionScreen19> {
               children: [
                 GestureDetector(
                   onTap: () {
-                    context.goNamed(RouteNames.questionScreen18);
+                    context.goNamed(RouteNames.questionScreen17);
                   },
                   child: Container(
                     padding: const EdgeInsets.all(10),
