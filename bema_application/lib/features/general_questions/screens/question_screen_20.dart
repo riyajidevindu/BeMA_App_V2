@@ -5,14 +5,14 @@ import 'package:go_router/go_router.dart';
 import 'package:bema_application/routes/route_names.dart';
 import 'package:bema_application/common/widgets/tiles/option_tile.dart';
 
-class QuestionScreen19 extends StatefulWidget {
-  const QuestionScreen19({super.key});
+class QuestionScreen20 extends StatefulWidget {
+  const QuestionScreen20({super.key});
 
   @override
-  _QuestionScreen19State createState() => _QuestionScreen19State();
+  _QuestionScreen20State createState() => _QuestionScreen20State();
 }
 
-class _QuestionScreen19State extends State<QuestionScreen19> {
+class _QuestionScreen20State extends State<QuestionScreen20> {
 
   @override
   Widget build(BuildContext context) {
@@ -22,21 +22,18 @@ class _QuestionScreen19State extends State<QuestionScreen19> {
     final double screenHeight = MediaQuery.of(context).size.height;
     final double emojiSize = screenWidth * 0.1; // Responsive emoji size
 
-    final List<Map<String, String>> exerciseOptions = [
-      {"label": "Not very active", "emoji": "🛋️", "option": "inactive"},
-      {"label": "I exercise a few times a week", "emoji": "🏋️", "option": "few_times_week"},
-      {"label": "I try to move a bit each day", "emoji": "🚶", "option": "daily_movement"},
-      {"label": "I'm super active", "emoji": "🏃", "option": "super_active"},
+
+    final List<Map<String, String>> activenessOptions = [
+      {"label": "Walking or jogging", "emoji": "🚶‍♂️", "option": "walking_jogging"},
+      {"label": "Yoga or pilates", "emoji": "🧘", "option": "yoga_pilates"},
+      {"label": "Gym workout", "emoji": "🏋️‍♀️", "option": "gym_workout"},
+      {"label": "Sports or outdoor activities", "emoji": "⚽", "option": "sports_outdoor"},
     ];
 
     // Handle the selection and navigation logic
     void handleContinue() {
      
-      if (questionnaireProvider.activeness == "inactive") {
-        //context.goNamed(RouteNames.questionScreen19); 
-      } else {
-        context.goNamed(RouteNames.questionScreen20); 
-      }
+      //context.goNamed(RouteNames.questionScreen17); // Navigate to the non-smoker page
       
     }
 
@@ -53,7 +50,7 @@ class _QuestionScreen19State extends State<QuestionScreen19> {
               children: [
                 GestureDetector(
                   onTap: () {
-                    context.goNamed(RouteNames.questionScreen18);
+                    context.goNamed(RouteNames.questionScreen19);
                   },
                   child: Container(
                     padding: const EdgeInsets.all(10),
@@ -90,7 +87,7 @@ class _QuestionScreen19State extends State<QuestionScreen19> {
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
                     const Text(
-                      "Let's talk about exercise,",
+                      "What's your favourite way to,",
                       textAlign: TextAlign.center,
                       style: TextStyle(
                         fontSize: 24,
@@ -98,7 +95,7 @@ class _QuestionScreen19State extends State<QuestionScreen19> {
                       ),
                     ),
                     const Text(
-                      "How active are you on a daily basis?",
+                      "stay active?",
                       textAlign: TextAlign.center,
                       style: TextStyle(
                         fontSize: 24,
@@ -118,18 +115,18 @@ class _QuestionScreen19State extends State<QuestionScreen19> {
                       alignment: WrapAlignment.center,
                       spacing: screenWidth * 0.05, // Space between options
                       runSpacing: screenHeight * 0.02,
-                      children: exerciseOptions.map((option) {
+                      children: activenessOptions.map((option) {
                         return SizedBox(
                           width: screenWidth * 0.4, // Fixed width for consistency
                           child: OptionTile(
                             emoji: option["emoji"]!,
                             label: option["label"]!,
                             option: option["option"]!,
-                            selectedOption: questionnaireProvider.activeness,
+                            selectedOption: questionnaireProvider.activeMode,
                             emojiSize: emojiSize,
                             onSelect: () {
                               // Update the smoking status in provider
-                              questionnaireProvider.setActiveness(option["option"]!);
+                              questionnaireProvider.setActiveMode(option["option"]!);
                             },
                           ),
                         );
@@ -140,7 +137,7 @@ class _QuestionScreen19State extends State<QuestionScreen19> {
 
                     // Continue button
                     ElevatedButton(
-                      onPressed: questionnaireProvider.activeness != null
+                      onPressed: questionnaireProvider.activeMode != null
                           ? handleContinue
                           : null, // Disable button if no option is selected
                       style: ElevatedButton.styleFrom(

@@ -29,6 +29,7 @@ class QuestionnaireProvider with ChangeNotifier {
   String? _alcoholStatus;
   String? _alcoholCount;
   String? _activeness;
+  String? _activeMode;
 
   // Getters
   int? get age => _age;
@@ -59,6 +60,7 @@ class QuestionnaireProvider with ChangeNotifier {
   String? get alcoholStatus => _alcoholStatus;
   String? get alcoholCount => _alcoholCount;
   String? get activeness => _activeness;
+  String? get activeMode => _activeMode;
 
   // Setters with notifyListeners to update UI when state changes
 
@@ -288,5 +290,10 @@ class QuestionnaireProvider with ChangeNotifier {
     _activeness = value;
     notifyListeners();
   }
- 
+
+  void setActiveMode(String value) {
+    _activeMode = value;
+    notifyListeners();
+  }
+  
 }
