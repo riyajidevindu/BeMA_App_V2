@@ -11,6 +11,7 @@ import 'package:bema_application/features/general_questions/screens/question_scr
 import 'package:bema_application/features/general_questions/screens/question_screen_15.dart';
 import 'package:bema_application/features/general_questions/screens/question_screen_16.dart';
 import 'package:bema_application/features/general_questions/screens/question_screen_17.dart';
+import 'package:bema_application/features/general_questions/screens/question_screen_18.dart';
 import 'package:bema_application/features/general_questions/screens/question_screen_2.dart';
 import 'package:bema_application/features/general_questions/screens/question_screen_3.dart';
 import 'package:bema_application/features/general_questions/screens/question_screen_4.dart';
@@ -172,6 +173,13 @@ final goRouter = GoRouter(
         name: RouteNames.questionScreen17,
         pageBuilder: (context, state) => const MaterialPage(
           child: QuestionScreen17(),
+        ),
+      ),
+      GoRoute(
+        path: '/${RouteNames.questionScreen18}',
+        name: RouteNames.questionScreen18,
+        pageBuilder: (context, state) => const MaterialPage(
+          child: QuestionScreen18(),
         ),
       ),
        GoRoute(

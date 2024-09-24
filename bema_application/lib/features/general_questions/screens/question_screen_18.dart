@@ -5,14 +5,14 @@ import 'package:go_router/go_router.dart';
 import 'package:bema_application/routes/route_names.dart';
 import 'package:bema_application/common/widgets/tiles/option_tile.dart';
 
-class QuestionScreen17 extends StatefulWidget {
-  const QuestionScreen17({super.key});
+class QuestionScreen18 extends StatefulWidget {
+  const QuestionScreen18({super.key});
 
   @override
-  _QuestionScreen17State createState() => _QuestionScreen17State();
+  _QuestionScreen18State createState() => _QuestionScreen18State();
 }
 
-class _QuestionScreen17State extends State<QuestionScreen17> {
+class _QuestionScreen18State extends State<QuestionScreen18> {
 
   @override
   Widget build(BuildContext context) {
@@ -22,20 +22,20 @@ class _QuestionScreen17State extends State<QuestionScreen17> {
     final double screenHeight = MediaQuery.of(context).size.height;
     final double emojiSize = screenWidth * 0.1; // Responsive emoji size
 
+    // Smoking option
     final List<Map<String, String>> alcoholOptions = [
-      {"label": "No, I don't drink", "emoji": "🚫", "option": "no_alcohol"},
-      {"label": "Used to, but not anymore", "emoji": "🍾", "option": "used_to_alcohol"},
-      {"label": "Yes, occasionally", "emoji": "🥂", "option": "occasionally_alcohol"},
-      {"label": "Yes, quite frequently", "emoji": "🍻", "option": "frequently_alcohol"},
+      {"label": "Just one", "emoji": "🍷", "option": "one"},
+      {"label": "A couple", "emoji": "🥂", "option": "couple"},
+      {"label": "More than a few", "emoji": "🍾", "option": "more_few"},
+      {"label": "I lost count!", "emoji": "🍻", "option": "lost_count"},
     ];
+
 
     // Handle the selection and navigation logic
     void handleContinue() {
-      if (questionnaireProvider.alcoholStatus == "no_alcohol") {
-        //context.goNamed(RouteNames.nonSmokerPage); // Navigate to the non-smoker page
-      } else {
-        context.goNamed(RouteNames.questionScreen18); // Navigate to the smoker page
-      }
+     
+      //context.goNamed(RouteNames.questionScreen17); // Navigate to the non-smoker page
+      
     }
 
     return Scaffold(
@@ -51,7 +51,7 @@ class _QuestionScreen17State extends State<QuestionScreen17> {
               children: [
                 GestureDetector(
                   onTap: () {
-                    context.goNamed(RouteNames.questionScreen15);
+                    context.goNamed(RouteNames.questionScreen17);
                   },
                   child: Container(
                     padding: const EdgeInsets.all(10),
@@ -88,7 +88,7 @@ class _QuestionScreen17State extends State<QuestionScreen17> {
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
                     const Text(
-                      "How about alcohol? Do you drink?",
+                      "When you drink, how many glasses do you typically have?",
                       textAlign: TextAlign.center,
                       style: TextStyle(
                         fontSize: 24,
@@ -97,7 +97,7 @@ class _QuestionScreen17State extends State<QuestionScreen17> {
                     ),
                     SizedBox(height: screenHeight * 0.04),
                     const Text(
-                      "🍷", // Cigarette emoji
+                      "🥃", // Cigarette emoji
                       style: TextStyle(fontSize: 50),
                       textAlign: TextAlign.center,
                     ),
@@ -115,11 +115,11 @@ class _QuestionScreen17State extends State<QuestionScreen17> {
                             emoji: option["emoji"]!,
                             label: option["label"]!,
                             option: option["option"]!,
-                            selectedOption: questionnaireProvider.alcoholStatus,
+                            selectedOption: questionnaireProvider.alcoholCount,
                             emojiSize: emojiSize,
                             onSelect: () {
                               // Update the smoking status in provider
-                              questionnaireProvider.setAlcoholStatus(option["option"]!);
+                              questionnaireProvider.setAlcoholCount(option["option"]!);
                             },
                           ),
                         );
@@ -130,7 +130,7 @@ class _QuestionScreen17State extends State<QuestionScreen17> {
 
                     // Continue button
                     ElevatedButton(
-                      onPressed: questionnaireProvider.alcoholStatus != null
+                      onPressed: questionnaireProvider.alcoholCount != null
                           ? handleContinue
                           : null, // Disable button if no option is selected
                       style: ElevatedButton.styleFrom(

@@ -28,6 +28,7 @@ class QuestionnaireProvider with ChangeNotifier {
   String? _smokingStatus;
   String? _smokingCount;
   String? _alcoholStatus;
+  String? _alcoholCount;
 
   // Getters
   int? get age => _age;
@@ -56,6 +57,7 @@ class QuestionnaireProvider with ChangeNotifier {
   String? get smokingStatus => _smokingStatus;
   String? get smokingCount => _smokingCount;
   String? get alcoholStatus => _alcoholStatus;
+  String? get alcoholCount => _alcoholCount;
   
 
   // Setters with notifyListeners to update UI when state changes
@@ -267,6 +269,11 @@ class QuestionnaireProvider with ChangeNotifier {
 
   void setAlcoholStatus(String value) {
     _alcoholStatus = value;
+    notifyListeners();
+  }
+
+  void setAlcoholCount(String value) {
+    _alcoholCount = value;
     notifyListeners();
   }
 
