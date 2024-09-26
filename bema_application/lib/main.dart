@@ -14,12 +14,15 @@ Future<void> main() async {
 //  await dotenv.load(fileName: ".env");
 
   await Firebase.initializeApp();
-  
+
   runApp(
     MultiProvider(
       providers: [
-        ChangeNotifierProvider(create: (_) => AuthenticationProvider()), // Authentication
-        ChangeNotifierProvider(create: (_) => QuestionnaireProvider()),  // Add QuestionnaireProvider
+        ChangeNotifierProvider(
+            create: (_) => AuthenticationProvider()), // Authentication
+        ChangeNotifierProvider(
+            create: (_) =>
+                QuestionnaireProvider()), // Add QuestionnaireProvider
       ],
       child: const MyApp(),
     ),
@@ -33,7 +36,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp.router(
       title: 'BeMA',
-      routerConfig: goRouter,  // Your GoRouter configuration
+      routerConfig: goRouter, // Your GoRouter configuration
       theme: ThemeData(
         scaffoldBackgroundColor: backgroundColor,
         primaryColor: primaryColor,
