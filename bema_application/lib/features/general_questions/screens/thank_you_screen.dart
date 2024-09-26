@@ -1,6 +1,12 @@
+import 'package:bema_application/common/widgets/snackbar%20messages/snackbar_message.dart';
+import 'package:bema_application/features/general_questions/data/model/user_health_model.dart';
 import 'package:bema_application/routes/route_names.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:provider/provider.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:bema_application/features/general_questions/providers/questioneer_provider.dart';
 
 class ThankYouScreen extends StatefulWidget {
   const ThankYouScreen({super.key});
@@ -10,6 +16,99 @@ class ThankYouScreen extends StatefulWidget {
 }
 
 class _ThankYouScreenState extends State<ThankYouScreen> {
+  bool _isSaving = false; // To show progress indicator
+
+  // Function to save data to Firestore using UserHealthModel
+  Future<void> _saveDataToFirestore(BuildContext context) async {
+    setState(() {
+      _isSaving = true;
+    });
+
+    final FirebaseAuth auth = FirebaseAuth.instance;
+    final User? currentUser = auth.currentUser;
+
+    if (currentUser == null) {
+      // Handle the case where the user is not logged in
+      print("User is not logged in.");
+      return;
+    }
+
+    final String userId = currentUser.uid;
+
+    // Access the QuestionnaireProvider data
+    final questionnaireProvider =
+        Provider.of<QuestionnaireProvider>(context, listen: false);
+
+    // Create an instance of UserHealthModel from the provider data
+    final userHealthData = UserHealthModel(
+      userId: userId,
+      age: questionnaireProvider.age ?? 0,
+      height: double.tryParse(questionnaireProvider.heightValue ?? '0') ?? 0.0,
+      heightUnit: questionnaireProvider.heightUnit,
+      weight: double.tryParse(questionnaireProvider.weightValue ?? '0') ?? 0.0,
+      weightUnit: questionnaireProvider.weightUnit,
+      gender: questionnaireProvider.selectedGender ?? '',
+      profession: questionnaireProvider.selectedOccupation ??
+          questionnaireProvider.customOccupation ??
+          '',
+      hasDiabetes: questionnaireProvider.hasDiabetes ?? false,
+      diabetesTreatmentYears: questionnaireProvider.diabetesDuration != null
+          ? int.tryParse(questionnaireProvider.diabetesDuration!)
+          : null,
+      hasHighBloodPressure: questionnaireProvider.hasHypertension ?? false,
+      highBloodPressureTreatmentYears:
+          questionnaireProvider.hypertensionDuration != null
+              ? int.tryParse(questionnaireProvider.hypertensionDuration!)
+              : null,
+      hasCholesterol: questionnaireProvider.hasCholesterol ?? false,
+      cholesterolTreatmentYears:
+          questionnaireProvider.cholesterolDuration != null
+              ? int.tryParse(questionnaireProvider.cholesterolDuration!)
+              : null,
+      hasAllergies: questionnaireProvider.hasAllergies ?? false,
+      allergyType: questionnaireProvider.allergiesDescription,
+      hadSurgeries: questionnaireProvider.hasSurgeries ?? false,
+      surgeryYear: questionnaireProvider.surgeryYear != null
+          ? int.tryParse(questionnaireProvider.surgeryYear!)
+          : null,
+      surgeryType: questionnaireProvider.surgeryType,
+      hasDisabilitiesOrSpecialNeeds:
+          questionnaireProvider.hasDisability ?? false,
+      disabilityDiscription: questionnaireProvider.disabilityDescription,
+      hasFamilyMedicalHistory: questionnaireProvider.hasFamilyMedHis ?? false,
+      familyMedicalHistoryDiscription: questionnaireProvider.familyMedHistory,
+      smokes: questionnaireProvider.smokingStatus != null &&
+          questionnaireProvider.smokingStatus != "no_never",
+      smokingFrequency: questionnaireProvider.smokingCount,
+      drinks: questionnaireProvider.alcoholStatus != null &&
+          questionnaireProvider.alcoholStatus != "no_never",
+      glassesPerWeek: questionnaireProvider.alcoholCount,
+      exercises: questionnaireProvider.activeness != null &&
+          questionnaireProvider.activeness!.isNotEmpty,
+      favoriteExercise: questionnaireProvider.activeMode,
+    );
+
+    // Convert the UserHealthModel instance to a map and save it to Firestore
+    try {
+      await FirebaseFirestore.instance
+          .collection('userBasicData')
+          .doc(userId)
+          .set(userHealthData.toMap());
+      showSuccessSnackBarMessage(context, 'Data saved successfully!');
+      print('Data saved successfully!');
+
+      // Navigate to the next screen
+      //context.goNamed(RouteNames.nextScreen);
+    } catch (e) {
+      showErrorSnackBarMessage(context, 'Error saving data: $e');
+      print('Error saving data: $e');
+    } finally {
+      setState(() {
+        _isSaving = false; // Stop showing the progress indicator
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final double screenWidth = MediaQuery.of(context).size.width;
@@ -30,13 +129,15 @@ class _ThankYouScreenState extends State<ThankYouScreen> {
                 // Back button inside a transparent circle
                 GestureDetector(
                   onTap: () {
-                    context.goNamed(RouteNames.questionScreen19); // Adjust this route to the correct one
+                    context.goNamed(RouteNames
+                        .questionScreen19); // Adjust this route to the correct one
                   },
                   child: Container(
                     padding: const EdgeInsets.all(10),
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
-                      color: Colors.black.withOpacity(0.2), // Transparent background
+                      color: Colors.black
+                          .withOpacity(0.2), // Transparent background
                     ),
                     child: const Icon(
                       Icons.arrow_back,
@@ -44,12 +145,14 @@ class _ThankYouScreenState extends State<ThankYouScreen> {
                     ),
                   ),
                 ),
-                SizedBox(width: screenWidth * 0.025), // Space between back button and progress bar
+                SizedBox(
+                    width: screenWidth *
+                        0.025), // Space between back button and progress bar
 
                 // Progress bar with increased width
                 const Expanded(
                   child: LinearProgressIndicator(
-                    value: 1.0, 
+                    value: 1.0,
                     backgroundColor: Colors.grey,
                     color: Colors.blue, // Progress bar color
                   ),
@@ -95,20 +198,26 @@ class _ThankYouScreenState extends State<ThankYouScreen> {
 
                     // Continue button
                     ElevatedButton(
-                      onPressed: () {
-                        //context.goNamed(RouteNames.nextScreen); // Adjust this to the appropriate next route
-                      },
+                      onPressed: _isSaving
+                          ? null // Disable button while saving
+                          : () => _saveDataToFirestore(
+                              context), // Call Firestore save method
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.blue, // Blue button color
-                        minimumSize: const Size(double.infinity, 50), // Full-width button
+                        minimumSize: const Size(
+                            double.infinity, 50), // Full-width button
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12),
                         ),
                       ),
-                      child: const Text(
-                        "Continue",
-                        style: TextStyle(fontSize: 18),
-                      ),
+                      child: _isSaving
+                          ? const CircularProgressIndicator(
+                              color: Colors.white,
+                            )
+                          : const Text(
+                              "Continue",
+                              style: TextStyle(fontSize: 18),
+                            ),
                     ),
                     SizedBox(height: screenHeight * 0.02),
                   ],
