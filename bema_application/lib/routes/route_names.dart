@@ -26,6 +26,7 @@ class RouteNames {
   static const questionScreen19 = 'questionScreen19';
   static const questionScreen20 = 'questionScreen20';
   static const thankYouScreen = 'thankYouScreen';
+  static const homeScreen = 'homeScreen';
 
   static const chatScreen = 'chatScreen';
 }

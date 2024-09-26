@@ -98,7 +98,7 @@ class _ThankYouScreenState extends State<ThankYouScreen> {
       print('Data saved successfully!');
 
       // Navigate to the next screen
-      //context.goNamed(RouteNames.nextScreen);
+      context.goNamed(RouteNames.homeScreen);
     } catch (e) {
       showErrorSnackBarMessage(context, 'Error saving data: $e');
       print('Error saving data: $e');

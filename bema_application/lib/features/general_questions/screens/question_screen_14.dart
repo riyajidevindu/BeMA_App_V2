@@ -53,9 +53,7 @@ class _QuestionScreen14State extends State<QuestionScreen14> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            const SizedBox(height: 50),
-
-            // Row for Back button and Progress bar
+             // Row for Back button and Progress bar
             Row(
               children: [
                 // Back button inside a transparent circle
