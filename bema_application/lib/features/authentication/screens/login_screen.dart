@@ -1,6 +1,7 @@
 import 'package:bema_application/common/config/colors.dart';
 import 'package:bema_application/common/widgets/buttons/custom_elevation_buttons.dart';
 import 'package:bema_application/common/widgets/snackbar%20messages/snackbar_message.dart';
+import 'package:bema_application/features/authentication/data/service/auth_service.dart';
 import 'package:bema_application/features/authentication/providers/authentication_provider.dart';
 import 'package:bema_application/routes/route_names.dart';
 import 'package:flutter/material.dart';
@@ -16,14 +17,10 @@ class LoginScreen extends StatefulWidget {
 
 class _LoginScreenState extends State<LoginScreen> {
   final auth = AuthenticationProvider();
-
+  final state = AuthService();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
-
-  // For managing form validation
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
-
-  // For managing loading state during login
   bool isSubmitting = false;
 
   @override
@@ -33,7 +30,6 @@ class _LoginScreenState extends State<LoginScreen> {
     super.dispose();
   }
 
-  // Simulate login logic
   void _login() async {
     setState(() {
       isSubmitting = true;
@@ -41,30 +37,32 @@ class _LoginScreenState extends State<LoginScreen> {
 
     if (_formKey.currentState!.validate()) {
       final result = await auth.signInWithEmailAndPassword(
-        _emailController.text, 
-        _passwordController.text
+        _emailController.text,
+        _passwordController.text,
       );
 
       if (result.isSuccess) {
-        //context.goNamed(RouteNames.wrapper);
+        // Check if the user completed the questionnaire
+        bool isQuestionnaireCompleted =
+            await state.checkQuestionnaireCompletion(auth.firebaseUser!);
+
+        if (isQuestionnaireCompleted) {
+          context.goNamed(RouteNames
+              .homeScreen); // Redirect to home if questionnaire is completed
+        } else {
+          context.goNamed(
+              RouteNames.userWelcomeScreen); // Redirect to questionnaire
+        }
+
         showSuccessSnackBarMessage(context, result.message);
       } else {
         showErrorSnackBarMessage(context, result.message);
       }
-
     }
 
     setState(() {
       isSubmitting = false;
     });
-  }
-
-  // Simulate Google login logic
-  void _googleLogin() {
-    // Add your Google login logic here (e.g., Firebase Google authentication)
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Google Login Successful')),
-    );
   }
 
   @override
@@ -73,18 +71,16 @@ class _LoginScreenState extends State<LoginScreen> {
     final double screenWidth = MediaQuery.of(context).size.width;
 
     return Scaffold(
-      backgroundColor: const Color(0xFFE8F2FF), // backgroundColor
+      backgroundColor: const Color(0xFFE8F2FF),
       body: SingleChildScrollView(
         child: Padding(
           padding: EdgeInsets.symmetric(
-            horizontal: screenWidth * 0.08, // Responsive padding
+            horizontal: screenWidth * 0.08,
             vertical: screenHeight * 0.02,
           ),
           child: Form(
-            key: _formKey, // Form key for validation
+            key: _formKey,
             child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 SizedBox(height: screenHeight * 0.1), // Responsive spacing
                 const Text(
@@ -141,71 +137,15 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
                 SizedBox(height: screenHeight * 0.02),
 
-                // Login Button with Loading Indicator
-                     CustomElevationBtn(
-                    buttonName: 'Login',
-                    onClick: () async {
-                      setState(() {
-                        isSubmitting = true;
-                      });
-                      if (_formKey.currentState!.validate()) {
-                        final result = await auth.signInWithEmailAndPassword(
-                          _emailController.text,
-                          _passwordController.text,
-                        );
-                        if (result.isSuccess) {
-                          context.goNamed(RouteNames.userWelcomeScreen);
-                          showSuccessSnackBarMessage(context, result.message);
-                        } else {
-                          showErrorSnackBarMessage(context, result.message);
-                        }
-                      }
-                      setState(() {
-                        isSubmitting = false;
-                      });
-                    },
-                    isSubmitting: isSubmitting,
-                  ),
-                SizedBox(height: screenHeight * 0.03),
 
-                // OR Divider
-                const Row(
-                  children: [
-                    Expanded(child: Divider(thickness: 1)),
-                    Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 8.0),
-                      child: Text('OR'),
-                    ),
-                    Expanded(child: Divider(thickness: 1)),
-                  ],
-                ),
-                SizedBox(height: screenHeight * 0.03),
 
-                // Google Login Button
-                ElevatedButton.icon(
-                  onPressed: isSubmitting
-                      ? null
-                      : _googleLogin, // Disable button if loading
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.white,
-                    padding:
-                        EdgeInsets.symmetric(vertical: screenHeight * 0.025),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
-                      side: const BorderSide(color: Colors.grey),
-                    ),
-                  ),
-                  icon: const FaIcon(
-                    FontAwesomeIcons.google,
-                    color: Colors.red,
-                  ),
-                  label: const Text(
-                    'Sign in with Google',
-                    style: TextStyle(color: Colors.black),
-                  ),
+                CustomElevationBtn(
+                  buttonName: 'Login',
+                  onClick: _login, // Call the modified login function
+                  isSubmitting: isSubmitting,
                 ),
+
                 SizedBox(height: screenHeight * 0.02),
-
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
@@ -251,7 +191,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   ],
                 ),
                 SizedBox(
-                    height: screenHeight * 0.02), // Add space at the bottom
+                    height: screenHeight * 0.02), 
               ],
             ),
           ),
