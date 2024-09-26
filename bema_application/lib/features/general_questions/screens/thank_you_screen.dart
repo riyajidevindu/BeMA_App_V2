@@ -88,16 +88,23 @@ class _ThankYouScreenState extends State<ThankYouScreen> {
       favoriteExercise: questionnaireProvider.activeMode,
     );
 
-    // Convert the UserHealthModel instance to a map and save it to Firestore
     try {
+      // Convert the UserHealthModel instance to a map and save it to Firestore
       await FirebaseFirestore.instance
           .collection('userBasicData')
           .doc(userId)
           .set(userHealthData.toMap());
-      showSuccessSnackBarMessage(context, 'Data saved successfully!');
-      print('Data saved successfully!');
 
-      // Navigate to the next screen
+      // Update the 'questionnaireCompleted' field to true in the 'AppUsers' collection
+      await FirebaseFirestore.instance
+          .collection('AppUsers')
+          .doc(userId)
+          .update({'questionnaireCompleted': true});
+
+      showSuccessSnackBarMessage(context, 'Data saved successfully!');
+      print('Data and questionnaire status saved successfully!');
+
+      // Navigate to the home screen
       context.goNamed(RouteNames.homeScreen);
     } catch (e) {
       showErrorSnackBarMessage(context, 'Error saving data: $e');
@@ -136,8 +143,7 @@ class _ThankYouScreenState extends State<ThankYouScreen> {
                     padding: const EdgeInsets.all(10),
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
-                      color: Colors.black
-                          .withOpacity(0.2), // Transparent background
+                      color: Colors.black.withOpacity(0.2), // Transparent background
                     ),
                     child: const Icon(
                       Icons.arrow_back,
@@ -145,9 +151,7 @@ class _ThankYouScreenState extends State<ThankYouScreen> {
                     ),
                   ),
                 ),
-                SizedBox(
-                    width: screenWidth *
-                        0.025), // Space between back button and progress bar
+                SizedBox(width: screenWidth * 0.025), // Space between back button and progress bar
 
                 // Progress bar with increased width
                 const Expanded(
@@ -200,12 +204,10 @@ class _ThankYouScreenState extends State<ThankYouScreen> {
                     ElevatedButton(
                       onPressed: _isSaving
                           ? null // Disable button while saving
-                          : () => _saveDataToFirestore(
-                              context), // Call Firestore save method
+                          : () => _saveDataToFirestore(context), // Call Firestore save method
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.blue, // Blue button color
-                        minimumSize: const Size(
-                            double.infinity, 50), // Full-width button
+                        minimumSize: const Size(double.infinity, 50), // Full-width button
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12),
                         ),

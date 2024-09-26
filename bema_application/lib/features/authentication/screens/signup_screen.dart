@@ -19,12 +19,10 @@ class _SignupScreenState extends State<SignupScreen> {
   final TextEditingController _usernameController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
-  final TextEditingController _confirmPasswordController =
-      TextEditingController();
+  final TextEditingController _confirmPasswordController = TextEditingController();
 
-  // For managing loading state during sign-up
   bool isSubmitting = false;
-
+  
   @override
   void dispose() {
     _usernameController.dispose();
@@ -34,48 +32,7 @@ class _SignupScreenState extends State<SignupScreen> {
     super.dispose();
   }
 
-  // For managing form validation
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
-
-  // Simulate sign-up logic
-  // void _signup() async {
-  //   if (_formKey.currentState!.validate()) {
-  //     if (_passwordController.text != _confirmPasswordController.text) {
-  //       showErrorSnackBarMessage(context, 'Password does not match');
-  //       return;
-  //     }
-
-  //     setState(() {
-  //       isSubmitting = true;
-  //     });
-
-  //     AuthResult result =
-  //         await Provider.of<AuthenticationProvider>(context, listen: false)
-  //             .signUp(
-  //       name: _usernameController.text,
-  //       email: _emailController.text,
-  //       password: _passwordController.text,
-  //       confirmPassword: _confirmPasswordController.text,
-  //     );
-
-  //     if (result.isSuccess) {
-  //       context.goNamed(RouteNames.wrapper);
-  //       showSuccessSnackBarMessage(context, result.message);
-  //     } else {
-  //       showErrorSnackBarMessage(context, result.message);
-  //     }
-
-  //     setState(() {
-  //       isSubmitting = false;
-  //     });
-  //   }
-  // }
-
-  // Simulate Google sign-up logic
-  void _googleSignup() async {
-    // Add your Google sign-up logic here (e.g., Firebase Google authentication)
-    showSuccessSnackBarMessage(context, 'Google Sign-up Successful');
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -83,18 +40,16 @@ class _SignupScreenState extends State<SignupScreen> {
     final double screenWidth = MediaQuery.of(context).size.width;
 
     return Scaffold(
-      backgroundColor: const Color(0xFFE8F2FF), // backgroundColor
+      backgroundColor: const Color(0xFFE8F2FF),
       body: SingleChildScrollView(
         child: Padding(
           padding: EdgeInsets.symmetric(
-            horizontal: screenWidth * 0.08, // Responsive padding
+            horizontal: screenWidth * 0.08,
             vertical: screenHeight * 0.02,
           ),
           child: Form(
-            key: _formKey, // Form key for validation
+            key: _formKey,
             child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 SizedBox(height: screenHeight * 0.1), // Responsive spacing
                 const Text(
@@ -200,82 +155,41 @@ class _SignupScreenState extends State<SignupScreen> {
                 ),
                 SizedBox(height: screenHeight * 0.02),
 
-                // Sign-up Button with Loading Indicator
+
                 CustomElevationBtn(
-                    buttonName: 'Sign Up',
-                    onClick: () async {
-                      setState(() {
-                        isSubmitting = true;
-                      });
-                     if (_passwordController.text !=
-                          _confirmPasswordController.text) {
-                        showErrorSnackBarMessage(
-                            context, 'Password does not match');
-                        return;
+                  buttonName: 'Sign Up',
+                  onClick: () async {
+                    setState(() {
+                      isSubmitting = true;
+                    });
+                    if (_passwordController.text != _confirmPasswordController.text) {
+                      showErrorSnackBarMessage(context, 'Password does not match');
+                      return;
+                    }
+                    if (_formKey.currentState!.validate()) {
+                      AuthResult result = await Provider.of<AuthenticationProvider>(
+                        context, 
+                        listen: false,
+                      ).signUp(
+                        name: _usernameController.text,
+                        email: _emailController.text,
+                        password: _passwordController.text,
+                        confirmPassword: _confirmPasswordController.text,
+                      );
+
+                      if (result.isSuccess) {
+                        context.goNamed(RouteNames.userWelcomeScreen); // Redirect to questionnaire
+                        showSuccessSnackBarMessage(context, result.message);
+                      } else {
+                        showErrorSnackBarMessage(context, result.message);
                       }
-                      if (_formKey.currentState!.validate()) {
-                        if (!context.mounted) return;
-                        AuthResult result = await Provider.of<
-                                AuthenticationProvider>(context, listen: false)
-                            .signUp(
-                                name: _usernameController.text,
-                                email: _emailController.text,
-                                password: _passwordController.text,
-                                confirmPassword: _confirmPasswordController.text,
-                            );
+                    }
 
-                        if (result.isSuccess) {
-                          context.goNamed(RouteNames.wrapper);
-                          showSuccessSnackBarMessage(context, result.message);
-                        } else {
-                          showErrorSnackBarMessage(context, result.message);
-                        }
-                      }
-
-                      setState(() {
-                        isSubmitting = false;
-                      });
-                    },
-                    isSubmitting: isSubmitting,
-                  ),
-
-                SizedBox(height: screenHeight * 0.03),
-
-                // OR Divider
-                const Row(
-                  children: [
-                    Expanded(child: Divider(thickness: 1)),
-                    Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 8.0),
-                      child: Text('OR'),
-                    ),
-                    Expanded(child: Divider(thickness: 1)),
-                  ],
-                ),
-                SizedBox(height: screenHeight * 0.03),
-
-                // Google Sign-up Button
-                ElevatedButton.icon(
-                  onPressed: isSubmitting
-                      ? null
-                      : _googleSignup, // Disable button if loading
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.white,
-                    padding:
-                        EdgeInsets.symmetric(vertical: screenHeight * 0.025),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
-                      side: const BorderSide(color: Colors.grey),
-                    ),
-                  ),
-                  icon: const FaIcon(
-                    FontAwesomeIcons.google,
-                    color: Colors.red,
-                  ),
-                  label: const Text(
-                    'Sign up with Google',
-                    style: TextStyle(color: Colors.black),
-                  ),
+                    setState(() {
+                      isSubmitting = false;
+                    });
+                  },
+                  isSubmitting: isSubmitting,
                 ),
 
                 SizedBox(height: screenHeight * 0.02),
@@ -311,3 +225,4 @@ class _SignupScreenState extends State<SignupScreen> {
     );
   }
 }
+
