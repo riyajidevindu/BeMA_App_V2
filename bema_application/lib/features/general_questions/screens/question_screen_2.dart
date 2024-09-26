@@ -62,102 +62,109 @@ class _QuestionScreen2State extends State<QuestionScreen2> {
 
     return Scaffold(
       backgroundColor: const Color(0xFFE6F0FF), // Light blue background
-      body: Padding(
-        padding: const EdgeInsets.all(20.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            const SizedBox(height: 50), // Add padding to push content down
-            const LinearProgressIndicator(
-              value: 0.05, 
-              backgroundColor: Colors.grey,
-              color: Colors.blue, // Blue progress
-            ),
-            const SizedBox(height: 30), // Padding after progress bar
-            const Text(
-              "How young are you?",
-              style: TextStyle(
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
+      resizeToAvoidBottomInset: true, // Ensure screen resizes for keyboard
+      body: SingleChildScrollView( // Make the entire content scrollable
+        child: Padding(
+          padding: EdgeInsets.only(
+            left: 20.0,
+            right: 20.0,
+            bottom: MediaQuery.of(context).viewInsets.bottom + 20, // Adjust bottom padding for keyboard
+            top: 20.0,
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              const SizedBox(height: 50), // Add padding to push content down
+              const LinearProgressIndicator(
+                value: 0.05, 
+                backgroundColor: Colors.grey,
+                color: Colors.blue, // Blue progress
               ),
-            ),
-            const SizedBox(height: 20), // Padding after heading
-            TextFormField(
-              controller: _ageController,
-              focusNode: _focusNode,
-              decoration: InputDecoration(
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
+              const SizedBox(height: 30), // Padding after progress bar
+              const Text(
+                "How young are you?",
+                style: TextStyle(
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
                 ),
-                hintText: 'Enter your age',
               ),
-              keyboardType: TextInputType.number,
-              inputFormatters: [
-                FilteringTextInputFormatter.digitsOnly, // Only allow digits
+              const SizedBox(height: 20), // Padding after heading
+              TextFormField(
+                controller: _ageController,
+                focusNode: _focusNode,
+                decoration: InputDecoration(
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  hintText: 'Enter your age',
+                ),
+                keyboardType: TextInputType.number,
+                inputFormatters: [
+                  FilteringTextInputFormatter.digitsOnly, // Only allow digits
+                ],
+                onChanged: (value) {
+                  // Validate and update age in provider
+                  _updateAge(context);
+                },
+              ),
+              const SizedBox(height: 20), // Padding after input field
+              if (age != null) ...[
+                Text(
+                  '$age years old',
+                  style: const TextStyle(
+                    fontSize: 16,
+                    color: Colors.black,
+                  ),
+                ),
+                const SizedBox(height: 20), // Padding after formatted age
               ],
-              onChanged: (value) {
-                // Validate and update age in provider
-                _updateAge(context);
-              },
-            ),
-            const SizedBox(height: 20), // Padding after input field
-            if (age != null) ...[
-              Text(
-                '$age years old',
-                style: const TextStyle(
+              const Text(
+                "We'd love to know your age so we can better understand your journey!",
+                textAlign: TextAlign.center,
+                style: TextStyle(
                   fontSize: 16,
-                  color: Colors.black,
+                  color: Colors.grey,
                 ),
               ),
-              const SizedBox(height: 20), // Padding after formatted age
+              const SizedBox(height: 40), // Padding after description
+              const Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text("👶", style: TextStyle(fontSize: 40)), // Child emoji
+                  SizedBox(width: 20),
+                  Text("👨", style: TextStyle(fontSize: 40)), // Adult male emoji
+                  SizedBox(width: 20),
+                  Text("👴", style: TextStyle(fontSize: 40)), // Elderly man emoji
+                ],
+              ),
+              const SizedBox(height: 40), // Padding before button
+              ElevatedButton(
+                onPressed: () {
+                  if (age != null && age > 0) {
+                    context.goNamed(RouteNames.questionScreen3);
+                  } else {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('Please enter a valid age.'),
+                      ),
+                    );
+                  }
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.blue, // Blue button color
+                  minimumSize: const Size(double.infinity, 50), // Full-width button
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+                child: const Text(
+                  "Continue",
+                  style: TextStyle(fontSize: 18),
+                ),
+              ),
+              const SizedBox(height: 20), // Padding after button
             ],
-            const Text(
-              "We'd love to know your age so we can better understand your journey!",
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 16,
-                color: Colors.grey,
-              ),
-            ),
-            const SizedBox(height: 40), // Padding after description
-            const Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Text("👶", style: TextStyle(fontSize: 40)), // Child emoji
-                SizedBox(width: 20),
-                Text("👨", style: TextStyle(fontSize: 40)), // Adult male emoji
-                SizedBox(width: 20),
-                Text("👴", style: TextStyle(fontSize: 40)), // Elderly man emoji
-              ],
-            ),
-            const Spacer(), // Push button to the bottom
-            ElevatedButton(
-              onPressed: () {
-                if (age != null && age > 0) {
-                  context.goNamed(RouteNames.questionScreen3);
-                } else {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Please enter a valid age.'),
-                    ),
-                  );
-                }
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.blue, // Blue button color
-                minimumSize:
-                    const Size(double.infinity, 50), // Full-width button
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-              ),
-              child: const Text(
-                "Continue",
-                style: TextStyle(fontSize: 18),
-              ),
-            ),
-            const SizedBox(height: 20), // Padding after button
-          ],
+          ),
         ),
       ),
     );
