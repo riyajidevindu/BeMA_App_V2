@@ -46,6 +46,7 @@ dependencies:
   provider: ^6.1.2
   custom_navigation_bar: ^0.8.2
   cached_network_image: ^3.4.1
+  shared_preferences: ^2.3.2
   # flutter_dotenv: ^5.0.2
   # dart_openai: ^5.1.0
 
