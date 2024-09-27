@@ -38,7 +38,7 @@ class WelcomeScreen extends StatelessWidget {
                     fontStyle: FontStyle.italic,
                     letterSpacing: 1.5)),
             SizedBox(
-              height: screenHeight * 0.6,
+              height: screenHeight * 0.66,
             ),
                 CustomOutLineButton(
                 buttonName: 'Get Started',
@@ -46,9 +46,7 @@ class WelcomeScreen extends StatelessWidget {
                   context.goNamed(RouteNames.loginScreen);
                 }),
                 SizedBox(height: screenHeight * 0.03),
-            SizedBox(
-              height: screenHeight * 0.1,
-            ),
+           
           ],
         )
       ]),

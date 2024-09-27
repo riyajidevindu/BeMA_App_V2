@@ -1,12 +1,11 @@
+import 'package:bema_application/common/widgets/buttons/custom_elevation_buttons.dart';
 import 'package:bema_application/common/widgets/snackbar%20messages/snackbar_message.dart';
 import 'package:bema_application/features/authentication/data/models/login_result.dart';
 import 'package:bema_application/features/authentication/providers/authentication_provider.dart';
-import 'package:bema_application/common/widgets/buttons/custom_elevation_buttons.dart';
 import 'package:bema_application/routes/route_names.dart';
 import 'package:flutter/material.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:go_router/go_router.dart';
-import 'package:provider/provider.dart'; // For Google icon
+import 'package:provider/provider.dart';
 
 class SignupScreen extends StatefulWidget {
   const SignupScreen({super.key});
@@ -19,10 +18,11 @@ class _SignupScreenState extends State<SignupScreen> {
   final TextEditingController _usernameController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
-  final TextEditingController _confirmPasswordController = TextEditingController();
+  final TextEditingController _confirmPasswordController =
+      TextEditingController();
 
   bool isSubmitting = false;
-  
+
   @override
   void dispose() {
     _usernameController.dispose();
@@ -50,29 +50,42 @@ class _SignupScreenState extends State<SignupScreen> {
           child: Form(
             key: _formKey,
             child: Column(
+              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                SizedBox(height: screenHeight * 0.1), // Responsive spacing
+                SizedBox(height: screenHeight * 0.04), // Responsive spacing
+
+                // Logo
+                Center(
+                  child: Image.asset(
+                    'assets/logo.png', // Make sure this path is correct
+                    height: screenHeight * 0.2, // Logo size
+                  ),
+                ),
+                SizedBox(height: screenHeight * 0.02), // Spacing after logo
+
                 const Text(
                   'Sign Up',
                   style: TextStyle(
                     fontSize: 28,
                     fontWeight: FontWeight.bold,
-                    color: Color(0xFF000000), // textColor
+                    color: Color(0xFF000000), // Text color
                   ),
                   textAlign: TextAlign.center,
                 ),
-                SizedBox(height: screenHeight * 0.05),
+                SizedBox(height: screenHeight * 0.03),
 
                 // Username Field
                 TextFormField(
                   controller: _usernameController,
                   decoration: InputDecoration(
+                    prefixIcon:
+                        Icon(Icons.person, color: Colors.grey[600]), // Add icon
                     labelText: 'Username',
                     labelStyle: const TextStyle(color: Colors.grey),
                     fillColor: const Color(0xFFFFFFFF),
                     filled: true,
                     border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(8),
+                      borderRadius: BorderRadius.circular(12), // More rounded
                     ),
                   ),
                   validator: (value) {
@@ -88,12 +101,14 @@ class _SignupScreenState extends State<SignupScreen> {
                 TextFormField(
                   controller: _emailController,
                   decoration: InputDecoration(
+                    prefixIcon:
+                        Icon(Icons.email, color: Colors.grey[600]), // Add icon
                     labelText: 'Email',
                     labelStyle: const TextStyle(color: Colors.grey),
                     fillColor: const Color(0xFFFFFFFF),
                     filled: true,
                     border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(8),
+                      borderRadius: BorderRadius.circular(12),
                     ),
                   ),
                   validator: (value) {
@@ -112,12 +127,14 @@ class _SignupScreenState extends State<SignupScreen> {
                 TextFormField(
                   controller: _passwordController,
                   decoration: InputDecoration(
+                    prefixIcon:
+                        Icon(Icons.lock, color: Colors.grey[600]), // Add icon
                     labelText: 'Password',
                     labelStyle: const TextStyle(color: Colors.grey),
                     fillColor: const Color(0xFFFFFFFF),
                     filled: true,
                     border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(8),
+                      borderRadius: BorderRadius.circular(12),
                     ),
                   ),
                   obscureText: true,
@@ -134,41 +151,40 @@ class _SignupScreenState extends State<SignupScreen> {
                 TextFormField(
                   controller: _confirmPasswordController,
                   decoration: InputDecoration(
+                    prefixIcon:
+                        Icon(Icons.lock, color: Colors.grey[600]), // Add icon
                     labelText: 'Confirm Password',
                     labelStyle: const TextStyle(color: Colors.grey),
                     fillColor: const Color(0xFFFFFFFF),
                     filled: true,
                     border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(8),
+                      borderRadius: BorderRadius.circular(12),
                     ),
                   ),
                   obscureText: true,
-                  // validator: (value) {
-                  //   if (value == null || value.isEmpty) {
-                  //     return 'Please confirm your password';
-                  //   }
-                  //   if (value != _passwordController.text) {
-                  //     return 'Passwords do not match';
-                  //   }
-                  //   return null;
-                  // },
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Please confirm your password';
+                    }
+                    if (value != _passwordController.text) {
+                      return 'Passwords do not match';
+                    }
+                    return null;
+                  },
                 ),
-                SizedBox(height: screenHeight * 0.02),
+                SizedBox(height: screenHeight * 0.04),
 
-
+                // Custom Button
                 CustomElevationBtn(
                   buttonName: 'Sign Up',
                   onClick: () async {
                     setState(() {
                       isSubmitting = true;
                     });
-                    if (_passwordController.text != _confirmPasswordController.text) {
-                      showErrorSnackBarMessage(context, 'Password does not match');
-                      return;
-                    }
                     if (_formKey.currentState!.validate()) {
-                      AuthResult result = await Provider.of<AuthenticationProvider>(
-                        context, 
+                      AuthResult result =
+                          await Provider.of<AuthenticationProvider>(
+                        context,
                         listen: false,
                       ).signUp(
                         name: _usernameController.text,
@@ -178,7 +194,8 @@ class _SignupScreenState extends State<SignupScreen> {
                       );
 
                       if (result.isSuccess) {
-                        context.goNamed(RouteNames.userWelcomeScreen); // Redirect to questionnaire
+                        context.goNamed(RouteNames
+                            .userWelcomeScreen); // Redirect to questionnaire
                         showSuccessSnackBarMessage(context, result.message);
                       } else {
                         showErrorSnackBarMessage(context, result.message);
@@ -209,7 +226,7 @@ class _SignupScreenState extends State<SignupScreen> {
                       child: const Text(
                         'Login',
                         style: TextStyle(
-                          color: Colors.black,
+                          color: Colors.blue, // Make the link stand out
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
                         ),
@@ -225,4 +242,3 @@ class _SignupScreenState extends State<SignupScreen> {
     );
   }
 }
-

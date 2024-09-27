@@ -22,15 +22,14 @@ class _CustomElevationBtnState extends State<CustomElevationBtn> {
   Widget build(BuildContext context) {
     var height = MediaQuery.of(context).size.height;
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 30),
+      margin: const EdgeInsets.symmetric(horizontal: 10),
       width: double.infinity,
       child: ElevatedButton(
         style: ElevatedButton.styleFrom(
           backgroundColor: primaryColor,
         ),
-        
         onPressed: () {
-          widget.isSubmitting ?null: widget.onClick();
+          widget.isSubmitting ? null : widget.onClick();
         },
         child: Padding(
           padding: const EdgeInsets.symmetric(vertical: 12),
