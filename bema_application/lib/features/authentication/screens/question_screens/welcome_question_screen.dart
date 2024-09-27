@@ -59,7 +59,7 @@ class _UserWelcomeScreenState extends State<UserWelcomeScreen> {
       body: Stack(
         children: [
           const Background(
-              isBackButton: true), // Background widget with 'const'
+              isBackButton: false), // Background widget with 'const'
           Center(
             child: Padding(
               padding: const EdgeInsets.all(20.0),
