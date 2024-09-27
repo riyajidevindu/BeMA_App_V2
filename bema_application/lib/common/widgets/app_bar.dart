@@ -12,11 +12,6 @@ class CustomAppBar extends StatefulWidget {
   State<CustomAppBar> createState() => _CustomAppBarState();
 }
 
-void changeMode(BuildContext context) {
-  final autProvider =
-      Provider.of<AuthenticationProvider>(context, listen: false);
-}
-
 class _CustomAppBarState extends State<CustomAppBar> {
   @override
   Widget build(BuildContext context) {
@@ -25,7 +20,6 @@ class _CustomAppBarState extends State<CustomAppBar> {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        // Wrapping the Container in Flexible ensures it doesn't overflow
         Flexible(
           child: Container(
             height: 50,
@@ -46,13 +40,13 @@ class _CustomAppBarState extends State<CustomAppBar> {
                       radius: 18,
                       backgroundImage: AssetImage('assets/logo.png'),
                     ),
-                    const SizedBox(width: 15), // Reduced for responsiveness
+                    const SizedBox(width: 15),
                     Text(
                       "BeMA",
                       style: TextStyle(
                         color: backgroundColor,
                         fontWeight: FontWeight.w500,
-                        fontSize: width * 0.055, // Responsive text size
+                        fontSize: width * 0.055,
                       ),
                     ),
                   ],
@@ -61,32 +55,27 @@ class _CustomAppBarState extends State<CustomAppBar> {
                   children: [
                     IconButton(
                       onPressed: () {
-                        if (!context.mounted) return;
-                        // context.push('/${RouteNames.notificationScreen}');
+                        // Handle notification button press
                       },
                       icon: Icon(
                         Icons.notifications,
                         color: backgroundColor,
-                        size: width * 0.06, // Responsive icon size
+                        size: width * 0.06,
                       ),
                     ),
                     PopupMenuButton<String>(
                       icon: Icon(
                         Icons.settings,
                         color: backgroundColor,
-                        size: width * 0.06, // Responsive icon size
+                        size: width * 0.06,
                       ),
                       onSelected: (value) {
                         if (value == 'profile') {
-                          // Navigate to the Profile screen
                           context.push('/${RouteNames.profileScreen}');
                         } else if (value == 'signOut') {
-                          // Perform Sign Out
                           final authProvider =
-                              Provider.of<AuthenticationProvider>(context,
-                                  listen: false);
+                              Provider.of<AuthenticationProvider>(context, listen: false);
                           authProvider.signOut();
-                          // Navigate to the Sign-In screen or homepage
                           context.push('/${RouteNames.loginScreen}');
                         } else if (value == 'chat') {
                           context.push('/${RouteNames.chatScreen}');
@@ -96,51 +85,23 @@ class _CustomAppBarState extends State<CustomAppBar> {
                         return [
                           PopupMenuItem<String>(
                             value: 'profile',
-                            child: Container(
-                              width: 75, // Set a fixed width for all menu items
-                              padding: const EdgeInsets.all(8.0),
-                              decoration: BoxDecoration(
-                                color: Colors.lightBlue
-                                    .withOpacity(0.2), // Light blue background
-                                borderRadius:
-                                    BorderRadius.circular(8), // Rounded corners
-                                border: Border.all(
-                                    color: Colors.lightBlue,
-                                    width: 2), // Light blue border
-                              ),
-                              child: const Text('Profile',
-                                  style: TextStyle(
-                                      color: Colors.black)), // Text color black
+                            child: _buildPopupMenuItem(
+                              icon: Icons.person,
+                              text: 'Profile',
                             ),
                           ),
                           PopupMenuItem<String>(
                             value: 'signOut',
-                            child: Container(
-                              width: 75,
-                              padding: const EdgeInsets.all(8.0),
-                              decoration: BoxDecoration(
-                                color: Colors.lightBlue.withOpacity(0.2),
-                                borderRadius: BorderRadius.circular(8),
-                                border: Border.all(
-                                    color: Colors.lightBlue, width: 2),
-                              ),
-                              child: const Text('Sign Out',
-                                  style: TextStyle(color: Colors.black)),
+                            child: _buildPopupMenuItem(
+                              icon: Icons.exit_to_app,
+                              text: 'Sign Out',
                             ),
                           ),
                           PopupMenuItem<String>(
                             value: 'chat',
-                            child: Container(
-                              width: 75,
-                              padding: const EdgeInsets.all(8.0),
-                              decoration: BoxDecoration(
-                                color: Colors.lightBlue.withOpacity(0.2),
-                                borderRadius: BorderRadius.circular(8),
-                                border: Border.all(
-                                    color: Colors.lightBlue, width: 2),
-                              ),
-                              child: const Text('Chat',
-                                  style: TextStyle(color: Colors.black)),
+                            child: _buildPopupMenuItem(
+                              icon: Icons.chat_bubble,
+                              text: 'Chat',
                             ),
                           ),
                         ];
@@ -153,6 +114,37 @@ class _CustomAppBarState extends State<CustomAppBar> {
           ),
         ),
       ],
+    );
+  }
+
+  // Function to build each popup menu item with custom styling
+  Widget _buildPopupMenuItem({required IconData icon, required String text}) {
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 12.0),
+      decoration: BoxDecoration(
+        color: Colors.white, // Light background
+        borderRadius: BorderRadius.circular(8), // Rounded corners
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey.withOpacity(0.2), // Shadow effect
+            spreadRadius: 2,
+            blurRadius: 5,
+            offset: const Offset(0, 3), // Offset for shadow
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          Icon(icon, color: primaryColor), // Icon with custom color
+          const SizedBox(width: 10),
+          Text(
+            text,
+            style: const TextStyle(
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
