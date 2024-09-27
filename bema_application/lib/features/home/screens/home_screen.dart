@@ -1,11 +1,101 @@
 import 'package:bema_application/common/config/colors.dart';
 import 'package:bema_application/common/widgets/app_bar.dart';
+import 'package:bema_application/features/authentication/data/models/profile_service.dart';
+import 'package:bema_application/features/authentication/data/models/user_model.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:bema_application/routes/route_names.dart';
+import 'package:intl/intl.dart';
 
-class HomeScreen extends StatelessWidget {
+class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
+
+  @override
+  State<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+  final profileService = ProfileService();
+  String userName = 'User'; // Default name while loading
+  String greetingMessage = 'Good Day'; // Default greeting
+  bool isLoading = true; // Track loading state
+  String formattedDate = ""; // To hold the formatted date
+
+  @override
+  void initState() {
+    super.initState();
+    getUser(); // Fetch user details when the screen loads
+    _setGreetingMessage(); // Set the appropriate greeting message
+    _setFormattedDate(); // Set the formatted date
+  }
+
+  /// Fetches the user profile data
+  Future<void> getUser() async {
+    try {
+      UserModel? user =
+          await profileService.getUser(FirebaseAuth.instance.currentUser!.uid);
+
+      // Debug the fetched user details
+      debugPrint('Fetched user: ${user?.name}');
+
+      if (user != null && user.name.isNotEmpty) {
+        setState(() {
+          userName = user.name;
+        });
+      }
+    } catch (e) {
+      debugPrint("Error fetching user data: $e");
+    } finally {
+      setState(() {
+        isLoading = false; // Set loading to false once data is fetched
+      });
+    }
+  }
+
+  /// Sets the greeting message based on the current time
+  void _setGreetingMessage() {
+    final hour = DateTime.now().hour;
+
+    if (hour < 12) {
+      greetingMessage = 'Good Morning';
+    } else if (hour < 17) {
+      greetingMessage = 'Good Afternoon';
+    } else if (hour < 21) {
+      greetingMessage = 'Good Evening';
+    } else {
+      greetingMessage = 'Good Night';
+    }
+  }
+
+  /// Sets the formatted date based on the current date
+  void _setFormattedDate() {
+    final now = DateTime.now();
+    final dayOfMonth = now.day;
+    final daySuffix = _getDaySuffix(dayOfMonth); // Get the correct day suffix (e.g., 1st, 2nd)
+    final formattedDay = DateFormat('EEEE').format(now); // Get the day of the week (e.g., Monday)
+
+    setState(() {
+      formattedDate = "$dayOfMonth$daySuffix $formattedDay";
+    });
+  }
+
+  /// Helper function to determine the correct suffix for the day
+  String _getDaySuffix(int day) {
+    if (day >= 11 && day <= 13) {
+      return 'th';
+    }
+    switch (day % 10) {
+      case 1:
+        return 'st';
+      case 2:
+        return 'nd';
+      case 3:
+        return 'rd';
+      default:
+        return 'th';
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -25,9 +115,9 @@ class HomeScreen extends StatelessWidget {
           children: [
             Container(
               width: double.infinity,
-              padding: EdgeInsets.all(16.0), // Padding inside the box
-              margin: EdgeInsets.only(
-                  bottom: 20.0), // Space around the box if needed
+              padding: const EdgeInsets.all(16.0), // Padding inside the box
+              margin: const EdgeInsets.only(
+                  bottom: 20.0, top: 20), // Space around the box if needed
               decoration: BoxDecoration(
                 color: const Color.fromARGB(
                     255, 26, 201, 213), // Background color of the box
@@ -39,27 +129,27 @@ class HomeScreen extends StatelessWidget {
                     color: Colors.grey.withOpacity(0.5),
                     spreadRadius: 2,
                     blurRadius: 5,
-                    offset: Offset(0, 3), // Shadow position
+                    offset: const Offset(0, 3), // Shadow position
                   ),
                 ],
               ),
-              child: const Column(
+              child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    "Good Morning, ABC",
-                    style: TextStyle(
+                    "$greetingMessage, $userName!",
+                    style: const TextStyle(
                       fontSize: 22,
                       color: Color.fromARGB(255, 1, 34, 75),
                       fontWeight: FontWeight.bold,
                     ),
                   ),
-                  SizedBox(height: 5),
+                  const SizedBox(height: 5),
                   Text(
-                    "6 th Monday",
-                    style: TextStyle(
-                      fontSize: 16,
-                      color: Color.fromARGB(255, 18, 8, 8),
+                    formattedDate, // Dynamically set date here
+                    style: const TextStyle(
+                      fontSize: 20,
+                      color: Color.fromARGB(255, 253, 251, 251),
                     ),
                   ),
                 ],
@@ -82,22 +172,22 @@ class HomeScreen extends StatelessWidget {
                     color: Colors.lightBlueAccent,
                   ),
                   _buildCard(
-                   avatar: const CircleAvatar(
+                    avatar: const CircleAvatar(
                       radius: 35,
                       backgroundImage: AssetImage('assets/mood.png'),
                     ),
                     title: "Mood Friend",
                     subtitle: "Fix You Mood",
-                    color: Colors.orangeAccent
+                    color: Colors.orangeAccent,
                   ),
                   _buildCard(
-                   avatar: const CircleAvatar(
+                    avatar: const CircleAvatar(
                       radius: 35,
                       backgroundImage: AssetImage('assets/meals.png'),
                     ),
                     title: "Your Meals",
                     subtitle: "Add to daily",
-                    color: Colors.orange
+                    color: Colors.orange,
                   ),
                   _buildCard(
                     avatar: const CircleAvatar(
@@ -106,7 +196,7 @@ class HomeScreen extends StatelessWidget {
                     ),
                     title: "Your Points",
                     subtitle: "Check me",
-                    color: Colors.lightBlue
+                    color: Colors.lightBlue,
                   ),
                 ],
               ),
