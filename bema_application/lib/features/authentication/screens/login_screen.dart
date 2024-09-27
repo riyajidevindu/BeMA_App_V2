@@ -5,7 +5,6 @@ import 'package:bema_application/features/authentication/data/service/auth_servi
 import 'package:bema_application/features/authentication/providers/authentication_provider.dart';
 import 'package:bema_application/routes/route_names.dart';
 import 'package:flutter/material.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:go_router/go_router.dart'; // For Google icon
 
 class LoginScreen extends StatefulWidget {
@@ -42,16 +41,13 @@ class _LoginScreenState extends State<LoginScreen> {
       );
 
       if (result.isSuccess) {
-        // Check if the user completed the questionnaire
         bool isQuestionnaireCompleted =
             await state.checkQuestionnaireCompletion(auth.firebaseUser!);
 
         if (isQuestionnaireCompleted) {
-          context.goNamed(RouteNames
-              .homeScreen); // Redirect to home if questionnaire is completed
+          context.goNamed(RouteNames.homeScreen); // Redirect to home if questionnaire is completed
         } else {
-          context.goNamed(
-              RouteNames.userWelcomeScreen); // Redirect to questionnaire
+          context.goNamed(RouteNames.userWelcomeScreen); // Redirect to questionnaire
         }
 
         showSuccessSnackBarMessage(context, result.message);
@@ -81,29 +77,41 @@ class _LoginScreenState extends State<LoginScreen> {
           child: Form(
             key: _formKey,
             child: Column(
+              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                SizedBox(height: screenHeight * 0.1), // Responsive spacing
+                SizedBox(height: screenHeight * 0.04), // Adjusted for responsiveness
+
+                // Logo at the top
+                Center(
+                  child: Image.asset(
+                    'assets/logo.png', // Ensure this path is correct
+                    height: screenHeight * 0.25, // Responsive logo size
+                  ),
+                ),
+                SizedBox(height: screenHeight * 0.02), // Spacing after the logo
+
                 const Text(
                   'Login',
                   style: TextStyle(
                     fontSize: 28,
                     fontWeight: FontWeight.bold,
-                    color: Color(0xFF000000), // textColor
+                    color: Colors.black, // Dark text color
                   ),
                   textAlign: TextAlign.center,
                 ),
                 SizedBox(height: screenHeight * 0.05),
 
-                // Username Field
+                // Email Field
                 TextFormField(
                   controller: _emailController,
                   decoration: InputDecoration(
+                    prefixIcon: Icon(Icons.email, color: Colors.grey[600]), // Add email icon
                     labelText: 'Email',
                     labelStyle: const TextStyle(color: Colors.grey),
                     fillColor: const Color(0xFFFFFFFF),
                     filled: true,
                     border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(8),
+                      borderRadius: BorderRadius.circular(12), // More rounded corners
                     ),
                   ),
                   validator: (value) {
@@ -119,12 +127,13 @@ class _LoginScreenState extends State<LoginScreen> {
                 TextFormField(
                   controller: _passwordController,
                   decoration: InputDecoration(
+                    prefixIcon: Icon(Icons.lock, color: Colors.grey[600]), // Add password icon
                     labelText: 'Password',
                     labelStyle: const TextStyle(color: Colors.grey),
                     fillColor: const Color(0xFFFFFFFF),
                     filled: true,
                     border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(8),
+                      borderRadius: BorderRadius.circular(12), // More rounded corners
                     ),
                   ),
                   obscureText: true,
@@ -135,17 +144,16 @@ class _LoginScreenState extends State<LoginScreen> {
                     return null;
                   },
                 ),
-                SizedBox(height: screenHeight * 0.02),
+                SizedBox(height: screenHeight * 0.04),
 
-
-
+                // Custom Elevated Button
                 CustomElevationBtn(
                   buttonName: 'Login',
-                  onClick: _login, // Call the modified login function
+                  onClick: _login,
                   isSubmitting: isSubmitting,
                 ),
-
                 SizedBox(height: screenHeight * 0.02),
+
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
@@ -160,7 +168,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       child: const Text(
                         'Register',
                         style: TextStyle(
-                          color: secondaryTextColor,
+                          color: Colors.blue, // Accent color for the clickable text
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
                         ),
@@ -168,21 +176,22 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                   ],
                 ),
+                SizedBox(height: screenHeight * 0.01),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     const Text(
-                      'Forget your password ? ',
+                      'Forgot your password? ',
                       style: TextStyle(color: secondaryTextColor, fontSize: 16),
                     ),
                     GestureDetector(
                       onTap: () {
-                        context.goNamed(RouteNames.loginScreen);
+                        // Add functionality to reset password
                       },
                       child: const Text(
-                        'Click',
+                        'Reset',
                         style: TextStyle(
-                          color: secondaryTextColor,
+                          color: Colors.blue, // Accent color for clickable text
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
                         ),
@@ -190,8 +199,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                   ],
                 ),
-                SizedBox(
-                    height: screenHeight * 0.02), 
+                SizedBox(height: screenHeight * 0.04), // More spacing at the end
               ],
             ),
           ),
