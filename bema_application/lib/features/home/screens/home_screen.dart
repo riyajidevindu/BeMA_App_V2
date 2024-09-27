@@ -6,6 +6,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:bema_application/routes/route_names.dart';
+import 'package:intl/intl.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -19,12 +20,14 @@ class _HomeScreenState extends State<HomeScreen> {
   String userName = 'User'; // Default name while loading
   String greetingMessage = 'Good Day'; // Default greeting
   bool isLoading = true; // Track loading state
+  String formattedDate = ""; // To hold the formatted date
 
   @override
   void initState() {
     super.initState();
     getUser(); // Fetch user details when the screen loads
     _setGreetingMessage(); // Set the appropriate greeting message
+    _setFormattedDate(); // Set the formatted date
   }
 
   /// Fetches the user profile data
@@ -62,6 +65,35 @@ class _HomeScreenState extends State<HomeScreen> {
       greetingMessage = 'Good Evening';
     } else {
       greetingMessage = 'Good Night';
+    }
+  }
+
+  /// Sets the formatted date based on the current date
+  void _setFormattedDate() {
+    final now = DateTime.now();
+    final dayOfMonth = now.day;
+    final daySuffix = _getDaySuffix(dayOfMonth); // Get the correct day suffix (e.g., 1st, 2nd)
+    final formattedDay = DateFormat('EEEE').format(now); // Get the day of the week (e.g., Monday)
+
+    setState(() {
+      formattedDate = "$dayOfMonth$daySuffix $formattedDay";
+    });
+  }
+
+  /// Helper function to determine the correct suffix for the day
+  String _getDaySuffix(int day) {
+    if (day >= 11 && day <= 13) {
+      return 'th';
+    }
+    switch (day % 10) {
+      case 1:
+        return 'st';
+      case 2:
+        return 'nd';
+      case 3:
+        return 'rd';
+      default:
+        return 'th';
     }
   }
 
@@ -113,10 +145,10 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                   ),
                   const SizedBox(height: 5),
-                  const Text(
-                    "6 th Monday",
-                    style: TextStyle(
-                      fontSize: 16,
+                  Text(
+                    formattedDate, // Dynamically set date here
+                    style: const TextStyle(
+                      fontSize: 20,
                       color: Color.fromARGB(255, 253, 251, 251),
                     ),
                   ),
