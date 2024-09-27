@@ -23,20 +23,49 @@ class HomeScreen extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              "Good Morning, ABC", 
-              style: TextStyle(
-                fontSize: 22, 
-                color: Colors.redAccent,
-                fontWeight: FontWeight.bold
+            Container(
+              width: double.infinity,
+              padding: EdgeInsets.all(16.0), // Padding inside the box
+              margin: EdgeInsets.only(
+                  bottom: 20.0), // Space around the box if needed
+              decoration: BoxDecoration(
+                color: const Color.fromARGB(
+                    255, 26, 201, 213), // Background color of the box
+                borderRadius: BorderRadius.circular(12), // Rounded corners
+                border: Border.all(
+                    color: Colors.grey.shade300), // Border around the box
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.grey.withOpacity(0.5),
+                    spreadRadius: 2,
+                    blurRadius: 5,
+                    offset: Offset(0, 3), // Shadow position
+                  ),
+                ],
+              ),
+              child: const Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    "Good Morning, ABC",
+                    style: TextStyle(
+                      fontSize: 22,
+                      color: Color.fromARGB(255, 1, 34, 75),
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  SizedBox(height: 5),
+                  Text(
+                    "6 th Monday",
+                    style: TextStyle(
+                      fontSize: 16,
+                      color: Color.fromARGB(255, 18, 8, 8),
+                    ),
+                  ),
+                ],
               ),
             ),
-            const SizedBox(height: 5),
-            Text(
-              "6 th Monday",
-              style: TextStyle(fontSize: 16, color: Colors.grey),
-            ),
-            SizedBox(height: 20),
+            const SizedBox(height: 20),
             Expanded(
               child: GridView.count(
                 crossAxisCount: 2,
@@ -44,27 +73,39 @@ class HomeScreen extends StatelessWidget {
                 mainAxisSpacing: 16.0,
                 children: [
                   _buildCard(
-                    icon: Icons.fitness_center, 
-                    title: "Daily Task", 
-                    subtitle: "Your Health Guide", 
-                    color: Colors.lightBlueAccent
+                    avatar: const CircleAvatar(
+                      radius: 35,
+                      backgroundImage: AssetImage('assets/tasks.png'),
+                    ),
+                    title: "Daily Task",
+                    subtitle: "Your Health Guide",
+                    color: Colors.lightBlueAccent,
                   ),
                   _buildCard(
-                    icon: Icons.mood, 
-                    title: "Mood Friend", 
-                    subtitle: "Fix You Mood", 
+                   avatar: const CircleAvatar(
+                      radius: 35,
+                      backgroundImage: AssetImage('assets/mood.png'),
+                    ),
+                    title: "Mood Friend",
+                    subtitle: "Fix You Mood",
                     color: Colors.orangeAccent
                   ),
                   _buildCard(
-                    icon: Icons.restaurant, 
-                    title: "Your Meals", 
-                    subtitle: "Add to daily", 
+                   avatar: const CircleAvatar(
+                      radius: 35,
+                      backgroundImage: AssetImage('assets/meals.png'),
+                    ),
+                    title: "Your Meals",
+                    subtitle: "Add to daily",
                     color: Colors.orange
                   ),
                   _buildCard(
-                    icon: Icons.score, 
-                    title: "Your Points", 
-                    subtitle: "Check me", 
+                    avatar: const CircleAvatar(
+                      radius: 35,
+                      backgroundImage: AssetImage('assets/score.png'),
+                    ),
+                    title: "Your Points",
+                    subtitle: "Check me",
                     color: Colors.lightBlue
                   ),
                 ],
@@ -76,7 +117,12 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildCard({required IconData icon, required String title, required String subtitle, required Color color}) {
+  Widget _buildCard({
+    required Widget avatar, // Accepts any widget (e.g., CircleAvatar)
+    required String title,
+    required String subtitle,
+    required Color color,
+  }) {
     return Container(
       decoration: BoxDecoration(
         color: color.withOpacity(0.2),
@@ -84,18 +130,18 @@ class HomeScreen extends StatelessWidget {
         border: Border.all(color: color.withOpacity(0.6)),
       ),
       child: Padding(
-        padding: const EdgeInsets.all(16.0),
+        padding: const EdgeInsets.all(8.0),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(icon, size: 40, color: color),
-            const SizedBox(height: 16),
+            avatar, // Display the passed widget (CircleAvatar in this case)
+            const SizedBox(height: 5),
             Text(
               title,
               style: const TextStyle(
-                fontSize: 18, 
+                fontSize: 18,
                 fontWeight: FontWeight.bold,
-                color: Colors.black
+                color: Colors.black,
               ),
             ),
             const SizedBox(height: 8),
@@ -103,7 +149,7 @@ class HomeScreen extends StatelessWidget {
               subtitle,
               textAlign: TextAlign.center,
               style: TextStyle(
-                fontSize: 14, 
+                fontSize: 14,
                 color: Colors.grey[700],
               ),
             ),
