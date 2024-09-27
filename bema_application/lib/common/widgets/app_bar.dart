@@ -2,8 +2,8 @@ import 'package:bema_application/common/config/colors.dart';
 import 'package:bema_application/features/authentication/providers/authentication_provider.dart';
 import 'package:bema_application/routes/route_names.dart';
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
+import 'package:provider/provider.dart';
 
 class CustomAppBar extends StatefulWidget {
   const CustomAppBar({super.key});
@@ -48,7 +48,7 @@ class _CustomAppBarState extends State<CustomAppBar> {
                     ),
                     const SizedBox(width: 15), // Reduced for responsiveness
                     Text(
-                      "BeMa",
+                      "BeMA",
                       style: TextStyle(
                         color: backgroundColor,
                         fontWeight: FontWeight.w500,
@@ -82,59 +82,69 @@ class _CustomAppBarState extends State<CustomAppBar> {
                           context.push('/${RouteNames.profileScreen}');
                         } else if (value == 'signOut') {
                           // Perform Sign Out
-                          final authProvider = Provider.of<AuthenticationProvider>(context, listen: false);
+                          final authProvider =
+                              Provider.of<AuthenticationProvider>(context,
+                                  listen: false);
                           authProvider.signOut();
                           // Navigate to the Sign-In screen or homepage
                           context.push('/${RouteNames.loginScreen}');
-                        }
-                        else if (value == 'chat') {
+                        } else if (value == 'chat') {
                           context.push('/${RouteNames.chatScreen}');
                         }
                       },
-               itemBuilder: (BuildContext context) {
-  return [
-    PopupMenuItem<String>(
-      value: 'profile',
-      child: Container(
-        width: 75, // Set a fixed width for all menu items
-        padding: const EdgeInsets.all(8.0),
-        decoration: BoxDecoration(
-          color: Colors.lightBlue.withOpacity(0.2), // Light blue background
-          borderRadius: BorderRadius.circular(8),   // Rounded corners
-          border: Border.all(color: Colors.lightBlue, width: 2), // Light blue border
-        ),
-        child: const Text('Profile', style: TextStyle(color: Colors.black)), // Text color black
-      ),
-    ),
-    PopupMenuItem<String>(
-      value: 'signOut',
-      child: Container(
-         width: 75,
-        padding: const EdgeInsets.all(8.0),
-        decoration: BoxDecoration(
-          color: Colors.lightBlue.withOpacity(0.2),
-          borderRadius: BorderRadius.circular(8),
-          border: Border.all(color: Colors.lightBlue, width: 2),
-        ),
-        child: const Text('Sign Out', style: TextStyle(color: Colors.black)),
-      ),
-    ),
-    PopupMenuItem<String>(
-      value: 'chat',
-      child: Container(
-         width: 75,
-        padding: const EdgeInsets.all(8.0),
-        decoration: BoxDecoration(
-          color: Colors.lightBlue.withOpacity(0.2),
-          borderRadius: BorderRadius.circular(8),
-          border: Border.all(color: Colors.lightBlue, width: 2),
-        ),
-        child: const Text('Chat', style: TextStyle(color: Colors.black)),
-      ),
-    ),
-  ];
-},
-
+                      itemBuilder: (BuildContext context) {
+                        return [
+                          PopupMenuItem<String>(
+                            value: 'profile',
+                            child: Container(
+                              width: 75, // Set a fixed width for all menu items
+                              padding: const EdgeInsets.all(8.0),
+                              decoration: BoxDecoration(
+                                color: Colors.lightBlue
+                                    .withOpacity(0.2), // Light blue background
+                                borderRadius:
+                                    BorderRadius.circular(8), // Rounded corners
+                                border: Border.all(
+                                    color: Colors.lightBlue,
+                                    width: 2), // Light blue border
+                              ),
+                              child: const Text('Profile',
+                                  style: TextStyle(
+                                      color: Colors.black)), // Text color black
+                            ),
+                          ),
+                          PopupMenuItem<String>(
+                            value: 'signOut',
+                            child: Container(
+                              width: 75,
+                              padding: const EdgeInsets.all(8.0),
+                              decoration: BoxDecoration(
+                                color: Colors.lightBlue.withOpacity(0.2),
+                                borderRadius: BorderRadius.circular(8),
+                                border: Border.all(
+                                    color: Colors.lightBlue, width: 2),
+                              ),
+                              child: const Text('Sign Out',
+                                  style: TextStyle(color: Colors.black)),
+                            ),
+                          ),
+                          PopupMenuItem<String>(
+                            value: 'chat',
+                            child: Container(
+                              width: 75,
+                              padding: const EdgeInsets.all(8.0),
+                              decoration: BoxDecoration(
+                                color: Colors.lightBlue.withOpacity(0.2),
+                                borderRadius: BorderRadius.circular(8),
+                                border: Border.all(
+                                    color: Colors.lightBlue, width: 2),
+                              ),
+                              child: const Text('Chat',
+                                  style: TextStyle(color: Colors.black)),
+                            ),
+                          ),
+                        ];
+                      },
                     ),
                   ],
                 ),
