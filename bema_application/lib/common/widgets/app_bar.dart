@@ -77,8 +77,6 @@ class _CustomAppBarState extends State<CustomAppBar> {
                               Provider.of<AuthenticationProvider>(context, listen: false);
                           authProvider.signOut();
                           context.push('/${RouteNames.loginScreen}');
-                        } else if (value == 'chat') {
-                          context.push('/${RouteNames.chatScreen}');
                         }
                       },
                       itemBuilder: (BuildContext context) {
@@ -95,13 +93,6 @@ class _CustomAppBarState extends State<CustomAppBar> {
                             child: _buildPopupMenuItem(
                               icon: Icons.exit_to_app,
                               text: 'Sign Out',
-                            ),
-                          ),
-                          PopupMenuItem<String>(
-                            value: 'chat',
-                            child: _buildPopupMenuItem(
-                              icon: Icons.chat_bubble,
-                              text: 'Chat',
                             ),
                           ),
                         ];
