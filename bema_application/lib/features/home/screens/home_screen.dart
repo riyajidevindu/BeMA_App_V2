@@ -2,6 +2,7 @@ import 'package:bema_application/common/config/colors.dart';
 import 'package:bema_application/common/widgets/app_bar.dart';
 import 'package:bema_application/features/authentication/data/models/profile_service.dart';
 import 'package:bema_application/features/authentication/data/models/user_model.dart';
+import 'package:bema_application/features/authentication/screens/chat_screen/chat_screen.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
@@ -139,7 +140,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   Text(
                     "$greetingMessage, $userName!",
                     style: const TextStyle(
-                      fontSize: 22,
+                      fontSize: 20,
                       color: Color.fromARGB(255, 1, 34, 75),
                       fontWeight: FontWeight.bold,
                     ),
@@ -148,7 +149,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   Text(
                     formattedDate, // Dynamically set date here
                     style: const TextStyle(
-                      fontSize: 20,
+                      fontSize: 18,
                       color: Color.fromARGB(255, 253, 251, 251),
                     ),
                   ),
@@ -170,6 +171,12 @@ class _HomeScreenState extends State<HomeScreen> {
                     title: "Daily Task",
                     subtitle: "Your Health Guide",
                     color: Colors.lightBlueAccent,
+                      onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => const ChatScreen()),
+                      );
+              },
                   ),
                   _buildCard(
                     avatar: const CircleAvatar(
@@ -179,6 +186,12 @@ class _HomeScreenState extends State<HomeScreen> {
                     title: "Mood Friend",
                     subtitle: "Fix You Mood",
                     color: Colors.orangeAccent,
+                                   onTap: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(builder: (context) => const ChatScreen()),
+                                  );
+                          },
                   ),
                   _buildCard(
                     avatar: const CircleAvatar(
@@ -188,6 +201,12 @@ class _HomeScreenState extends State<HomeScreen> {
                     title: "Your Meals",
                     subtitle: "Add to daily",
                     color: Colors.orange,
+                                   onTap: () {
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(builder: (context) => const ChatScreen()),
+                                    );
+                            },
                   ),
                   _buildCard(
                     avatar: const CircleAvatar(
@@ -197,6 +216,12 @@ class _HomeScreenState extends State<HomeScreen> {
                     title: "Your Points",
                     subtitle: "Check me",
                     color: Colors.lightBlue,
+                                   onTap: () {
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(builder: (context) => const ChatScreen()),
+                                    );
+                            },
                   ),
                 ],
               ),
@@ -207,13 +232,16 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _buildCard({
-    required Widget avatar, // Accepts any widget (e.g., CircleAvatar)
-    required String title,
-    required String subtitle,
-    required Color color,
-  }) {
-    return Container(
+ Widget _buildCard({
+  required Widget avatar, // Accepts any widget (e.g., CircleAvatar)
+  required String title,
+  required String subtitle,
+  required Color color,
+  VoidCallback? onTap, // onTap can be null if not provided
+}) {
+  return GestureDetector(
+    onTap: onTap, // Trigger the onTap function if tapped
+    child: Container(
       decoration: BoxDecoration(
         color: color.withOpacity(0.2),
         borderRadius: BorderRadius.circular(16),
@@ -246,6 +274,8 @@ class _HomeScreenState extends State<HomeScreen> {
           ],
         ),
       ),
-    );
-  }
+    ),
+  );
+}
+
 }
