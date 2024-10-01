@@ -1,3 +1,4 @@
+import 'package:bema_application/features/authentication/screens/dailyTask_screen/dailyTask_screnn.dart';
 import 'package:bema_application/features/authentication/screens/chat_screen/chat_screen.dart';
 import 'package:bema_application/features/authentication/screens/login_screen.dart';
 import 'package:bema_application/features/authentication/screens/profile_screen.dart';
@@ -219,6 +220,13 @@ final goRouter = GoRouter(
         name: RouteNames.chatScreen,
         pageBuilder: (context, state) => const MaterialPage(
           child: ChatScreen(),
+        ),
+      ),
+         GoRoute(
+        path: '/${RouteNames.DailyTaskScreen}',
+        name: RouteNames.DailyTaskScreen,
+        pageBuilder: (context, state) => const MaterialPage(
+          child: DailytaskScrenn(),
         ),
       ),
 // final goRouter = GoRouter(initialLocation: '/${RouteNames.wrapper}', routes: [

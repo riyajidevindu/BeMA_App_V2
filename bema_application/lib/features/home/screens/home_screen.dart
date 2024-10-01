@@ -3,6 +3,7 @@ import 'package:bema_application/common/widgets/app_bar.dart';
 import 'package:bema_application/features/authentication/data/models/profile_service.dart';
 import 'package:bema_application/features/authentication/data/models/user_model.dart';
 import 'package:bema_application/features/authentication/screens/chat_screen/chat_screen.dart';
+import 'package:bema_application/features/authentication/screens/dailyTask_screen/dailyTask_screnn.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
@@ -174,7 +175,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       onTap: () {
                       Navigator.push(
                         context,
-                        MaterialPageRoute(builder: (context) => const ChatScreen()),
+                        MaterialPageRoute(builder: (context) => const DailytaskScrenn()),
                       );
               },
                   ),
