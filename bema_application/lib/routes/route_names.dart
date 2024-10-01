@@ -30,5 +30,5 @@ class RouteNames {
 
   static const chatScreen = 'chatScreen';
   static const DailyTaskScreen = 'DailyTaskScreen';
-  static const LeaderboardScreen = 'LeaderboardScreen';
+  static const LearderboardScreen = 'LearderboardScreen';
 }

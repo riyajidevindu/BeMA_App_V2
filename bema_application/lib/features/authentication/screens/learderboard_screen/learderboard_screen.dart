@@ -2,14 +2,14 @@ import 'package:bema_application/common/config/colors.dart';
 import 'package:bema_application/common/widgets/app_bar.dart';
 import 'package:flutter/material.dart';
 
-class DailytaskScrenn extends StatefulWidget {
-  const DailytaskScrenn({super.key});
+class LearderboardScreen extends StatefulWidget {
+  const LearderboardScreen({super.key});
 
   @override
-  State<DailytaskScrenn> createState() => _DailytaskScrennState();
+  State<LearderboardScreen> createState() => _LearderboardScreenState();
 }
 
-class _DailytaskScrennState extends State<DailytaskScrenn> {
+class _LearderboardScreenState extends State<LearderboardScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -21,8 +21,8 @@ class _DailytaskScrennState extends State<DailytaskScrenn> {
         body: const Padding(
           padding:
               EdgeInsets.all(16.0), // Provide padding around body content
-           child:      Text(
-                    "Daily Task screen",
+          child:      Text(
+                    "Learboard screen",
                     style: TextStyle(
                       fontSize: 20,
                       color: Color.fromARGB(255, 1, 34, 75),
