@@ -224,7 +224,7 @@ final goRouter = GoRouter(initialLocation: '/${RouteNames.wrapper}', routes: [
     path: '/${RouteNames.dailyTaskScreen}',
     name: RouteNames.dailyTaskScreen,
     pageBuilder: (context, state) =>const MaterialPage(
-      child: DailytaskScrenn(),
+      child: DailytaskScreen(),
     ),
   ),
   // GoRoute(
