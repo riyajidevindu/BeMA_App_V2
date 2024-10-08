@@ -29,4 +29,6 @@ class RouteNames {
   static const homeScreen = 'homeScreen';
 
   static const chatScreen = 'chatScreen';
+  static const DailyTaskScreen = 'DailyTaskScreen';
+  static const LearderboardScreen = 'LearderboardScreen';
 }
