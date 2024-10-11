@@ -1,5 +1,8 @@
 import 'package:bema_application/common/config/colors.dart';
 import 'package:bema_application/common/widgets/app_bar.dart';
+import 'package:bema_application/features/authentication/data/models/profile_service.dart';
+import 'package:bema_application/features/authentication/data/models/user_model.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 class LearderboardScreen extends StatefulWidget {
@@ -10,13 +13,46 @@ class LearderboardScreen extends StatefulWidget {
 }
 
 class _LearderboardScreenState extends State<LearderboardScreen> {
+  final profileService = ProfileService();
+  String userName = 'User';
+   bool isLoading = true;
+
+   @override
+  void initState() {
+    super.initState();
+    getUser(); // Fetch user details when the screen loads
+  }
+
+   /// Fetches the user profile data
+  Future<void> getUser() async {
+    try {
+      UserModel? user =
+          await profileService.getUser(FirebaseAuth.instance.currentUser!.uid);
+
+      // Debug the fetched user details
+      debugPrint('Fetched user: ${user?.name}');
+
+      if (user != null && user.name.isNotEmpty) {
+        setState(() {
+          userName = user.name;
+        });
+      }
+    } catch (e) {
+      debugPrint("Error fetching user data: $e");
+    } finally {
+      setState(() {
+        isLoading = false; // Set loading to false once data is fetched
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        backgroundColor: backgroundColor, // Use background color from theme
+        backgroundColor: backgroundColor, 
         appBar: AppBar(
-          backgroundColor: backgroundColor, // Consistent background color
-          title: const CustomAppBar(), // Custom AppBar from previous screen
+          backgroundColor: backgroundColor, 
+          title: const CustomAppBar(), 
         ),
        body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -25,14 +61,14 @@ class _LearderboardScreenState extends State<LearderboardScreen> {
           children: [
             Center(
               child: Container(
-                padding: EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
                 decoration: BoxDecoration(
-                  color: Color(0xFF00BFA5),
+                  color: const Color(0xFF00BFA5),
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Text(
-                  'ROOKIE',
-                  style: TextStyle(
+                  "$userName!",
+                  style: const TextStyle(
                     fontSize: 24,
                     color: Colors.black,
                     fontWeight: FontWeight.bold,
@@ -40,7 +76,7 @@ class _LearderboardScreenState extends State<LearderboardScreen> {
                 ),
               ),
             ),
-            SizedBox(height: 20),
+            const SizedBox(height: 20),
             buildAchievementRow('Hot Dog', '90/200 Articles Liked', 90 / 200, Icons.fastfood),
             buildAchievementRow('Beer', '2/8 Games Played', 2 / 8, Icons.sports_bar),
             buildAchievementRow('Protein Shake', '25/30 Apps Downloaded', 25 / 30, Icons.local_drink),
@@ -60,10 +96,10 @@ class _LearderboardScreenState extends State<LearderboardScreen> {
           Row(
             children: [
               Icon(icon, color: Colors.black),
-              SizedBox(width: 10),
+              const SizedBox(width: 10),
               Text(
                 title,
-                style: TextStyle(color: Colors.black, fontSize: 18),
+                style: const TextStyle(color: Colors.black, fontSize: 18),
               ),
             ],
           ),
@@ -72,15 +108,15 @@ class _LearderboardScreenState extends State<LearderboardScreen> {
             children: [
               Text(
                 progressText,
-                style: TextStyle(color: Colors.black, fontSize: 14),
+                style: const TextStyle(color: Colors.black, fontSize: 14),
               ),
-              SizedBox(height: 5),
+              const SizedBox(height: 5),
               Container(
                 width: 200,
                 child: LinearProgressIndicator(
                   value: progress,
                   backgroundColor: Colors.grey,
-                  valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF00BFA5)),
+                  valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFF00BFA5)),
                 ),
               ),
             ],
