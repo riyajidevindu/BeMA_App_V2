@@ -3,8 +3,8 @@ import 'package:bema_application/common/widgets/app_bar.dart';
 import 'package:bema_application/features/authentication/data/models/profile_service.dart';
 import 'package:bema_application/features/authentication/data/models/user_model.dart';
 import 'package:bema_application/features/authentication/screens/chat_screen/chat_screen.dart';
-import 'package:bema_application/features/authentication/screens/dailyTask_screen/dailyTask_screnn.dart';
 import 'package:bema_application/features/authentication/screens/learderboard_screen/learderboard_screen.dart';
+import 'package:bema_application/routes/app_router.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
@@ -173,12 +173,9 @@ class _HomeScreenState extends State<HomeScreen> {
                     title: "Daily Task",
                     subtitle: "Your Health Guide",
                     color: Colors.lightBlueAccent,
-                      onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (context) => const DailytaskScrenn()),
-                      );
-              },
+                    onTap: () {                      
+                       context.pushNamed(RouteNames.dailyTaskScreen);
+                    },
                   ),
                   _buildCard(
                     avatar: const CircleAvatar(

@@ -29,7 +29,7 @@ class WelcomeScreen extends StatelessWidget {
               SizedBox(
               height: screenHeight * 0.15,
             ),
-             const Text('As your BeMa',
+             const Text('As your BeMA',
                 textAlign: TextAlign.center,
                 style: TextStyle(
                     color: Color.fromARGB(255, 3, 16, 159),
@@ -41,7 +41,7 @@ class WelcomeScreen extends StatelessWidget {
               height: screenHeight * 0.66,
             ),
                 CustomOutLineButton(
-                buttonName: 'Get Started',
+                buttonName: 'Get Started ',
                 onClick: () {
                   context.goNamed(RouteNames.loginScreen);
                 }),
