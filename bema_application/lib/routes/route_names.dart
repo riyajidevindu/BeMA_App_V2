@@ -5,6 +5,8 @@ class RouteNames {
   static const loginScreen = 'loginScreen';
   static const userWelcomeScreen = 'userWelcomeScreen';
   static const profileScreen = 'profileScreen';
+  
+  static const bottomNavigationBarScreen = 'bottomNavigationBarScreen';
 
   static const questionScreen2 = 'questionScreen2';
   static const questionScreen3 = 'questionScreen3';

@@ -1,3 +1,4 @@
+import 'package:bema_application/common/widgets/tiles/bottom_navigation_bar.dart';
 import 'package:bema_application/features/authentication/screens/chat_screen/chat_screen.dart';
 import 'package:bema_application/features/authentication/screens/login_screen.dart';
 import 'package:bema_application/features/authentication/screens/profile_screen.dart';
@@ -30,6 +31,7 @@ import 'package:bema_application/routes/route_names.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
+
 final goRouter = GoRouter(initialLocation: '/${RouteNames.wrapper}', routes: [
   GoRoute(
     path: '/${RouteNames.wrapper}',
@@ -52,6 +54,17 @@ final goRouter = GoRouter(initialLocation: '/${RouteNames.wrapper}', routes: [
       child: LoginScreen(),
     ),
   ),
+  GoRoute(
+      path: '/${RouteNames.bottomNavigationBarScreen}',
+      name: RouteNames.bottomNavigationBarScreen,
+      pageBuilder: (context, state) {
+        int id = state.extra as int;
+        return MaterialPage(
+          child: BottomNavigationBarScreen(
+            initialIndex: id,
+          ),
+        );
+      }),
   GoRoute(
     path: '/${RouteNames.userWelcomeScreen}',
     name: RouteNames.userWelcomeScreen,

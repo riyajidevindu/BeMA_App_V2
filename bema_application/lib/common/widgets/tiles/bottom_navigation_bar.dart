@@ -2,6 +2,7 @@ import 'package:bema_application/common/config/colors.dart';
 import 'package:bema_application/features/authentication/screens/chat_screen/chat_screen.dart';
 import 'package:bema_application/features/authentication/screens/learderboard_screen/learderboard_screen.dart';
 import 'package:bema_application/features/authentication/screens/profile_screen.dart';
+import 'package:bema_application/features/daily_suggestions/screens/daily_suggestions_screen.dart';
 import 'package:bema_application/features/home/screens/home_screen.dart';
 import 'package:custom_navigation_bar/custom_navigation_bar.dart';
 import 'package:flutter/material.dart';
@@ -22,7 +23,7 @@ class _BottomNavigationBarScreenState extends State<BottomNavigationBarScreen> {
     const ChatScreen(),
     const LearderboardScreen(),
     const ProfileViewScreen(),
-    // const DailytaskScrenn(),
+    const DailytaskScreen(),
   ];
 
   void _onItemTapped(int index) {
