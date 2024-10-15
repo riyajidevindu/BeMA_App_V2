@@ -26,11 +26,11 @@ import 'package:bema_application/features/general_questions/screens/question_scr
 import 'package:bema_application/features/general_questions/screens/question_screen_9.dart';
 import 'package:bema_application/features/general_questions/screens/thank_you_screen.dart';
 import 'package:bema_application/features/home/screens/home_screen.dart';
+import 'package:bema_application/features/instant_stress_release/screens/instant_stress_release_screen.dart';
 import 'package:bema_application/routes/authendication_wrapper.dart';
 import 'package:bema_application/routes/route_names.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-
 
 final goRouter = GoRouter(initialLocation: '/${RouteNames.wrapper}', routes: [
   GoRoute(
@@ -236,8 +236,15 @@ final goRouter = GoRouter(initialLocation: '/${RouteNames.wrapper}', routes: [
   GoRoute(
     path: '/${RouteNames.dailyTaskScreen}',
     name: RouteNames.dailyTaskScreen,
-    pageBuilder: (context, state) =>const MaterialPage(
+    pageBuilder: (context, state) => const MaterialPage(
       child: DailytaskScreen(),
+    ),
+  ),
+  GoRoute(
+    path: '/${RouteNames.stressReleaseScreen}',
+    name: RouteNames.stressReleaseScreen,
+    pageBuilder: (context, state) => const MaterialPage(
+      child: StressReleaseScreen(),
     ),
   ),
   // GoRoute(

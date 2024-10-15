@@ -200,12 +200,9 @@ class _HomeScreenState extends State<HomeScreen> {
                     title: "Your Meals",
                     subtitle: "Add to daily",
                     color: Colors.orange,
-                                   onTap: () {
-                                    Navigator.push(
-                                      context,
-                                      MaterialPageRoute(builder: (context) => const ChatScreen()),
-                                    );
-                            },
+                    onTap: () {
+                       context.pushNamed(RouteNames.stressReleaseScreen);     
+                    },
                   ),
                   _buildCard(
                     avatar: const CircleAvatar(

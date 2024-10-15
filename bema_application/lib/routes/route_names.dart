@@ -5,7 +5,7 @@ class RouteNames {
   static const loginScreen = 'loginScreen';
   static const userWelcomeScreen = 'userWelcomeScreen';
   static const profileScreen = 'profileScreen';
-  
+
   static const bottomNavigationBarScreen = 'bottomNavigationBarScreen';
 
   static const questionScreen2 = 'questionScreen2';
@@ -32,5 +32,6 @@ class RouteNames {
 
   static const chatScreen = 'chatScreen';
   static const dailyTaskScreen = 'dailyTaskScreen';
+  static const stressReleaseScreen = 'stressReleaseScreen';
   static const LearderboardScreen = 'LearderboardScreen';
 }
