@@ -87,8 +87,6 @@ class _DailytaskScreenState extends State<DailytaskScreen> {
       icon: Icons.accessibility,
       type: "regular",
     ),
-
-    // Add more tasks here
   ];
 
   @override
@@ -168,10 +166,11 @@ class _DailytaskScreenState extends State<DailytaskScreen> {
     });
   }
 
-
-
   @override
   Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final screenHeight = MediaQuery.of(context).size.height;
+
     int totalTasks = tasks.length;
     int completedCount = completedTasks.length;
     double taskCompletionPercentage = completedCount / totalTasks;
@@ -187,31 +186,49 @@ class _DailytaskScreenState extends State<DailytaskScreen> {
         ? const Center(child: CircularProgressIndicator()) // Show a loader while data is fetched
         : Column(
           children: [
+            // Points and Overall Progress Section
             Padding(
               padding: const EdgeInsets.all(16.0),
               child: Column(
                 children: [
-                  Text(
-                    'Points: $userPoints',
-                    style: const TextStyle(
-                      fontSize: 22,
-                      fontWeight: FontWeight.w600,
-                      color: Colors.blueGrey,
-                    ),
-                  ),
-                  const SizedBox(height: 10),
-                  Stack(
-                    alignment: Alignment.center,
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      CircularProgressIndicator(
-                        value: taskCompletionPercentage,
-                        backgroundColor: Colors.grey[200],
-                        color: Colors.blueAccent,
-                        strokeWidth: 8,
+                      // Display user points in a badge-like style
+                      Chip(
+                        label: Text(
+                          'Points: $userPoints',
+                          style: const TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                          ),
+                        ),
+                        backgroundColor: Colors.greenAccent.shade400,
                       ),
-                      Text(
-                        '${(taskCompletionPercentage * 100).toInt()}%',
-                        style: const TextStyle(fontSize: 18, color: Colors.blueGrey),
+                      // Circular progress for task completion
+                      Stack(
+                        alignment: Alignment.center,
+                        children: [
+                          SizedBox(
+                            width: screenWidth * 0.2,
+                            height: screenWidth * 0.2,
+                            child: CircularProgressIndicator(
+                              value: taskCompletionPercentage,
+                              backgroundColor: Colors.grey[200],
+                              color: Colors.blueAccent,
+                              strokeWidth: 10,
+                            ),
+                          ),
+                          Text(
+                            '${(taskCompletionPercentage * 100).toInt()}%',
+                            style: const TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.blueGrey,
+                            ),
+                          ),
+                        ],
                       ),
                     ],
                   ),
@@ -283,14 +300,39 @@ class _DailytaskScreenState extends State<DailytaskScreen> {
                                   ),
                                 ),
                                 const SizedBox(height: 20),
-                                ElevatedButton(
-                                  onPressed: completedTasks.contains(index)
-                                      ? null
-                                      : () => completeTask(index),
-                                  child: Text(
-                                    completedTasks.contains(index) ? "Completed" : "Mark as Done",
-                                  ),
-                                ),
+                                completedTasks.contains(index)
+                                  ? Container(
+                                      padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 20),
+                                      decoration: BoxDecoration(
+                                        color: Colors.greenAccent.shade400,
+                                        borderRadius: BorderRadius.circular(30),
+                                      ),
+                                      child: Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          const Icon(Icons.check_circle, color: Colors.white, size: 24),
+                                          const SizedBox(width: 10),
+                                          const Text(
+                                            'Completed',
+                                            style: TextStyle(
+                                              fontSize: 18,
+                                              fontWeight: FontWeight.bold,
+                                              color: Colors.white,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    )
+                                  : FloatingActionButton.extended(
+                                      onPressed: () => completeTask(index),
+                                      label: const Text('Mark as Done'),
+                                      icon: const Icon(Icons.check),
+                                      backgroundColor: Colors.blueAccent,
+                                      elevation: 4,
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(30),
+                                      ),
+                                    ),
                               ],
                             ),
                           ),
