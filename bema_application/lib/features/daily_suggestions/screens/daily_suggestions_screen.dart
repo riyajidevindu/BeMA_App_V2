@@ -1,10 +1,9 @@
-import 'package:bema_application/common/config/colors.dart'; // Custom colors
-import 'package:bema_application/common/widgets/app_bar.dart'; // Custom AppBar
+import 'package:bema_application/common/config/colors.dart'; 
+import 'package:bema_application/common/widgets/app_bar.dart'; 
 import 'package:bema_application/common/widgets/cards/water_intake_card.dart';
 import 'package:bema_application/features/daily_suggestions/data/models/daily_task.dart';
+import 'package:bema_application/features/daily_suggestions/data/services/task_service.dart';
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart'; // Import GoRouter to handle navigation
-
 
 class DailytaskScreen extends StatefulWidget {
   const DailytaskScreen({super.key});
@@ -14,14 +13,15 @@ class DailytaskScreen extends StatefulWidget {
 }
 
 class _DailytaskScreenState extends State<DailytaskScreen> {
-  int userPoints = 0; // Track user points
-  Set<int> completedTasks = Set(); // Track completed tasks
-  int currentPage = 0; // Track the current page index for PageView
-  final PageController _pageController = PageController(); // Add PageController
+  int userPoints = 0;
+  Set<int> completedTasks = Set(); 
+  int currentPage = 0; 
+  final PageController _pageController = PageController();
+  final TaskService _taskService = TaskService(); // TaskService for Firestore
 
-  // List of daily tasks
-    final List<TaskModel> tasks = [
-    TaskModel(
+  bool isLoading = true; // To track loading state
+  List<TaskModel> tasks = [
+     TaskModel(
       title: "Water Intake",
       detail: "You should drink 2.5 liters of water today.",
       icon: Icons.local_drink,
@@ -87,20 +87,67 @@ class _DailytaskScreenState extends State<DailytaskScreen> {
       icon: Icons.accessibility,
       type: "regular",
     ),
-  ];
-  
 
-  // Function to mark tasks as complete
+    // Add more tasks here
+  ];
+
+  @override
+  void initState() {
+    super.initState();
+    _loadTasksFromFirestore(); // Load tasks from Firestore on screen load
+  }
+
+  /// Fetch user's task progress from Firestore
+  Future<void> _loadTasksFromFirestore() async {
+    setState(() {
+      isLoading = true;
+    });
+
+    tasks = await _taskService.fetchUserTasks(tasks); 
+    // Update the user points and completed tasks based on the fetched data
+    _updateTaskStates();
+    
+    setState(() {
+      isLoading = false; // Stop loading once tasks are fetched
+    });
+  }
+
+  /// Update task states after fetching data from Firestore
+  void _updateTaskStates() {
+    int points = 0;
+    Set<int> completed = Set();
+
+    for (int i = 0; i < tasks.length; i++) {
+      if (tasks[i].completed) {
+        completed.add(i);
+        points += 10; // Assuming 10 points per completed task
+      }
+    }
+
+    setState(() {
+      userPoints = points;
+      completedTasks = completed;
+    });
+  }
+
+  /// Save task progress in Firestore
+  Future<void> _saveTaskProgress(int index) async {
+    await _taskService.saveTask(tasks[index]);
+  }
+
+  /// Function to mark tasks as complete and save to Firestore
   void completeTask(int index) {
     setState(() {
       if (!completedTasks.contains(index)) {
         completedTasks.add(index);
-        userPoints += 10; // Award 10 points per task
+        tasks[index] = tasks[index].copyWith(completed: true);
+        userPoints += 10;
+        _saveTaskProgress(index); // Save task completion to Firestore
       }
     });
   }
 
-  // Function to handle progress updates for stepwise tasks
+  /// Function to update stepwise tasks like Water Intake
   void updateStepwiseTask(int index) {
     setState(() {
       if (!completedTasks.contains(index)) {
@@ -111,6 +158,7 @@ class _DailytaskScreenState extends State<DailytaskScreen> {
           completedTasks.add(index);
           userPoints += 10;
         }
+        _saveTaskProgress(index); // Save updated progress to Firestore
       }
     });
   }
@@ -122,167 +170,159 @@ class _DailytaskScreenState extends State<DailytaskScreen> {
     double taskCompletionPercentage = completedCount / totalTasks;
 
     return Scaffold(
-      backgroundColor: backgroundColor, // Custom background
+      backgroundColor: backgroundColor, 
       appBar: AppBar(
         backgroundColor: backgroundColor,
-        title: const CustomAppBar(), // Custom AppBar widget
-        elevation: 0, // Flat modern appbar
+        title: const CustomAppBar(),
+        elevation: 0,
       ),
-      body: Column(
-        children: [
-          // Task completion progress
-          Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Column(
-              children: [
-                Text(
-                  'Points: $userPoints',
-                  style: const TextStyle(
-                    fontSize: 22,
-                    fontWeight: FontWeight.w600,
-                    color: Colors.blueGrey,
+      body: isLoading 
+        ? const Center(child: CircularProgressIndicator()) // Show a loader while data is fetched
+        : Column(
+          children: [
+            Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                children: [
+                  Text(
+                    'Points: $userPoints',
+                    style: const TextStyle(
+                      fontSize: 22,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.blueGrey,
+                    ),
                   ),
-                ),
-                const SizedBox(height: 10),
-                Stack(
-                  alignment: Alignment.center,
-                  children: [
-                    CircularProgressIndicator(
-                      value: taskCompletionPercentage,
-                      backgroundColor: Colors.grey[200],
-                      color: Colors.blueAccent,
-                      strokeWidth: 8,
-                    ),
-                    Text(
-                      '${(taskCompletionPercentage * 100).toInt()}%',
-                      style:
-                          const TextStyle(fontSize: 18, color: Colors.blueGrey),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 10),
-                Text(
-                  'Completed $completedCount / $totalTasks tasks',
-                  style: const TextStyle(fontSize: 16, color: Colors.blueGrey),
-                ),
-              ],
+                  const SizedBox(height: 10),
+                  Stack(
+                    alignment: Alignment.center,
+                    children: [
+                      CircularProgressIndicator(
+                        value: taskCompletionPercentage,
+                        backgroundColor: Colors.grey[200],
+                        color: Colors.blueAccent,
+                        strokeWidth: 8,
+                      ),
+                      Text(
+                        '${(taskCompletionPercentage * 100).toInt()}%',
+                        style: const TextStyle(fontSize: 18, color: Colors.blueGrey),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 10),
+                  Text(
+                    'Completed $completedCount / $totalTasks tasks',
+                    style: const TextStyle(fontSize: 16, color: Colors.blueGrey),
+                  ),
+                ],
+              ),
             ),
-          ),
 
-          // PageView for tasks
-          Expanded(
-            child: Stack(
-              children: [
-                PageView.builder(
-                  controller: _pageController,
-                  onPageChanged: (index) {
-                    setState(() {
-                      currentPage = index;
-                    });
-                  },
-                  itemCount: tasks.length,
-                  itemBuilder: (context, index) {
-                    final task = tasks[index];
+            // PageView for tasks
+            Expanded(
+              child: Stack(
+                children: [
+                  PageView.builder(
+                    controller: _pageController,
+                    onPageChanged: (index) {
+                      setState(() {
+                        currentPage = index;
+                      });
+                    },
+                    itemCount: tasks.length,
+                    itemBuilder: (context, index) {
+                      final task = tasks[index];
 
-                    // Special card for water intake
-                    if (task.title == "Water Intake") {
+                      if (task.title == "Water Intake") {
+                        return Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 10),
+                          child: WaterIntakeCard(
+                            totalWaterGoal: task.total!.toDouble(),
+                            currentProgress: task.progress!.toDouble(),
+                            onProgressUpdate: () => updateStepwiseTask(index),
+                          ),
+                        );
+                      }
+
                       return Padding(
                         padding: const EdgeInsets.symmetric(vertical: 10),
-                        child: WaterIntakeCard(
-                          totalWaterGoal: task.total!.toDouble(),
-                          currentProgress: task.progress!.toDouble(),
-                        ),
-                      );
-                    }
-
-                    // Regular task UI
-                    return Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 10),
-                      child: Card(
-                        elevation: 5,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(16),
-                        ),
-                        child: Padding(
-                          padding: const EdgeInsets.all(16.0),
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Icon(task.icon,
-                                  size: 40, color: Colors.blueAccent),
-                              const SizedBox(height: 10),
-                              Text(
-                                task.title,
-                                style: const TextStyle(
-                                  fontSize: 24,
-                                  fontWeight: FontWeight.w700,
-                                  color: Colors.blueGrey,
+                        child: Card(
+                          elevation: 5,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                          child: Padding(
+                            padding: const EdgeInsets.all(16.0),
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(task.icon, size: 40, color: Colors.blueAccent),
+                                const SizedBox(height: 10),
+                                Text(
+                                  task.title,
+                                  style: const TextStyle(
+                                    fontSize: 24,
+                                    fontWeight: FontWeight.w700,
+                                    color: Colors.blueGrey,
+                                  ),
                                 ),
-                              ),
-                              const SizedBox(height: 16),
-                              Text(
-                                task.detail,
-                                textAlign: TextAlign.center,
-                                style: const TextStyle(
-                                  fontSize: 18,
-                                  color: Colors.grey,
+                                const SizedBox(height: 16),
+                                Text(
+                                  task.detail,
+                                  textAlign: TextAlign.center,
+                                  style: const TextStyle(
+                                    fontSize: 18,
+                                    color: Colors.grey,
+                                  ),
                                 ),
-                              ),
-                              const SizedBox(height: 20),
-                              ElevatedButton(
-                                onPressed: completedTasks.contains(index)
-                                    ? null
-                                    : () => completeTask(index),
-                                child: Text(
-                                  completedTasks.contains(index)
-                                      ? "Completed"
-                                      : "Mark as Done",
+                                const SizedBox(height: 20),
+                                ElevatedButton(
+                                  onPressed: completedTasks.contains(index)
+                                      ? null
+                                      : () => completeTask(index),
+                                  child: Text(
+                                    completedTasks.contains(index) ? "Completed" : "Mark as Done",
+                                  ),
                                 ),
-                              ),
-                            ],
+                              ],
+                            ),
                           ),
                         ),
+                      );
+                    },
+                  ),
+
+                  if (currentPage > 0)
+                    Align(
+                      alignment: Alignment.centerLeft,
+                      child: IconButton(
+                        icon: const Icon(Icons.arrow_back_ios, color: Colors.blueAccent),
+                        onPressed: () {
+                          _pageController.previousPage(
+                            duration: const Duration(milliseconds: 300),
+                            curve: Curves.easeInOut,
+                          );
+                        },
                       ),
-                    );
-                  },
-                ),
-
-                // Left arrow for previous task
-                if (currentPage > 0)
-                  Align(
-                    alignment: Alignment.centerLeft,
-                    child: IconButton(
-                      icon: const Icon(Icons.arrow_back_ios,
-                          color: Colors.blueAccent),
-                      onPressed: () {
-                        _pageController.previousPage(
-                          duration: const Duration(milliseconds: 300),
-                          curve: Curves.easeInOut,
-                        );
-                      },
                     ),
-                  ),
 
-                // Right arrow for next task
-                if (currentPage < tasks.length - 1)
-                  Align(
-                    alignment: Alignment.centerRight,
-                    child: IconButton(
-                      icon: const Icon(Icons.arrow_forward_ios,
-                          color: Colors.blueAccent),
-                      onPressed: () {
-                        _pageController.nextPage(
-                          duration: const Duration(milliseconds: 300),
-                          curve: Curves.easeInOut,
-                        );
-                      },
+                  if (currentPage < tasks.length - 1)
+                    Align(
+                      alignment: Alignment.centerRight,
+                      child: IconButton(
+                        icon: const Icon(Icons.arrow_forward_ios, color: Colors.blueAccent),
+                        onPressed: () {
+                          _pageController.nextPage(
+                            duration: const Duration(milliseconds: 300),
+                            curve: Curves.easeInOut,
+                          );
+                        },
+                      ),
                     ),
-                  ),
-              ],
+                ],
+              ),
             ),
-          ),
-        ],
-      ),
+          ],
+        ),
     );
   }
 }

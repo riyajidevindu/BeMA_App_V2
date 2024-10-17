@@ -3,11 +3,13 @@ import 'package:flutter/material.dart';
 class WaterIntakeCard extends StatefulWidget {
   final double totalWaterGoal; // Total water intake goal in milliliters
   final double currentProgress; // Current water intake progress
+  final VoidCallback onProgressUpdate; // Callback to trigger Firestore update
 
   const WaterIntakeCard({
     Key? key,
     required this.totalWaterGoal,
     required this.currentProgress,
+    required this.onProgressUpdate, // Accept the callback
   }) : super(key: key);
 
   @override
@@ -19,7 +21,6 @@ class _WaterIntakeCardState extends State<WaterIntakeCard> {
   double selectedAmount = 250.0; // Default amount for water intake (in milliliters)
   String selectedDrink = "Water"; // Default drink type
 
-  // Drink options with their corresponding icons and amounts in milliliters (use doubles)
   final Map<String, Map<String, dynamic>> drinkOptions = {
     "Water": {"icon": Icons.local_drink, "amount": 250.0},
     "Tea": {"icon": Icons.emoji_food_beverage, "amount": 200.0},
@@ -40,6 +41,9 @@ class _WaterIntakeCardState extends State<WaterIntakeCard> {
       if (currentWaterProgress > widget.totalWaterGoal) {
         currentWaterProgress = widget.totalWaterGoal; // Cap the progress at the goal
       }
+
+      // Trigger the Firestore update by calling the callback
+      widget.onProgressUpdate();
     });
   }
 
@@ -151,9 +155,9 @@ class _WaterIntakeCardState extends State<WaterIntakeCard> {
                       children: [
                         const Icon(Icons.check_circle, color: Colors.white, size: 24),
                         const SizedBox(width: 10),
-                        Text(
+                        const Text(
                           'Completed',
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontSize: 18,
                             fontWeight: FontWeight.bold,
                             color: Colors.white,
@@ -172,7 +176,6 @@ class _WaterIntakeCardState extends State<WaterIntakeCard> {
                       borderRadius: BorderRadius.circular(30),
                     ),
                   ),
-
           ],
         ),
       ),
