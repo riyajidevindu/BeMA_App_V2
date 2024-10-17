@@ -182,12 +182,12 @@ class _StressReleaseScreenState extends State<StressReleaseScreen>
     return Scaffold(
       appBar: AppBar(
         backgroundColor: backgroundColor,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Color.fromARGB(255, 3, 0, 0)),
-          onPressed: () {
-            context.pop(); // Go back
-          },
-        ),
+        // leading: IconButton(
+        //   icon: const Icon(Icons.arrow_back, color: Color.fromARGB(255, 3, 0, 0)),
+        //   onPressed: () {
+        //     context.pop(); // Go back
+        //   },
+        // ),
         title: const CustomAppBar(),
       ),
       body: Column(

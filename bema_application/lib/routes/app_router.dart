@@ -27,12 +27,25 @@ import 'package:bema_application/features/general_questions/screens/question_scr
 import 'package:bema_application/features/general_questions/screens/thank_you_screen.dart';
 import 'package:bema_application/features/home/screens/home_screen.dart';
 import 'package:bema_application/features/instant_stress_release/screens/instant_stress_release_screen.dart';
+import 'package:bema_application/features/navbar/bottom_navbar.dart';
 import 'package:bema_application/routes/authendication_wrapper.dart';
 import 'package:bema_application/routes/route_names.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 final goRouter = GoRouter(initialLocation: '/${RouteNames.wrapper}', routes: [
+  GoRoute(
+    path: '/${RouteNames.bottomNavigationBarScreen}',
+    name: RouteNames.bottomNavigationBarScreen,
+    pageBuilder: (context, state) {
+      int id = state.extra as int;  // Pass index for initial tab
+      return MaterialPage(
+        child: BNavbarScreen(
+          initialIndex: id,  // Specify the initial tab
+        ),
+      );
+    },
+  ),
   GoRoute(
     path: '/${RouteNames.wrapper}',
     name: RouteNames.wrapper,
@@ -54,17 +67,6 @@ final goRouter = GoRouter(initialLocation: '/${RouteNames.wrapper}', routes: [
       child: LoginScreen(),
     ),
   ),
-  GoRoute(
-      path: '/${RouteNames.bottomNavigationBarScreen}',
-      name: RouteNames.bottomNavigationBarScreen,
-      pageBuilder: (context, state) {
-        int id = state.extra as int;
-        return MaterialPage(
-          child: BottomNavigationBarScreen(
-            initialIndex: id,
-          ),
-        );
-      }),
   GoRoute(
     path: '/${RouteNames.userWelcomeScreen}',
     name: RouteNames.userWelcomeScreen,

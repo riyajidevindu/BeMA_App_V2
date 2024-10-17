@@ -129,12 +129,12 @@ class _DailytaskScreenState extends State<DailytaskScreen> {
       backgroundColor: backgroundColor, // Use custom background color
       appBar: AppBar(
         backgroundColor: backgroundColor, // Consistent background color
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Color.fromARGB(255, 3, 0, 0)), // Back arrow icon
-          onPressed: () {
-            context.pop(); // Use GoRouter's pop method to go back
-          },
-        ),
+        // leading: IconButton(
+        //   icon: const Icon(Icons.arrow_back, color: Color.fromARGB(255, 3, 0, 0)), // Back arrow icon
+        //   onPressed: () {
+        //     context.pop(); // Use GoRouter's pop method to go back
+        //   },
+        // ),
         title: const CustomAppBar(), // Use custom AppBar widget
       ),
       body: Column(
