@@ -17,125 +17,118 @@ class _CustomAppBarState extends State<CustomAppBar> {
   Widget build(BuildContext context) {
     double width = MediaQuery.of(context).size.width;
 
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Flexible(
-          child: Container(
-            height: 50,
-            decoration: BoxDecoration(
-              gradient: const LinearGradient(
-                colors: [primaryColor, primaryColor],
-              ),
-              borderRadius: BorderRadius.circular(10),
-            ),
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10),
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          colors: [Color(0xFF0288D1), Color(0xFF26C6DA)], // Gradient effect
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.2),
+            spreadRadius: 2,
+            blurRadius: 5,
+            offset: const Offset(0, 3), // Shadow position
+          ),
+        ],
+        borderRadius: BorderRadius.circular(12), // Rounded corners for entire AppBar
+      ),
+      height: 60, // Consistent height
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          GestureDetector(
+            onTap: () {
+              // Navigate to the home tab in the bottom navigation bar
+              context.goNamed(RouteNames.bottomNavigationBarScreen, extra: 0);
+            },
             child: Row(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Row(
-                  children: [
-                    const SizedBox(width: 15),
-                    const CircleAvatar(
-                      radius: 18,
-                      backgroundImage: AssetImage('assets/logo.png'),
-                    ),
-                    const SizedBox(width: 15),
-                    Text(
-                      "BeMA",
-                      style: TextStyle(
-                        color: backgroundColor,
-                        fontWeight: FontWeight.w500,
-                        fontSize: width * 0.055,
-                      ),
-                    ),
-                  ],
+                const CircleAvatar(
+                  radius: 20,
+                  backgroundImage: AssetImage('assets/logo.png'),
                 ),
-                Row(
-                  children: [
-                    IconButton(
-                      onPressed: () {
-                        // Handle notification button press
-                      },
-                      icon: Icon(
-                        Icons.notifications,
-                        color: backgroundColor,
-                        size: width * 0.06,
-                      ),
-                    ),
-                    PopupMenuButton<String>(
-                      icon: Icon(
-                        Icons.settings,
-                        color: backgroundColor,
-                        size: width * 0.06,
-                      ),
-                      onSelected: (value) {
-                        if (value == 'profile') {
-                          context.push('/${RouteNames.profileScreen}');
-                        } else if (value == 'signOut') {
-                          final authProvider =
-                              Provider.of<AuthenticationProvider>(context, listen: false);
-                          authProvider.signOut();
-                          context.push('/${RouteNames.loginScreen}');
-                        }
-                      },
-                      itemBuilder: (BuildContext context) {
-                        return [
-                          PopupMenuItem<String>(
-                            value: 'profile',
-                            child: _buildPopupMenuItem(
-                              icon: Icons.person,
-                              text: 'Profile',
-                            ),
-                          ),
-                          PopupMenuItem<String>(
-                            value: 'signOut',
-                            child: _buildPopupMenuItem(
-                              icon: Icons.exit_to_app,
-                              text: 'Sign Out',
-                            ),
-                          ),
-                        ];
-                      },
-                    ),
-                  ],
+                const SizedBox(width: 10),
+                Text(
+                  "BeMA",
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                    fontSize: width * 0.06, // Responsive font size
+                  ),
                 ),
               ],
             ),
           ),
-        ),
-      ],
+          Row(
+            children: [
+              IconButton(
+                onPressed: () {
+                  // Handle notification button press
+                },
+                icon: Icon(
+                  Icons.notifications,
+                  color: Colors.white,
+                  size: width * 0.06,
+                ),
+              ),
+              PopupMenuButton<String>(
+                icon: Icon(
+                  Icons.settings,
+                  color: Colors.white,
+                  size: width * 0.06,
+                ),
+                onSelected: (value) {
+                  if (value == 'profile') {
+                    context.push('/${RouteNames.profileScreen}');
+                  } else if (value == 'signOut') {
+                    final authProvider =
+                        Provider.of<AuthenticationProvider>(context, listen: false);
+                    authProvider.signOut();
+                    context.push('/${RouteNames.loginScreen}');
+                  }
+                },
+                itemBuilder: (BuildContext context) {
+                  return [
+                    PopupMenuItem<String>(
+                      value: 'profile',
+                      child: _buildPopupMenuItem(
+                        icon: Icons.person,
+                        text: 'Profile',
+                      ),
+                    ),
+                    PopupMenuItem<String>(
+                      value: 'signOut',
+                      child: _buildPopupMenuItem(
+                        icon: Icons.exit_to_app,
+                        text: 'Sign Out',
+                      ),
+                    ),
+                  ];
+                },
+              ),
+            ],
+          ),
+        ],
+      ),
     );
   }
 
   // Function to build each popup menu item with custom styling
   Widget _buildPopupMenuItem({required IconData icon, required String text}) {
-    return Container(
-      padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 12.0),
-      decoration: BoxDecoration(
-        color: Colors.white, // Light background
-        borderRadius: BorderRadius.circular(8), // Rounded corners
-        boxShadow: [
-          BoxShadow(
-            color: Colors.grey.withOpacity(0.2), // Shadow effect
-            spreadRadius: 2,
-            blurRadius: 5,
-            offset: const Offset(0, 3), // Offset for shadow
+    return Row(
+      children: [
+        Icon(icon, color: primaryColor),
+        const SizedBox(width: 10),
+        Text(
+          text,
+          style: const TextStyle(
+            fontWeight: FontWeight.w500,
           ),
-        ],
-      ),
-      child: Row(
-        children: [
-          Icon(icon, color: primaryColor), // Icon with custom color
-          const SizedBox(width: 10),
-          Text(
-            text,
-            style: const TextStyle(
-              fontWeight: FontWeight.w500,
-            ),
-          ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 }

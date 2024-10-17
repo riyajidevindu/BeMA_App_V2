@@ -23,15 +23,14 @@ class _BNavbarScreenState extends State<BNavbarScreen> {
     super.initState();
     // Set the selected index to the initial index passed when navigating
     _selectedIndex = widget.initialIndex;
-    
-    // Log the initial index when the screen is first created
+
     debugPrint('Initial Index from shortcut: $_selectedIndex');
   }
 
   @override
   void didUpdateWidget(covariant BNavbarScreen oldWidget) {
     super.didUpdateWidget(oldWidget);
-    // Ensure that the index gets updated if the widget receives a new initial index (e.g., via a shortcut)
+    // Check if the widget's initial index is different from the current _selectedIndex
     if (oldWidget.initialIndex != widget.initialIndex) {
       setState(() {
         _selectedIndex = widget.initialIndex;
@@ -55,7 +54,6 @@ class _BNavbarScreenState extends State<BNavbarScreen> {
       _selectedIndex = index;
     });
 
-    // Log the selected index when a tab is tapped
     debugPrint('Selected Index: $index');
   }
 
