@@ -148,13 +148,18 @@ class _DailytaskScreenState extends State<DailytaskScreen> {
   }
 
   /// Function to update stepwise tasks like Water Intake
-  void updateStepwiseTask(int index) {
+  void updateStepwiseTask(int index, double selectedAmount) {
     setState(() {
       if (!completedTasks.contains(index)) {
+        // Convert selectedAmount to int before adding to progress
+        int updatedProgress = tasks[index].progress! + selectedAmount.toInt();
+        
+        // Update the progress by the selected drink amount
         tasks[index] = tasks[index].copyWith(
-          progress: (tasks[index].progress! + tasks[index].stepAmount!),
+          progress: updatedProgress,
         );
-        if (tasks[index].progress! >= tasks[index].total!) {
+        
+        if (updatedProgress >= tasks[index].total!) {
           completedTasks.add(index);
           userPoints += 10;
         }
@@ -162,6 +167,8 @@ class _DailytaskScreenState extends State<DailytaskScreen> {
       }
     });
   }
+
+
 
   @override
   Widget build(BuildContext context) {
@@ -238,7 +245,8 @@ class _DailytaskScreenState extends State<DailytaskScreen> {
                           child: WaterIntakeCard(
                             totalWaterGoal: task.total!.toDouble(),
                             currentProgress: task.progress!.toDouble(),
-                            onProgressUpdate: () => updateStepwiseTask(index),
+                            // Pass the selected amount to update the task
+                            onProgressUpdate: (selectedAmount) => updateStepwiseTask(index, selectedAmount),
                           ),
                         );
                       }

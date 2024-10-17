@@ -3,13 +3,13 @@ import 'package:flutter/material.dart';
 class WaterIntakeCard extends StatefulWidget {
   final double totalWaterGoal; // Total water intake goal in milliliters
   final double currentProgress; // Current water intake progress
-  final VoidCallback onProgressUpdate; // Callback to trigger Firestore update
+  final Function(double) onProgressUpdate; // Updated to pass the drink amount
 
   const WaterIntakeCard({
     Key? key,
     required this.totalWaterGoal,
     required this.currentProgress,
-    required this.onProgressUpdate, // Accept the callback
+    required this.onProgressUpdate, // Accept the callback with drink amount
   }) : super(key: key);
 
   @override
@@ -42,8 +42,8 @@ class _WaterIntakeCardState extends State<WaterIntakeCard> {
         currentWaterProgress = widget.totalWaterGoal; // Cap the progress at the goal
       }
 
-      // Trigger the Firestore update by calling the callback
-      widget.onProgressUpdate();
+      // Trigger the Firestore update by calling the callback and passing selectedAmount
+      widget.onProgressUpdate(selectedAmount);
     });
   }
 
