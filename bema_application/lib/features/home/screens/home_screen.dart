@@ -2,9 +2,6 @@ import 'package:bema_application/common/config/colors.dart';
 import 'package:bema_application/common/widgets/app_bar.dart';
 import 'package:bema_application/features/authentication/data/models/profile_service.dart';
 import 'package:bema_application/features/authentication/data/models/user_model.dart';
-import 'package:bema_application/features/authentication/screens/chat_screen/chat_screen.dart';
-import 'package:bema_application/features/authentication/screens/learderboard_screen/learderboard_screen.dart';
-import 'package:bema_application/routes/app_router.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
@@ -38,9 +35,6 @@ class _HomeScreenState extends State<HomeScreen> {
     try {
       UserModel? user =
           await profileService.getUser(FirebaseAuth.instance.currentUser!.uid);
-
-      // Debug the fetched user details
-      debugPrint('Fetched user: ${user?.name}');
 
       if (user != null && user.name.isNotEmpty) {
         setState(() {
@@ -122,8 +116,7 @@ class _HomeScreenState extends State<HomeScreen> {
               margin: const EdgeInsets.only(
                   bottom: 20.0, top: 20), // Space around the box if needed
               decoration: BoxDecoration(
-                color: const Color.fromARGB(
-                    255, 26, 201, 213), // Background color of the box
+                color: const Color.fromARGB(255, 26, 201, 213), // Background color of the box
                 borderRadius: BorderRadius.circular(12), // Rounded corners
                 border: Border.all(
                     color: Colors.grey.shade300), // Border around the box
@@ -173,8 +166,9 @@ class _HomeScreenState extends State<HomeScreen> {
                     title: "Daily Task",
                     subtitle: "Your Health Guide",
                     color: Colors.lightBlueAccent,
-                    onTap: () {                      
-                       context.pushNamed(RouteNames.dailyTaskScreen);
+                    onTap: () {
+                      // Navigate to Daily Task tab (index 3)
+                      context.goNamed(RouteNames.bottomNavigationBarScreen, extra: 3);
                     },
                   ),
                   _buildCard(
@@ -185,12 +179,10 @@ class _HomeScreenState extends State<HomeScreen> {
                     title: "Mood Friend",
                     subtitle: "Fix You Mood",
                     color: Colors.orangeAccent,
-                                   onTap: () {
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(builder: (context) => const ChatScreen()),
-                                  );
-                          },
+                    onTap: () {
+                      // Navigate to Mood tab (index 2)
+                      context.goNamed(RouteNames.bottomNavigationBarScreen, extra: 2);
+                    },
                   ),
                   _buildCard(
                     avatar: const CircleAvatar(
@@ -201,7 +193,8 @@ class _HomeScreenState extends State<HomeScreen> {
                     subtitle: "Relax Your Mind",
                     color: Colors.orange,
                     onTap: () {
-                       context.pushNamed(RouteNames.stressReleaseScreen);     
+                      // Navigate to Relax tab (index 1)
+                      context.goNamed(RouteNames.bottomNavigationBarScreen, extra: 1);
                     },
                   ),
                   _buildCard(
@@ -212,25 +205,11 @@ class _HomeScreenState extends State<HomeScreen> {
                     title: "Your Points",
                     subtitle: "Check me",
                     color: Colors.lightBlue,
-                                   onTap: () {
-                                    Navigator.push(
-                                      context,
-                                      MaterialPageRoute(builder: (context) => const LearderboardScreen()),
-                                    );
-                            },
+                    onTap: () {
+                      // Navigate to Points tab (index 4)
+                      context.goNamed(RouteNames.bottomNavigationBarScreen, extra: 4);
+                    },
                   ),
-                  // _buildCard(
-                  //   avatar: const CircleAvatar(
-                  //     radius: 35,
-                  //     backgroundImage: AssetImage('assets/meals.png'),
-                  //   ),
-                  //   title: "Your Meals",
-                  //   subtitle: "Add to daily",
-                  //   color: Colors.orange,
-                  //   onTap: () {
-                  //      context.pushNamed(RouteNames.stressReleaseScreen);     
-                  //   },
-                  // ),
                 ],
               ),
             ),
@@ -240,50 +219,49 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
- Widget _buildCard({
-  required Widget avatar, // Accepts any widget (e.g., CircleAvatar)
-  required String title,
-  required String subtitle,
-  required Color color,
-  VoidCallback? onTap, // onTap can be null if not provided
-}) {
-  return GestureDetector(
-    onTap: onTap, // Trigger the onTap function if tapped
-    child: Container(
-      decoration: BoxDecoration(
-        color: color.withOpacity(0.2),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: color.withOpacity(0.6)),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(8.0),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            avatar, // Display the passed widget (CircleAvatar in this case)
-            const SizedBox(height: 5),
-            Text(
-              title,
-              style: const TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-                color: Colors.black,
+  Widget _buildCard({
+    required Widget avatar, // Accepts any widget (e.g., CircleAvatar)
+    required String title,
+    required String subtitle,
+    required Color color,
+    VoidCallback? onTap, // onTap can be null if not provided
+  }) {
+    return GestureDetector(
+      onTap: onTap, // Trigger the onTap function if tapped
+      child: Container(
+        decoration: BoxDecoration(
+          color: color.withOpacity(0.2),
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: color.withOpacity(0.6)),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              avatar, // Display the passed widget (CircleAvatar in this case)
+              const SizedBox(height: 5),
+              Text(
+                title,
+                style: const TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black,
+                ),
               ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              subtitle,
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 14,
-                color: Colors.grey[700],
+              const SizedBox(height: 8),
+              Text(
+                subtitle,
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 14,
+                  color: Colors.grey[700],
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
-    ),
-  );
-}
-
+    );
+  }
 }

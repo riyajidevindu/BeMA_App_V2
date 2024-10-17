@@ -1,15 +1,14 @@
+import 'package:flutter/material.dart';
 import 'package:bema_application/common/config/colors.dart';
 import 'package:bema_application/features/authentication/screens/chat_screen/chat_screen.dart';
 import 'package:bema_application/features/authentication/screens/learderboard_screen/learderboard_screen.dart';
-import 'package:bema_application/features/authentication/screens/profile_screen.dart';
 import 'package:bema_application/features/daily_suggestions/screens/daily_suggestions_screen.dart';
 import 'package:bema_application/features/home/screens/home_screen.dart';
 import 'package:bema_application/features/instant_stress_release/screens/instant_stress_release_screen.dart';
-import 'package:flutter/material.dart';
 import 'package:custom_navigation_bar/custom_navigation_bar.dart';
 
 class BNavbarScreen extends StatefulWidget {
-  final int initialIndex; // Added to allow passing initial tab index
+  final int initialIndex; // Pass initial index for default tab
   const BNavbarScreen({super.key, this.initialIndex = 0}); // Default to 0 (Home)
 
   @override
@@ -24,17 +23,30 @@ class _BNavbarScreenState extends State<BNavbarScreen> {
     super.initState();
     // Set the selected index to the initial index passed when navigating
     _selectedIndex = widget.initialIndex;
+    
+    // Log the initial index when the screen is first created
+    debugPrint('Initial Index from shortcut: $_selectedIndex');
+  }
+
+  @override
+  void didUpdateWidget(covariant BNavbarScreen oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // Ensure that the index gets updated if the widget receives a new initial index (e.g., via a shortcut)
+    if (oldWidget.initialIndex != widget.initialIndex) {
+      setState(() {
+        _selectedIndex = widget.initialIndex;
+        debugPrint('Updated Index from shortcut: $_selectedIndex');
+      });
+    }
   }
 
   // List of screens for navigation
   static final List<Widget> _widgetOptions = <Widget>[
     HomeScreen(),
-    StressReleaseScreen(), 
+    StressReleaseScreen(),
     ChatScreen(),
     DailytaskScreen(),
     LearderboardScreen(),
-    //ProfileViewScreen()
-
   ];
 
   // Update index when navigation item is tapped
@@ -42,6 +54,9 @@ class _BNavbarScreenState extends State<BNavbarScreen> {
     setState(() {
       _selectedIndex = index;
     });
+
+    // Log the selected index when a tab is tapped
+    debugPrint('Selected Index: $index');
   }
 
   @override
@@ -102,15 +117,6 @@ class _BNavbarScreenState extends State<BNavbarScreen> {
                 style: TextStyle(color: secondaryTextColor),
               ),
             ),
-            // CustomNavigationBarItem(
-            //   icon: const Icon(Icons.person_off_outlined),
-            //   title: const Text(
-            //     'Profile',
-            //     style: TextStyle(color: secondaryTextColor),
-            //   ),
-            // ),
-
-            // You can add more CustomNavigationBarItem here
           ],
           selectedColor: primaryColor,
           unSelectedColor: secondaryTextColor,
