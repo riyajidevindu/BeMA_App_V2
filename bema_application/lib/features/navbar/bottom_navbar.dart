@@ -1,4 +1,8 @@
 import 'package:bema_application/common/config/colors.dart';
+import 'package:bema_application/features/authentication/screens/chat_screen/chat_screen.dart';
+import 'package:bema_application/features/authentication/screens/learderboard_screen/learderboard_screen.dart';
+import 'package:bema_application/features/authentication/screens/profile_screen.dart';
+import 'package:bema_application/features/daily_suggestions/screens/daily_suggestions_screen.dart';
 import 'package:bema_application/features/home/screens/home_screen.dart';
 import 'package:bema_application/features/instant_stress_release/screens/instant_stress_release_screen.dart';
 import 'package:flutter/material.dart';
@@ -24,9 +28,13 @@ class _BNavbarScreenState extends State<BNavbarScreen> {
 
   // List of screens for navigation
   static final List<Widget> _widgetOptions = <Widget>[
-    HomeScreen(), // Actual HomeScreen widget
-    StressReleaseScreen(), // Actual StressReleaseScreen widget
-    // Add more screens here if needed
+    HomeScreen(),
+    StressReleaseScreen(), 
+    ChatScreen(),
+    DailytaskScreen(),
+    LearderboardScreen(),
+    //ProfileViewScreen()
+
   ];
 
   // Update index when navigation item is tapped
@@ -73,6 +81,35 @@ class _BNavbarScreenState extends State<BNavbarScreen> {
                 style: TextStyle(color: secondaryTextColor),
               ),
             ),
+            CustomNavigationBarItem(
+              icon: const Icon(Icons.chat),
+              title: const Text(
+                'Chat',
+                style: TextStyle(color: secondaryTextColor),
+              ),
+            ),
+            CustomNavigationBarItem(
+              icon: const Icon(Icons.work),
+              title: const Text(
+                'Tasks',
+                style: TextStyle(color: secondaryTextColor),
+              ),
+            ),
+            CustomNavigationBarItem(
+              icon: const Icon(Icons.list),
+              title: const Text(
+                'Points',
+                style: TextStyle(color: secondaryTextColor),
+              ),
+            ),
+            // CustomNavigationBarItem(
+            //   icon: const Icon(Icons.person_off_outlined),
+            //   title: const Text(
+            //     'Profile',
+            //     style: TextStyle(color: secondaryTextColor),
+            //   ),
+            // ),
+
             // You can add more CustomNavigationBarItem here
           ],
           selectedColor: primaryColor,
