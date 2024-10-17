@@ -21,20 +21,15 @@ class _BNavbarScreenState extends State<BNavbarScreen> {
   @override
   void initState() {
     super.initState();
-    // Set the selected index to the initial index passed when navigating
-    _selectedIndex = widget.initialIndex;
-
-    debugPrint('Initial Index from shortcut: $_selectedIndex');
+    _selectedIndex = widget.initialIndex; // Set the initial index
   }
 
   @override
   void didUpdateWidget(covariant BNavbarScreen oldWidget) {
     super.didUpdateWidget(oldWidget);
-    // Check if the widget's initial index is different from the current _selectedIndex
     if (oldWidget.initialIndex != widget.initialIndex) {
       setState(() {
         _selectedIndex = widget.initialIndex;
-        debugPrint('Updated Index from shortcut: $_selectedIndex');
       });
     }
   }
@@ -53,8 +48,6 @@ class _BNavbarScreenState extends State<BNavbarScreen> {
     setState(() {
       _selectedIndex = index;
     });
-
-    debugPrint('Selected Index: $index');
   }
 
   @override
@@ -63,65 +56,64 @@ class _BNavbarScreenState extends State<BNavbarScreen> {
       backgroundColor: backgroundColor,
       body: _widgetOptions.elementAt(_selectedIndex), // Load the selected screen dynamically
       bottomNavigationBar: Container(
-        height: 55,
+        margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
         decoration: BoxDecoration(
-          color: backgroundColor,
-          borderRadius: const BorderRadius.only(
-            topLeft: Radius.circular(25),
-            topRight: Radius.circular(25),
-          ),
-          border: Border.all(
-            color: backgroundColor,
-            width: 2.0,
-          ),
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(30),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.1),
+              spreadRadius: 3,
+              blurRadius: 15,
+            ),
+          ],
         ),
         child: CustomNavigationBar(
-          backgroundColor: backgroundColor,
+          backgroundColor: Colors.white,
           currentIndex: _selectedIndex,
           onTap: _onItemTapped, // Handle tab changes
           items: [
             CustomNavigationBarItem(
-              icon: const Icon(Icons.home),
+              icon: const Icon(Icons.home, size: 24),
               title: const Text(
                 'Home',
-                style: TextStyle(color: secondaryTextColor),
+                style: TextStyle(fontSize: 12, color: secondaryTextColor),
               ),
             ),
             CustomNavigationBarItem(
-              icon: const Icon(Icons.air),
+              icon: const Icon(Icons.air, size: 24),
               title: const Text(
                 'Relax',
-                style: TextStyle(color: secondaryTextColor),
+                style: TextStyle(fontSize: 12, color: secondaryTextColor),
               ),
             ),
             CustomNavigationBarItem(
-              icon: const Icon(Icons.chat),
+              icon: const Icon(Icons.chat, size: 24),
               title: const Text(
                 'Chat',
-                style: TextStyle(color: secondaryTextColor),
+                style: TextStyle(fontSize: 12, color: secondaryTextColor),
               ),
             ),
             CustomNavigationBarItem(
-              icon: const Icon(Icons.work),
+              icon: const Icon(Icons.work, size: 24),
               title: const Text(
                 'Tasks',
-                style: TextStyle(color: secondaryTextColor),
+                style: TextStyle(fontSize: 12, color: secondaryTextColor),
               ),
             ),
             CustomNavigationBarItem(
-              icon: const Icon(Icons.list),
+              icon: const Icon(Icons.list, size: 24),
               title: const Text(
                 'Points',
-                style: TextStyle(color: secondaryTextColor),
+                style: TextStyle(fontSize: 12, color: secondaryTextColor),
               ),
             ),
           ],
           selectedColor: primaryColor,
           unSelectedColor: secondaryTextColor,
-          strokeColor: const Color.fromARGB(0, 22, 0, 0),
-          iconSize: 30.0,
-          elevation: 0,
-          borderRadius: const Radius.circular(25),
+          iconSize: 24, // Smaller icon size
+          elevation: 10, // Add some elevation to give a floating effect
+          borderRadius: const Radius.circular(30),
         ),
       ),
     );
