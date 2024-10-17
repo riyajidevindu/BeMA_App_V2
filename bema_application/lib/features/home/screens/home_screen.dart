@@ -195,10 +195,10 @@ class _HomeScreenState extends State<HomeScreen> {
                   _buildCard(
                     avatar: const CircleAvatar(
                       radius: 35,
-                      backgroundImage: AssetImage('assets/meals.png'),
+                      backgroundImage: AssetImage('assets/relax.png'),
                     ),
-                    title: "Your Meals",
-                    subtitle: "Add to daily",
+                    title: "Breath Relaxer",
+                    subtitle: "Relax Your Mind",
                     color: Colors.orange,
                     onTap: () {
                        context.pushNamed(RouteNames.stressReleaseScreen);     
@@ -219,6 +219,18 @@ class _HomeScreenState extends State<HomeScreen> {
                                     );
                             },
                   ),
+                  // _buildCard(
+                  //   avatar: const CircleAvatar(
+                  //     radius: 35,
+                  //     backgroundImage: AssetImage('assets/meals.png'),
+                  //   ),
+                  //   title: "Your Meals",
+                  //   subtitle: "Add to daily",
+                  //   color: Colors.orange,
+                  //   onTap: () {
+                  //      context.pushNamed(RouteNames.stressReleaseScreen);     
+                  //   },
+                  // ),
                 ],
               ),
             ),
