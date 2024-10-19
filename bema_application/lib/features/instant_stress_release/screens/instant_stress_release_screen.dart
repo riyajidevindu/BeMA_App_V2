@@ -140,7 +140,7 @@ class _StressReleaseScreenState extends State<StressReleaseScreen>
     // After the last cycle, start the heartbeat animation
     setState(() {
       currentProgress = 1.0; // Fully completed progress
-      statusText = "🎉\nRelaxation Complete"; // Emoji for completion
+      statusText = "🎉\nExercise Complete"; // Emoji for completion
       relaxationComplete = true; // Mark relaxation as complete
       _heartbeatController.forward(); // Start the heartbeat animation
     });
