@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 class TaskModel {
   final String title;
   final String detail;
-  final IconData icon;
   final String type; // "stepwise" or "regular"
   final int? total; // Total steps or amount (e.g., 2500ml for water intake)
   final int? progress; // Current progress (e.g., 500ml for water intake)
@@ -13,7 +12,6 @@ class TaskModel {
   TaskModel({
     required this.title,
     required this.detail,
-    required this.icon,
     required this.type,
     this.total,
     this.progress = 0,
@@ -26,7 +24,6 @@ class TaskModel {
     return TaskModel(
       title: data['title'] as String,
       detail: data['detail'] as String,
-      icon: IconData(data['icon'], fontFamily: 'MaterialIcons'),
       type: data['type'] as String,
       total: data['total'] as int?,
       progress: data['progress'] as int? ?? 0,
@@ -40,7 +37,6 @@ class TaskModel {
     return {
       'title': title,
       'detail': detail,
-      'icon': icon.codePoint, // Convert IconData to integer
       'type': type,
       'total': total,
       'progress': progress,
@@ -53,7 +49,6 @@ class TaskModel {
   TaskModel copyWith({
     String? title,
     String? detail,
-    IconData? icon,
     String? type,
     int? total,
     int? progress,
@@ -63,7 +58,6 @@ class TaskModel {
     return TaskModel(
       title: title ?? this.title,
       detail: detail ?? this.detail,
-      icon: icon ?? this.icon,
       type: type ?? this.type,
       total: total ?? this.total,
       progress: progress ?? this.progress,
