@@ -1,9 +1,7 @@
-import 'package:bema_application/common/config/colors.dart';
-import 'package:bema_application/common/widgets/app_bar.dart';
-import 'package:bema_application/features/authentication/screens/chat_screen/chat_message.dart';
-import 'package:bema_application/services/service.dart';
 import 'package:flutter/material.dart';
-// import 'package:flutter_emoji_picker/flutter_emoji_picker.dart'; // Add emoji picker
+import 'package:bema_application/common/config/colors.dart'; // Custom colors
+import 'package:bema_application/common/widgets/app_bar.dart'; // Custom AppBar
+import 'package:bema_application/features/authentication/screens/chat_screen/chat_message.dart';
 
 class ChatScreen extends StatefulWidget {
   const ChatScreen({super.key});
@@ -14,66 +12,56 @@ class ChatScreen extends StatefulWidget {
 
 class _ChatScreenState extends State<ChatScreen> {
   final TextEditingController _controller = TextEditingController();
-  // final List<ChatMessage> _messages = [];
-  // final OpenAIService openAIService = OpenAIService();
-
-  // Future<void> _sendMessage() async {
-  //   if (_controller.text.isEmpty) return;
-
-  //   // Create user message
-  //   ChatMessage newMessage = ChatMessage(text: _controller.text, sender: "user");
-  //   setState(() {
-  //     _messages.insert(0, newMessage);
-  //   });
-
-  //   String userInput = _controller.text;
-  //   _controller.clear();
-
-  //   // Send to OpenAI and get response
-  //   String openAIResponse = await openAIService.sendMessageToOpenAI(userInput);
-
-  //   // Create AI response
-  //   ChatMessage aiMessage = ChatMessage(text: openAIResponse, sender: "AI");
-  //   setState(() {
-  //     _messages.insert(0, aiMessage);
-  //   });
-  // }
 
   Widget _buildTextComposer() {
     return Padding(
-      padding: const EdgeInsets.all(3.0),
+      padding: const EdgeInsets.all(10.0),
       child: Row(
         children: [
           IconButton(
-            onPressed: () {},
-            icon: const Icon(Icons.emoji_emotions, color: Colors.orangeAccent),
+            onPressed: () {
+              // Open emoji picker
+            },
+            icon: const Icon(Icons.emoji_emotions_outlined, color: Colors.orangeAccent, size: 28),
           ),
           Expanded(
-            child: Padding(
-              padding: const EdgeInsets.all(10.0),
+            child: Container(
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(25.0),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.grey.withOpacity(0.2),
+                    spreadRadius: 1,
+                    blurRadius: 8,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
               child: TextField(
                 controller: _controller,
-                // onSubmitted: (value) => _sendMessage(),
                 decoration: InputDecoration(
                   hintText: "Type Your Message...",
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(25.0),
-                    borderSide: BorderSide.none,
-                  ),
-                  filled: true,
-                  fillColor: Colors.white,
-                  contentPadding: const EdgeInsets.symmetric(
-                    vertical: 10.0,
-                    horizontal: 20.0,
-                  ),
+                  contentPadding: const EdgeInsets.symmetric(vertical: 12.0, horizontal: 20.0),
+                  border: InputBorder.none,
                 ),
               ),
             ),
           ),
-          // IconButton(
-          //   onPressed: _sendMessage,
-          //   icon: const Icon(Icons.send, color: Color.fromARGB(255, 5, 7, 7)),
-          // ),
+          const SizedBox(width: 10),
+          GestureDetector(
+            onTap: () {
+              // Trigger send message
+            },
+            child: Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: Colors.blueAccent,
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(Icons.send, color: Colors.white, size: 28),
+            ),
+          ),
         ],
       ),
     );
@@ -92,30 +80,42 @@ class _ChatScreenState extends State<ChatScreen> {
             ),
             const SizedBox(width: 8.0),
           ],
-          Container(
-            margin: const EdgeInsets.symmetric(vertical: 5.0),
-            padding: const EdgeInsets.all(10.0),
-            constraints: BoxConstraints(
-              maxWidth: MediaQuery.of(context).size.width * 0.75,
-            ),
-            decoration: BoxDecoration(
-              color: isUser ? Colors.blue[100] : Colors.green[100],
-              borderRadius: BorderRadius.circular(15.0),
-            ),
-            child: Text(
-              message.text,
-              style: const TextStyle(
-                fontSize: 16.0,
-                color: Colors.black87,
+          Flexible(
+            child: Container(
+              margin: const EdgeInsets.symmetric(vertical: 5.0, horizontal: 8.0),
+              padding: const EdgeInsets.all(12.0),
+              constraints: BoxConstraints(
+                maxWidth: MediaQuery.of(context).size.width * 0.75,
+              ),
+              decoration: BoxDecoration(
+                color: isUser ? Colors.blueAccent.withOpacity(0.8) : Colors.greenAccent.withOpacity(0.7),
+                borderRadius: BorderRadius.only(
+                  topLeft: const Radius.circular(15.0),
+                  topRight: const Radius.circular(15.0),
+                  bottomLeft: isUser ? const Radius.circular(15.0) : const Radius.circular(0),
+                  bottomRight: isUser ? const Radius.circular(0) : const Radius.circular(15.0),
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.grey.withOpacity(0.3),
+                    spreadRadius: 2,
+                    blurRadius: 8,
+                    offset: const Offset(0, 3),
+                  ),
+                ],
+              ),
+              child: Text(
+                message.text,
+                style: const TextStyle(
+                  fontSize: 16.0,
+                  color: Colors.white,
+                ),
               ),
             ),
           ),
           if (isUser) ...[
             const SizedBox(width: 8.0),
-           const Text(
-               '😊', // User emoji
-                style: TextStyle(fontSize: 20.0), // Adjust size as needed
-                 ),
+            const Icon(Icons.person, color: Colors.blueAccent, size: 30), // User icon
           ],
         ],
       ),
@@ -135,21 +135,23 @@ class _ChatScreenState extends State<ChatScreen> {
           SafeArea(
             child: Column(
               children: [
-                // Flexible(
-                //   child: ListView.builder(
-                //     reverse: true,
-                //     padding: const EdgeInsets.all(10.0),
-                //     itemCount: _messages.length,
-                //     itemBuilder: (context, index) {
-                //       bool isUser = _messages[index].sender == "user";
-                //       return _buildChatBubble(_messages[index], isUser);
-                //     },
-                //   ),
-                // ),
-                Container(
-                  decoration: const BoxDecoration(
-                    color: primaryColor,
+                // Chat ListView
+                Expanded(
+                  child: ListView.builder(
+                    reverse: true, // Newest message at the bottom
+                    padding: const EdgeInsets.all(10.0),
+                    itemCount: 10, // Replace with _messages.length
+                    itemBuilder: (context, index) {
+                      // Replace with real data later
+                      bool isUser = index % 2 == 0;
+                      return _buildChatBubble(ChatMessage(text: "Sample message $index", sender: isUser ? "user" : "AI"), isUser);
+                    },
                   ),
+                ),
+                // Message composer
+                Container(
+                  color: Colors.transparent,
+                  padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 10),
                   child: _buildTextComposer(),
                 ),
               ],
