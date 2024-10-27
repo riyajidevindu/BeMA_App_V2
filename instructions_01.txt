@@ -1,0 +1,20 @@
+Instrucrtion for run application(make sure terminal end with \bema-ai-snm\bema_application>)
+
+create a virtual env  - python -m venv .venv
+activate env - .venv\Scripts\Activate.ps1
+
+install packages - pip install -r requirements.txt
+run pubspec packages to install new pacakages
+
+if you use emiulator,(api_service.dart file)
+uncomment ' final String baseUrl = "http://127.0.0.1:8000"; '
+comment 'final String baseUrl = 'https://42cd-112-135-68-28.ngrok-free.app'; '
+
+if you use your mobile (api_service.dart file)
+install ngrok
+comment ' final String baseUrl = "http://127.0.0.1:8000"; '
+uncomment 'final String baseUrl = 'https://42cd-112-135-68-28.ngrok-free.app'; ' (use the link according to your ngrok link)
+
+both...
+run app using uvicron - uvicorn app.main:app --reload
+if you got this 'INFO:     112.135.68.28:0 - "POST /bot/ HTTP/1.1" 200 OK' then you run correctly 
