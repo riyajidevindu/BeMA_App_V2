@@ -3,6 +3,7 @@ import 'package:bema_application/common/widgets/app_bar.dart';
 import 'package:bema_application/features/authentication/screens/chat_screen/chat_message.dart';
 import 'package:bema_application/services/service.dart';
 import 'package:flutter/material.dart';
+import 'package:bema_application/services/api_service.dart';
 // import 'package:flutter_emoji_picker/flutter_emoji_picker.dart'; // Add emoji picker
 
 class ChatScreen extends StatefulWidget {
@@ -14,30 +15,35 @@ class ChatScreen extends StatefulWidget {
 
 class _ChatScreenState extends State<ChatScreen> {
   final TextEditingController _controller = TextEditingController();
-  // final List<ChatMessage> _messages = [];
-  // final OpenAIService openAIService = OpenAIService();
+  final List<ChatMessage> _messages = [];
+  final ApiService apiService  = ApiService();
 
-  // Future<void> _sendMessage() async {
-  //   if (_controller.text.isEmpty) return;
+  Future<void> _sendMessage() async {
+    if (_controller.text.isEmpty) return;
 
-  //   // Create user message
-  //   ChatMessage newMessage = ChatMessage(text: _controller.text, sender: "user");
-  //   setState(() {
-  //     _messages.insert(0, newMessage);
-  //   });
+    // Create user message
+    ChatMessage newMessage = ChatMessage(text: _controller.text, sender: "user");
+    setState(() {
+      _messages.insert(0, newMessage);
+    });
 
-  //   String userInput = _controller.text;
-  //   _controller.clear();
+    String userInput = _controller.text;
+    _controller.clear();
 
-  //   // Send to OpenAI and get response
-  //   String openAIResponse = await openAIService.sendMessageToOpenAI(userInput);
+      // Send to FastAPI backend and get response
+    final response = await apiService.askBotQuestion(userInput);
 
-  //   // Create AI response
-  //   ChatMessage aiMessage = ChatMessage(text: openAIResponse, sender: "AI");
-  //   setState(() {
-  //     _messages.insert(0, aiMessage);
-  //   });
-  // }
+     // Check for null to handle errors
+    if (response != null && response.containsKey("answer")) {
+      // Create AI response
+      ChatMessage aiMessage = ChatMessage(text: response["answer"], sender: "AI");
+      setState(() {
+        _messages.insert(0, aiMessage);
+      });
+    } else {
+      print("Failed to get response from server.");
+    }
+  }
 
   Widget _buildTextComposer() {
     return Padding(
@@ -53,7 +59,7 @@ class _ChatScreenState extends State<ChatScreen> {
               padding: const EdgeInsets.all(10.0),
               child: TextField(
                 controller: _controller,
-                // onSubmitted: (value) => _sendMessage(),
+                onSubmitted: (value) => _sendMessage(),
                 decoration: InputDecoration(
                   hintText: "Type Your Message...",
                   border: OutlineInputBorder(
@@ -70,10 +76,10 @@ class _ChatScreenState extends State<ChatScreen> {
               ),
             ),
           ),
-          // IconButton(
-          //   onPressed: _sendMessage,
-          //   icon: const Icon(Icons.send, color: Color.fromARGB(255, 5, 7, 7)),
-          // ),
+          IconButton(
+            onPressed: _sendMessage,
+            icon: const Icon(Icons.send, color: Color.fromARGB(255, 5, 7, 7)),
+          ),
         ],
       ),
     );
@@ -135,17 +141,17 @@ class _ChatScreenState extends State<ChatScreen> {
           SafeArea(
             child: Column(
               children: [
-                // Flexible(
-                //   child: ListView.builder(
-                //     reverse: true,
-                //     padding: const EdgeInsets.all(10.0),
-                //     itemCount: _messages.length,
-                //     itemBuilder: (context, index) {
-                //       bool isUser = _messages[index].sender == "user";
-                //       return _buildChatBubble(_messages[index], isUser);
-                //     },
-                //   ),
-                // ),
+                Flexible(
+                  child: ListView.builder(
+                    reverse: true,
+                    padding: const EdgeInsets.all(10.0),
+                    itemCount: _messages.length,
+                    itemBuilder: (context, index) {
+                      bool isUser = _messages[index].sender == "user";
+                      return _buildChatBubble(_messages[index], isUser);
+                    },
+                  ),
+                ),
                 Container(
                   decoration: const BoxDecoration(
                     color: primaryColor,
