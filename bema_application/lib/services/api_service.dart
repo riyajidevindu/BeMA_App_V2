@@ -3,7 +3,7 @@ import 'package:http/http.dart' as http;
 
 class ApiService {
   // final String baseUrl = "http://127.0.0.1:8000"; //This is for Emiulator
-  final String baseUrl = 'https://42cd-112-135-68-28.ngrok-free.app'; //This is for when you run in physical device
+  final String baseUrl = 'https://227b-112-135-73-195.ngrok-free.app'; //This is for when you run in physical device
 
 
   // Function to ask a question to the bot
