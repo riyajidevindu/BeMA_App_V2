@@ -18,3 +18,60 @@ uncomment 'final String baseUrl = 'https://42cd-112-135-68-28.ngrok-free.app'; '
 both...
 run app using uvicron - uvicorn app.main:app --reload
 if you got this 'INFO:     112.135.68.28:0 - "POST /bot/ HTTP/1.1" 200 OK' then you run correctly 
+
+
+
+// instructions dinuk
+create a virtual env  - python -m venv .venv
+activate env - .venv\Scripts\Activate.ps1
+create an env file and add 'GROQ_API_KEY' taking from the groq website
+install packages - pip install -r requirements.txt
+run app using uvicron - uvicorn app.main:app --reload 
+
+
+before using change the data file path as of your local machine
+
+To use the routes
+
+http://127.0.0.1:8000/bot/ 
+{
+    question:"Your question"
+}
+
+http://127.0.0.1:8000/agent/
+
+{
+  "age": 32,
+  "allergyType": "Peanuts",
+  "cholesterolTreatmentYears": 5,
+  "diabetesTreatmentYears": 10,
+  "disabilityDiscription": "",
+  "drinks": true,
+  "exercises": true,
+  "familyMedicalHistoryDiscription": null,
+  "favoriteExercise": "Nothing",
+  "gender": "female",
+  "glassesPerWeek": null,
+  "hadSurgeries": true,
+  "hasAllergies": false,
+  "hasCholesterol": true,
+  "hasDiabetes": false,
+  "hasDisabilitiesOrSpecialNeeds": false,
+  "hasFamilyMedicalHistory": false,
+  "hasHighBloodPressure": true,
+  "height": 168.5,
+  "heightUnit": "cm",
+  "highBloodPressureTreatmentYears": 2,
+  "profession": "software engineer",
+  "smokes": false,
+  "smokingFrequency": null,
+  "surgeryType": "appendectomy",
+  "surgeryYear": 2018,
+  "userId": "user123abc456def789",
+  "weight": 65.3,
+  "weightUnit": "kg"
+}
+
+http://127.0.0.1:8000/voice/
+
+to do this add sample.mp3 to data/voice folder

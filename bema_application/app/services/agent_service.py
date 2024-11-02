@@ -41,7 +41,7 @@ def vector_embedding():
         state.embeddings = HuggingFaceEmbeddings()
         
         # Load documents from the specified directory (update path as needed)
-        loader = PyPDFDirectoryLoader('../../data')
+        loader = PyPDFDirectoryLoader('app/data')
         docs = loader.load()
         
         # Split documents into chunks
