@@ -3,7 +3,7 @@ import 'package:bema_application/common/widgets/app_bar.dart';
 import 'package:bema_application/features/authentication/screens/chat_screen/chat_message.dart';
 import 'package:bema_application/services/service.dart';
 import 'package:flutter/material.dart';
-// import 'package:flutter_emoji_picker/flutter_emoji_picker.dart'; // Add emoji picker
+import 'package:bema_application/services/api_service.dart';
 
 class ChatScreen extends StatefulWidget {
   const ChatScreen({super.key});
@@ -12,36 +12,74 @@ class ChatScreen extends StatefulWidget {
   State<ChatScreen> createState() => _ChatScreenState();
 }
 
-class _ChatScreenState extends State<ChatScreen> {
+class _ChatScreenState extends State<ChatScreen> with SingleTickerProviderStateMixin {
   final TextEditingController _controller = TextEditingController();
-  // final List<ChatMessage> _messages = [];
-  // final OpenAIService openAIService = OpenAIService();
+  final List<ChatMessage> _messages = [];
+  final ApiService apiService = ApiService();
+  final GlobalKey<AnimatedListState> _listKey = GlobalKey<AnimatedListState>();
+  bool _isTyping = false;
 
-  // Future<void> _sendMessage() async {
-  //   if (_controller.text.isEmpty) return;
+  late final AnimationController _sendButtonController;
+  late final Animation<double> _sendButtonAnimation;
 
-  //   // Create user message
-  //   ChatMessage newMessage = ChatMessage(text: _controller.text, sender: "user");
-  //   setState(() {
-  //     _messages.insert(0, newMessage);
-  //   });
+  @override
+  void initState() {
+    super.initState();
+    _sendButtonController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 100),
+      lowerBound: 0.9,
+      upperBound: 1.0,
+    );
 
-  //   String userInput = _controller.text;
-  //   _controller.clear();
+    _sendButtonAnimation = Tween<double>(begin: 1.0, end: 1.1).animate(
+      CurvedAnimation(
+        parent: _sendButtonController,
+        curve: Curves.easeInOut,
+      ),
+    );
+  }
 
-  //   // Send to OpenAI and get response
-  //   String openAIResponse = await openAIService.sendMessageToOpenAI(userInput);
+  @override
+  void dispose() {
+    _controller.dispose();
+    _sendButtonController.dispose();
+    super.dispose();
+  }
 
-  //   // Create AI response
-  //   ChatMessage aiMessage = ChatMessage(text: openAIResponse, sender: "AI");
-  //   setState(() {
-  //     _messages.insert(0, aiMessage);
-  //   });
-  // }
+  Future<void> _sendMessage() async {
+    if (_controller.text.isEmpty) return;
+
+    ChatMessage userMessage = ChatMessage(text: _controller.text, sender: "user");
+    setState(() {
+      _messages.insert(0, userMessage);
+      _listKey.currentState?.insertItem(0);
+      _isTyping = true; // Display typing indicator
+    });
+
+    String userInput = _controller.text;
+    _controller.clear();
+
+    final response = await apiService.askBotQuestion(userInput);
+
+    if (response != null && response.containsKey("answer")) {
+      ChatMessage aiMessage = ChatMessage(text: response["answer"], sender: "AI");
+      setState(() {
+        _messages.insert(0, aiMessage);
+        _listKey.currentState?.insertItem(0);
+      });
+    } else {
+      print("Failed to get response from server.");
+    }
+
+    setState(() {
+      _isTyping = false; // Hide typing indicator
+    });
+  }
 
   Widget _buildTextComposer() {
     return Padding(
-      padding: const EdgeInsets.all(3.0),
+      padding: const EdgeInsets.symmetric(horizontal: 10.0),
       child: Row(
         children: [
           IconButton(
@@ -49,31 +87,39 @@ class _ChatScreenState extends State<ChatScreen> {
             icon: const Icon(Icons.emoji_emotions, color: Colors.orangeAccent),
           ),
           Expanded(
-            child: Padding(
-              padding: const EdgeInsets.all(10.0),
-              child: TextField(
-                controller: _controller,
-                // onSubmitted: (value) => _sendMessage(),
-                decoration: InputDecoration(
-                  hintText: "Type Your Message...",
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(25.0),
-                    borderSide: BorderSide.none,
-                  ),
-                  filled: true,
-                  fillColor: Colors.white,
-                  contentPadding: const EdgeInsets.symmetric(
-                    vertical: 10.0,
-                    horizontal: 20.0,
-                  ),
+            child: TextField(
+              controller: _controller,
+              onChanged: (text) {
+                setState(() {
+                  _isTyping = text.isNotEmpty; // Show typing indicator when typing
+                });
+              },
+              onSubmitted: (value) => _sendMessage(),
+              decoration: InputDecoration(
+                hintText: "Type a message...",
+                hintStyle: TextStyle(color: Colors.grey[400]),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(25.0),
+                  borderSide: BorderSide.none,
                 ),
+                filled: true,
+                fillColor: Colors.white,
+                contentPadding: const EdgeInsets.symmetric(vertical: 15.0, horizontal: 30.0),
               ),
             ),
           ),
-          // IconButton(
-          //   onPressed: _sendMessage,
-          //   icon: const Icon(Icons.send, color: Color.fromARGB(255, 5, 7, 7)),
-          // ),
+          ScaleTransition(
+            scale: _sendButtonAnimation,
+            child: IconButton(
+              onPressed: () {
+                _sendButtonController.forward().then((_) {
+                  _sendButtonController.reverse();
+                  _sendMessage();
+                });
+              },
+              icon: const Icon(Icons.send, color: Color.fromARGB(255, 4, 8, 17)),
+            ),
+          ),
         ],
       ),
     );
@@ -87,7 +133,7 @@ class _ChatScreenState extends State<ChatScreen> {
         children: [
           if (!isUser) ...[
             const CircleAvatar(
-              backgroundImage: AssetImage('assets/logo.png'), // App icon for AI
+              backgroundImage: AssetImage('assets/logo.png'),
               radius: 20,
             ),
             const SizedBox(width: 8.0),
@@ -99,23 +145,22 @@ class _ChatScreenState extends State<ChatScreen> {
               maxWidth: MediaQuery.of(context).size.width * 0.75,
             ),
             decoration: BoxDecoration(
-              color: isUser ? Colors.blue[100] : Colors.green[100],
-              borderRadius: BorderRadius.circular(15.0),
+              color: isUser ? const Color.fromARGB(255, 85, 194, 224) : const Color.fromARGB(255, 157, 219, 162),
+              borderRadius: BorderRadius.only(
+                topLeft: Radius.circular(15),
+                topRight: Radius.circular(15),
+                bottomLeft: Radius.circular(isUser ? 15 : 0),
+                bottomRight: Radius.circular(isUser ? 0 : 15),
+              ),
             ),
             child: Text(
               message.text,
-              style: const TextStyle(
-                fontSize: 16.0,
-                color: Colors.black87,
-              ),
+              style: const TextStyle(fontSize: 16.0, color: Colors.black87),
             ),
           ),
           if (isUser) ...[
             const SizedBox(width: 8.0),
-           const Text(
-               '😊', // User emoji
-                style: TextStyle(fontSize: 20.0), // Adjust size as needed
-                 ),
+            const Text('😊', style: TextStyle(fontSize: 20.0)),
           ],
         ],
       ),
@@ -130,31 +175,52 @@ class _ChatScreenState extends State<ChatScreen> {
         backgroundColor: backgroundColor,
         title: const CustomAppBar(),
       ),
-      body: Stack(
+      body: Column(
         children: [
-          SafeArea(
-            child: Column(
-              children: [
-                // Flexible(
-                //   child: ListView.builder(
-                //     reverse: true,
-                //     padding: const EdgeInsets.all(10.0),
-                //     itemCount: _messages.length,
-                //     itemBuilder: (context, index) {
-                //       bool isUser = _messages[index].sender == "user";
-                //       return _buildChatBubble(_messages[index], isUser);
-                //     },
-                //   ),
-                // ),
-                Container(
-                  decoration: const BoxDecoration(
-                    color: primaryColor,
-                  ),
-                  child: _buildTextComposer(),
-                ),
-              ],
+          Expanded(
+            child: AnimatedList(
+              key: _listKey,
+              reverse: true,
+              padding: const EdgeInsets.all(10.0),
+              initialItemCount: _messages.length,
+              itemBuilder: (context, index, animation) {
+                bool isUser = _messages[index].sender == "user";
+                return SlideTransition(
+                  position: Tween<Offset>(
+                    begin: const Offset(1, 0),
+                    end: Offset.zero,
+                  ).animate(animation),
+                  child: _buildChatBubble(_messages[index], isUser),
+                );
+              },
             ),
           ),
+          if (_isTyping)
+            Padding(
+              padding: const EdgeInsets.only(left: 12.0, bottom: 10.0),
+              child: Row(
+                children: [
+                  const CircleAvatar(
+                    backgroundImage: AssetImage('assets/logo.png'),
+                    radius: 15,
+                  ),
+                  const SizedBox(width: 8.0),
+                  Text("typing...", style: TextStyle(color: Colors.grey[600])),
+                ],
+              ),
+            ),
+     ClipRRect(
+  borderRadius: const BorderRadius.only(
+    topLeft: Radius.circular(15.0),
+    topRight: Radius.circular(15.0),
+  ),
+  child: Container(
+    color: const Color.fromARGB(207, 4, 87, 231), // Transparent background (Alpha value: 150)
+    padding: const EdgeInsets.only(bottom: 5.0),
+    child: _buildTextComposer(),
+  ),
+),
+
         ],
       ),
     );

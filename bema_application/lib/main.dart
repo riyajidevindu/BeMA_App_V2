@@ -5,13 +5,15 @@ import 'package:bema_application/routes/app_router.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-// import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:bema_application/services/api_service.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+// import 'package:bema_application/features/authentication/screens/chat_screen/chat_provider.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   // Load the .env file before initializing Firebase
-//  await dotenv.load(fileName: ".env");
+ await dotenv.load(fileName: ".env");
 
   await Firebase.initializeApp();
 
@@ -23,6 +25,7 @@ Future<void> main() async {
         ChangeNotifierProvider(
             create: (_) =>
                 QuestionnaireProvider()), // Add QuestionnaireProvider
+        // ChangeNotifierProvider(create: (_) => ChatProvider()),
       ],
       child: const MyApp(),
     ),
