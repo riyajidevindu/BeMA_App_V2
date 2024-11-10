@@ -25,18 +25,25 @@ class ApiService {
       if (data.containsKey("answer")) {
         String answer = data["answer"];
 
-        // Limit the response to 75 words
-        List<String> words = answer.split(" ");
-        if (words.length > 75) {
-          answer = words.take(75).join(" ") + "...";
-        }
+     // Limit the response to 75 words
+      List<String> words = answer.split(" ");
+      if (words.length > 75) {
+        answer = words.take(75).join(" ") + "...";
+      }
 
-        // Format the answer in point form by splitting into sentences
-        List<String> points = answer.split('. ');
-        answer = points.map((point) => "* $point").join('\n');
+   // Use a regular expression to match numbered items and split accordingly
+RegExp numberedPointPattern = RegExp(r'(?=\d+\.)');
+List<String> points = answer.split(numberedPointPattern)
+  .map((point) => point.trim())
+  .where((point) => point.isNotEmpty)
+  .toList();
 
-        // Return the formatted answer in point form and limited to 75 words
-        return {"answer": answer};
+// Reverse the list of points to display them in ascending order
+points = points.reversed.toList();
+
+// Return the list of points
+return {"answer": points};
+
       }
     } else {
       print("Failed to get response: ${response.statusCode}");
