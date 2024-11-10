@@ -27,10 +27,15 @@ class ChatProvider extends ChangeNotifier {
     // Fetch AI response from API
     final response = await apiService.askBotQuestion(userInput);
 
-    // Check for API response and add AI message
+  // Check if response is not null and contains "answer" key
     if (response != null && response.containsKey("answer")) {
-      ChatMessage aiMessage = ChatMessage(text: response["answer"], sender: "AI");
-      _messages.insert(0, aiMessage);
+      List<String> points = List<String>.from(response["answer"]);
+
+      // Insert each point as a separate message
+      for (String point in points.reversed) {
+        ChatMessage aiMessage = ChatMessage(text: point, sender: "AI");
+        _messages.insert(0, aiMessage);
+      }
     } else {
       print("Failed to get response from server.");
     }

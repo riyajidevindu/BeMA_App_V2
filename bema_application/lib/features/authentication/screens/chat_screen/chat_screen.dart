@@ -50,6 +50,11 @@ class _ChatScreenState extends State<ChatScreen>
     super.dispose();
   }
 
+    String _stripHtmlTags(String htmlText) {
+    final tagRegExp = RegExp(r'<[^>]*>', multiLine: true, caseSensitive: true);
+    return htmlText.replaceAll(tagRegExp, '');
+  }
+
   Future<void> _sendMessage(BuildContext context) async {
     if (_controller.text.isEmpty) return;
     final chatProvider = Provider.of<ChatProvider>(context, listen: false);
@@ -69,9 +74,12 @@ class _ChatScreenState extends State<ChatScreen>
 
     final response = await apiService.askBotQuestion(userInput);
 
-    if (response != null && response.containsKey("answer")) {
+       if (response != null && response.containsKey("answer")) {
+      // Clean the response text to remove HTML tags
+      String cleanResponseText = _stripHtmlTags(response["answer"]);
+      
       ChatMessage aiMessage =
-          ChatMessage(text: response["answer"], sender: "AI");
+          ChatMessage(text: cleanResponseText, sender: "AI");
       setState(() {
         _messages.insert(0, aiMessage);
         _listKey.currentState?.insertItem(0);
