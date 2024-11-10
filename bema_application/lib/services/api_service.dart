@@ -33,7 +33,7 @@ class ApiService {
 
         // Format the answer in point form by splitting into sentences
         List<String> points = answer.split('. ');
-        answer = points.map((point) => "- $point").join('\n');
+        answer = points.map((point) => "* $point").join('\n');
 
         // Return the formatted answer in point form and limited to 75 words
         return {"answer": answer};
