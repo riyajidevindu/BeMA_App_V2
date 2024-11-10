@@ -8,7 +8,7 @@ if defined _OLD_CODEPAGE (
     "%SystemRoot%\System32\chcp.com" 65001 > nul
 )
 
-set VIRTUAL_ENV=F:\Apps Technologies\AI-Works\Projects\groupProjec_1\BeMaAIcode\version2\bema-ai-snm\bema_application\.venv
+set VIRTUAL_ENV=D:\Apps Technologies\Projects\BeMA\BeMA\bema_application\.venv
 
 if not defined PROMPT set PROMPT=$P$G
 
