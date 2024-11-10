@@ -100,7 +100,7 @@ class _ChatScreenState extends State<ChatScreen>
         children: [
           IconButton(
             onPressed: () {},
-            icon: const Icon(Icons.emoji_emotions, color: Colors.orangeAccent),
+            icon: const Icon(Icons.mic_rounded, color: Colors.orangeAccent),
           ),
           Expanded(
             child: TextField(
