@@ -7,7 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:bema_application/services/api_service.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-// import 'package:bema_application/features/authentication/screens/chat_screen/chat_provider.dart';
+import 'package:bema_application/features/authentication/screens/chat_screen/chat_provider.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -25,7 +25,7 @@ Future<void> main() async {
         ChangeNotifierProvider(
             create: (_) =>
                 QuestionnaireProvider()), // Add QuestionnaireProvider
-        // ChangeNotifierProvider(create: (_) => ChatProvider()),
+        ChangeNotifierProvider(create: (_) => ChatProvider()),
       ],
       child: const MyApp(),
     ),
