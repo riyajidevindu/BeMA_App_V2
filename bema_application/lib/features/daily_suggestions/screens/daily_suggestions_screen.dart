@@ -1,5 +1,5 @@
-import 'package:bema_application/common/config/colors.dart'; 
-import 'package:bema_application/common/widgets/app_bar.dart'; 
+import 'package:bema_application/common/config/colors.dart';
+import 'package:bema_application/common/widgets/app_bar.dart';
 import 'package:bema_application/common/widgets/cards/water_intake_card.dart';
 import 'package:bema_application/features/daily_suggestions/data/models/daily_task.dart';
 import 'package:bema_application/features/daily_suggestions/data/services/task_service.dart';
@@ -14,103 +14,48 @@ class DailytaskScreen extends StatefulWidget {
 
 class _DailytaskScreenState extends State<DailytaskScreen> {
   int userPoints = 0;
-  Set<int> completedTasks = Set(); 
-  int currentPage = 0; 
+  Set<int> completedTasks = Set();
+  int currentPage = 0;
   final PageController _pageController = PageController();
   final TaskService _taskService = TaskService(); // TaskService for Firestore
 
-  bool isLoading = true; // To track loading state
-  List<TaskModel> tasks = [
-     TaskModel(
-      title: "Water Intake",
-      detail: "You should drink 2.5 liters of water today.",
-      icon: Icons.local_drink,
-      type: "stepwise",
-      total: 2500,
-      progress: 0,
-      stepAmount: 250,
-    ),
-    TaskModel(
-      title: "Walking Duration",
-      detail: "Aim to walk for 45 minutes or complete 6000 steps today.",
-      icon: Icons.directions_walk,
-      type: "regular",
-    ),
-    TaskModel(
-      title: "Stretching Time",
-      detail: "Spend 10 minutes doing flexibility exercises.",
-      icon: Icons.accessibility_new,
-      type: "regular",
-    ),
-    TaskModel(
-      title: "Mindfulness Exercise",
-      detail: "Try 10 minutes of mindfulness meditation today.",
-      icon: Icons.self_improvement,
-      type: "regular",
-    ),
-    TaskModel(
-      title: "Nutrition Tip",
-      detail: "Eat at least 5 servings of fruits and vegetables.",
-      icon: Icons.local_dining,
-      type: "regular",
-    ),
-    TaskModel(
-      title: "Sleep Reminder",
-      detail: "Aim for at least 7 hours of sleep tonight.",
-      icon: Icons.bedtime,
-      type: "regular",
-    ),
-    TaskModel(
-      title: "Screen Time Break",
-      detail: "Take a 15-minute break after every hour of screen time.",
-      icon: Icons.tv_off,
-      type: "stepwise",
-      total: 4,
-      progress: 0,
-      stepAmount: 1,
-    ),
-    TaskModel(
-      title: "Special Task",
-      detail: "Today's challenge: Avoid sugary snacks.",
-      icon: Icons.no_food,
-      type: "regular",
-    ),
-    TaskModel(
-      title: "Social Interaction",
-      detail: "Reach out to a friend for a quick chat.",
-      icon: Icons.group,
-      type: "regular",
-    ),
-    TaskModel(
-      title: "Posture Check",
-      detail: "Make sure to check your posture every hour.",
-      icon: Icons.accessibility,
-      type: "regular",
-    ),
-  ];
+  bool isLoading = true; // Track loading state
+  List<TaskModel> tasks = []; // Initialize empty list to hold tasks
 
   @override
   void initState() {
     super.initState();
-    _loadTasksFromFirestore(); // Load tasks from Firestore on screen load
+    _generateAndLoadTasksForToday(); // Load or generate today's tasks
   }
 
-  /// Fetch user's task progress from Firestore
-  Future<void> _loadTasksFromFirestore() async {
+  /// Generate daily tasks if not already generated, then load them from Firestore
+  Future<void> _generateAndLoadTasksForToday() async {
     setState(() {
       isLoading = true;
     });
 
-    tasks = await _taskService.fetchUserTasks(tasks); 
-    // Update the user points and completed tasks based on the fetched data
-    _updateTaskStates();
+    // Define default tasks in case API or generation fails
+    List<TaskModel> defaultTasks = [
+      TaskModel(title: "Water Intake", detail: "Drink 2.5 liters of water", icon: Icons.local_drink, type: "stepwise", total: 2500, progress: 0, stepAmount: 250),
+      TaskModel(title: "Walking Duration", detail: "45 mins or 6000 steps", icon: Icons.directions_walk, type: "regular"),
+      // Add other default tasks as needed...
+    ];
+
+    // Generate daily tasks if they haven't been generated today
+    await _taskService.generateDailyTasksIfNeeded(defaultTasks);
+
+    // Fetch the generated tasks from Firestore
+    tasks = await _taskService.fetchUserTasks(defaultTasks);
     
+    // Update points and completed tasks based on fetched data
+    _updateTaskStates();
+
     setState(() {
       isLoading = false; // Stop loading once tasks are fetched
     });
   }
 
-  /// Update task states after fetching data from Firestore
+  /// Update task states based on the fetched data from Firestore
   void _updateTaskStates() {
     int points = 0;
     Set<int> completed = Set();
@@ -128,12 +73,12 @@ class _DailytaskScreenState extends State<DailytaskScreen> {
     });
   }
 
-  /// Save task progress in Firestore
+  /// Save individual task progress in Firestore
   Future<void> _saveTaskProgress(int index) async {
     await _taskService.saveTask(tasks[index]);
   }
 
-  /// Function to mark tasks as complete and save to Firestore
+  /// Mark a task as complete and save it to Firestore
   void completeTask(int index) {
     setState(() {
       if (!completedTasks.contains(index)) {
@@ -145,18 +90,14 @@ class _DailytaskScreenState extends State<DailytaskScreen> {
     });
   }
 
-  /// Function to update stepwise tasks like Water Intake
+  /// Update progress for stepwise tasks (e.g., Water Intake)
   void updateStepwiseTask(int index, double selectedAmount) {
     setState(() {
       if (!completedTasks.contains(index)) {
-        // Convert selectedAmount to int before adding to progress
         int updatedProgress = tasks[index].progress! + selectedAmount.toInt();
-        
-        // Update the progress by the selected drink amount
-        tasks[index] = tasks[index].copyWith(
-          progress: updatedProgress,
-        );
-        
+
+        tasks[index] = tasks[index].copyWith(progress: updatedProgress);
+
         if (updatedProgress >= tasks[index].total!) {
           completedTasks.add(index);
           userPoints += 10;
@@ -169,210 +110,208 @@ class _DailytaskScreenState extends State<DailytaskScreen> {
   @override
   Widget build(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
-    final screenHeight = MediaQuery.of(context).size.height;
 
     int totalTasks = tasks.length;
     int completedCount = completedTasks.length;
-    double taskCompletionPercentage = completedCount / totalTasks;
+    double taskCompletionPercentage = totalTasks > 0 ? completedCount / totalTasks : 0;
 
     return Scaffold(
-      backgroundColor: backgroundColor, 
+      backgroundColor: backgroundColor,
       appBar: AppBar(
         backgroundColor: backgroundColor,
         title: const CustomAppBar(),
         elevation: 0,
       ),
-      body: isLoading 
-        ? const Center(child: CircularProgressIndicator()) // Show a loader while data is fetched
-        : Column(
-          children: [
-            // Points and Overall Progress Section
-            Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Column(
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      body: isLoading
+          ? const Center(child: CircularProgressIndicator()) // Show loader while data is fetched
+          : Column(
+              children: [
+                // Points and Overall Progress Section
+                Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Column(
                     children: [
-                      // Display user points in a badge-like style
-                      Chip(
-                        label: Text(
-                          'Points: $userPoints',
-                          style: const TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.white,
-                          ),
-                        ),
-                        backgroundColor: Colors.greenAccent.shade400,
-                      ),
-                      // Circular progress for task completion
-                      Stack(
-                        alignment: Alignment.center,
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          SizedBox(
-                            width: screenWidth * 0.2,
-                            height: screenWidth * 0.2,
-                            child: CircularProgressIndicator(
-                              value: taskCompletionPercentage,
-                              backgroundColor: Colors.grey[200],
-                              color: Colors.blueAccent,
-                              strokeWidth: 10,
+                          // Display user points in a badge
+                          Chip(
+                            label: Text(
+                              'Points: $userPoints',
+                              style: const TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white,
+                              ),
                             ),
+                            backgroundColor: Colors.greenAccent.shade400,
                           ),
-                          Text(
-                            '${(taskCompletionPercentage * 100).toInt()}%',
-                            style: const TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.blueGrey,
-                            ),
+                          // Circular progress for task completion
+                          Stack(
+                            alignment: Alignment.center,
+                            children: [
+                              SizedBox(
+                                width: screenWidth * 0.2,
+                                height: screenWidth * 0.2,
+                                child: CircularProgressIndicator(
+                                  value: taskCompletionPercentage,
+                                  backgroundColor: Colors.grey[200],
+                                  color: Colors.blueAccent,
+                                  strokeWidth: 10,
+                                ),
+                              ),
+                              Text(
+                                '${(taskCompletionPercentage * 100).toInt()}%',
+                                style: const TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.blueGrey,
+                                ),
+                              ),
+                            ],
                           ),
                         ],
                       ),
+                      const SizedBox(height: 10),
+                      Text(
+                        'Completed $completedCount / $totalTasks tasks',
+                        style: const TextStyle(fontSize: 16, color: Colors.blueGrey),
+                      ),
                     ],
                   ),
-                  const SizedBox(height: 10),
-                  Text(
-                    'Completed $completedCount / $totalTasks tasks',
-                    style: const TextStyle(fontSize: 16, color: Colors.blueGrey),
-                  ),
-                ],
-              ),
-            ),
+                ),
 
-            // PageView for tasks
-            Expanded(
-              child: Stack(
-                children: [
-                  PageView.builder(
-                    controller: _pageController,
-                    onPageChanged: (index) {
-                      setState(() {
-                        currentPage = index;
-                      });
-                    },
-                    itemCount: tasks.length,
-                    itemBuilder: (context, index) {
-                      final task = tasks[index];
+                // PageView for tasks
+                Expanded(
+                  child: Stack(
+                    children: [
+                      PageView.builder(
+                        controller: _pageController,
+                        onPageChanged: (index) {
+                          setState(() {
+                            currentPage = index;
+                          });
+                        },
+                        itemCount: tasks.length,
+                        itemBuilder: (context, index) {
+                          final task = tasks[index];
 
-                      if (task.title == "Water Intake") {
-                        return Padding(
-                          padding: const EdgeInsets.symmetric(vertical: 10),
-                          child: WaterIntakeCard(
-                            totalWaterGoal: task.total!.toDouble(),
-                            currentProgress: task.progress!.toDouble(),
-                            // Pass the selected amount to update the task
-                            onProgressUpdate: (selectedAmount) => updateStepwiseTask(index, selectedAmount),
-                          ),
-                        );
-                      }
+                          if (task.title == "Water Intake") {
+                            return Padding(
+                              padding: const EdgeInsets.symmetric(vertical: 10),
+                              child: WaterIntakeCard(
+                                totalWaterGoal: task.total!.toDouble(),
+                                currentProgress: task.progress!.toDouble(),
+                                onProgressUpdate: (selectedAmount) => updateStepwiseTask(index, selectedAmount),
+                              ),
+                            );
+                          }
 
-                      return Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 10),
-                        child: Card(
-                          elevation: 5,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(16),
-                          ),
-                          child: Padding(
-                            padding: const EdgeInsets.all(16.0),
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Icon(task.icon, size: 40, color: Colors.blueAccent),
-                                const SizedBox(height: 10),
-                                Text(
-                                  task.title,
-                                  style: const TextStyle(
-                                    fontSize: 24,
-                                    fontWeight: FontWeight.w700,
-                                    color: Colors.blueGrey,
-                                  ),
-                                ),
-                                const SizedBox(height: 16),
-                                Text(
-                                  task.detail,
-                                  textAlign: TextAlign.center,
-                                  style: const TextStyle(
-                                    fontSize: 18,
-                                    color: Colors.grey,
-                                  ),
-                                ),
-                                const SizedBox(height: 20),
-                                completedTasks.contains(index)
-                                  ? Container(
-                                      padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 20),
-                                      decoration: BoxDecoration(
-                                        color: Colors.greenAccent.shade400,
-                                        borderRadius: BorderRadius.circular(30),
-                                      ),
-                                      child: Row(
-                                        mainAxisSize: MainAxisSize.min,
-                                        children: [
-                                          const Icon(Icons.check_circle, color: Colors.white, size: 24),
-                                          const SizedBox(width: 10),
-                                          const Text(
-                                            'Completed',
-                                            style: TextStyle(
-                                              fontSize: 18,
-                                              fontWeight: FontWeight.bold,
-                                              color: Colors.white,
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    )
-                                  : FloatingActionButton.extended(
-                                      onPressed: () => completeTask(index),
-                                      label: const Text('Mark as Done'),
-                                      icon: const Icon(Icons.check),
-                                      backgroundColor: Colors.blueAccent,
-                                      elevation: 4,
-                                      shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(30),
+                          return Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 10),
+                            child: Card(
+                              elevation: 5,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(16),
+                              ),
+                              child: Padding(
+                                padding: const EdgeInsets.all(16.0),
+                                child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Icon(task.icon, size: 40, color: Colors.blueAccent),
+                                    const SizedBox(height: 10),
+                                    Text(
+                                      task.title,
+                                      style: const TextStyle(
+                                        fontSize: 24,
+                                        fontWeight: FontWeight.w700,
+                                        color: Colors.blueGrey,
                                       ),
                                     ),
-                              ],
+                                    const SizedBox(height: 16),
+                                    Text(
+                                      task.detail,
+                                      textAlign: TextAlign.center,
+                                      style: const TextStyle(
+                                        fontSize: 18,
+                                        color: Colors.grey,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 20),
+                                    completedTasks.contains(index)
+                                        ? Container(
+                                            padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 20),
+                                            decoration: BoxDecoration(
+                                              color: Colors.greenAccent.shade400,
+                                              borderRadius: BorderRadius.circular(30),
+                                            ),
+                                            child: Row(
+                                              mainAxisSize: MainAxisSize.min,
+                                              children: [
+                                                const Icon(Icons.check_circle, color: Colors.white, size: 24),
+                                                const SizedBox(width: 10),
+                                                const Text(
+                                                  'Completed',
+                                                  style: TextStyle(
+                                                    fontSize: 18,
+                                                    fontWeight: FontWeight.bold,
+                                                    color: Colors.white,
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          )
+                                        : FloatingActionButton.extended(
+                                            onPressed: () => completeTask(index),
+                                            label: const Text('Mark as Done'),
+                                            icon: const Icon(Icons.check),
+                                            backgroundColor: Colors.blueAccent,
+                                            elevation: 4,
+                                            shape: RoundedRectangleBorder(
+                                              borderRadius: BorderRadius.circular(30),
+                                            ),
+                                          ),
+                                  ],
+                                ),
+                              ),
                             ),
+                          );
+                        },
+                      ),
+
+                      if (currentPage > 0)
+                        Align(
+                          alignment: Alignment.centerLeft,
+                          child: IconButton(
+                            icon: const Icon(Icons.arrow_back_ios, color: Colors.blueAccent),
+                            onPressed: () {
+                              _pageController.previousPage(
+                                duration: const Duration(milliseconds: 300),
+                                curve: Curves.easeInOut,
+                              );
+                            },
                           ),
                         ),
-                      );
-                    },
+
+                      if (currentPage < tasks.length - 1)
+                        Align(
+                          alignment: Alignment.centerRight,
+                          child: IconButton(
+                            icon: const Icon(Icons.arrow_forward_ios, color: Colors.blueAccent),
+                            onPressed: () {
+                              _pageController.nextPage(
+                                duration: const Duration(milliseconds: 300),
+                                curve: Curves.easeInOut,
+                              );
+                            },
+                          ),
+                        ),
+                    ],
                   ),
-
-                  if (currentPage > 0)
-                    Align(
-                      alignment: Alignment.centerLeft,
-                      child: IconButton(
-                        icon: const Icon(Icons.arrow_back_ios, color: Colors.blueAccent),
-                        onPressed: () {
-                          _pageController.previousPage(
-                            duration: const Duration(milliseconds: 300),
-                            curve: Curves.easeInOut,
-                          );
-                        },
-                      ),
-                    ),
-
-                  if (currentPage < tasks.length - 1)
-                    Align(
-                      alignment: Alignment.centerRight,
-                      child: IconButton(
-                        icon: const Icon(Icons.arrow_forward_ios, color: Colors.blueAccent),
-                        onPressed: () {
-                          _pageController.nextPage(
-                            duration: const Duration(milliseconds: 300),
-                            curve: Curves.easeInOut,
-                          );
-                        },
-                      ),
-                    ),
-                ],
-              ),
+                ),
+              ],
             ),
-          ],
-        ),
     );
   }
 }
