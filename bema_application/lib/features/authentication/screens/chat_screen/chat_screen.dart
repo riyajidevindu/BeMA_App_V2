@@ -4,6 +4,8 @@ import 'package:bema_application/features/authentication/screens/chat_screen/cha
 import 'package:bema_application/services/service.dart';
 import 'package:flutter/material.dart';
 import 'package:bema_application/services/api_service.dart';
+import 'package:bema_application/features/authentication/screens/chat_screen/chat_provider.dart';
+import 'package:provider/provider.dart';
 
 class ChatScreen extends StatefulWidget {
   const ChatScreen({super.key});
@@ -12,7 +14,8 @@ class ChatScreen extends StatefulWidget {
   State<ChatScreen> createState() => _ChatScreenState();
 }
 
-class _ChatScreenState extends State<ChatScreen> with SingleTickerProviderStateMixin {
+class _ChatScreenState extends State<ChatScreen>
+    with SingleTickerProviderStateMixin {
   final TextEditingController _controller = TextEditingController();
   final List<ChatMessage> _messages = [];
   final ApiService apiService = ApiService();
@@ -47,10 +50,14 @@ class _ChatScreenState extends State<ChatScreen> with SingleTickerProviderStateM
     super.dispose();
   }
 
-  Future<void> _sendMessage() async {
+  Future<void> _sendMessage(BuildContext context) async {
     if (_controller.text.isEmpty) return;
+    final chatProvider = Provider.of<ChatProvider>(context, listen: false);
+    await chatProvider.sendMessage(_controller.text);
+    _controller.clear();
 
-    ChatMessage userMessage = ChatMessage(text: _controller.text, sender: "user");
+    ChatMessage userMessage =
+        ChatMessage(text: _controller.text, sender: "user");
     setState(() {
       _messages.insert(0, userMessage);
       _listKey.currentState?.insertItem(0);
@@ -63,7 +70,8 @@ class _ChatScreenState extends State<ChatScreen> with SingleTickerProviderStateM
     final response = await apiService.askBotQuestion(userInput);
 
     if (response != null && response.containsKey("answer")) {
-      ChatMessage aiMessage = ChatMessage(text: response["answer"], sender: "AI");
+      ChatMessage aiMessage =
+          ChatMessage(text: response["answer"], sender: "AI");
       setState(() {
         _messages.insert(0, aiMessage);
         _listKey.currentState?.insertItem(0);
@@ -77,7 +85,7 @@ class _ChatScreenState extends State<ChatScreen> with SingleTickerProviderStateM
     });
   }
 
-  Widget _buildTextComposer() {
+  Widget _buildTextComposer(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 10.0),
       child: Row(
@@ -90,11 +98,10 @@ class _ChatScreenState extends State<ChatScreen> with SingleTickerProviderStateM
             child: TextField(
               controller: _controller,
               onChanged: (text) {
-                setState(() {
-                  _isTyping = text.isNotEmpty; // Show typing indicator when typing
-                });
+                Provider.of<ChatProvider>(context, listen: false)
+                    .setIsTyping(text.isNotEmpty);
               },
-              onSubmitted: (value) => _sendMessage(),
+              onSubmitted: (value) => _sendMessage(context),
               decoration: InputDecoration(
                 hintText: "Type a message...",
                 hintStyle: TextStyle(color: Colors.grey[400]),
@@ -104,7 +111,8 @@ class _ChatScreenState extends State<ChatScreen> with SingleTickerProviderStateM
                 ),
                 filled: true,
                 fillColor: Colors.white,
-                contentPadding: const EdgeInsets.symmetric(vertical: 15.0, horizontal: 30.0),
+                contentPadding: const EdgeInsets.symmetric(
+                    vertical: 15.0, horizontal: 30.0),
               ),
             ),
           ),
@@ -114,10 +122,11 @@ class _ChatScreenState extends State<ChatScreen> with SingleTickerProviderStateM
               onPressed: () {
                 _sendButtonController.forward().then((_) {
                   _sendButtonController.reverse();
-                  _sendMessage();
+                  _sendMessage(context);
                 });
               },
-              icon: const Icon(Icons.send, color: Color.fromARGB(255, 4, 8, 17)),
+              icon:
+                  const Icon(Icons.send, color: Color.fromARGB(255, 4, 8, 17)),
             ),
           ),
         ],
@@ -129,7 +138,8 @@ class _ChatScreenState extends State<ChatScreen> with SingleTickerProviderStateM
     return Align(
       alignment: isUser ? Alignment.centerRight : Alignment.centerLeft,
       child: Row(
-        mainAxisAlignment: isUser ? MainAxisAlignment.end : MainAxisAlignment.start,
+        mainAxisAlignment:
+            isUser ? MainAxisAlignment.end : MainAxisAlignment.start,
         children: [
           if (!isUser) ...[
             const CircleAvatar(
@@ -145,7 +155,9 @@ class _ChatScreenState extends State<ChatScreen> with SingleTickerProviderStateM
               maxWidth: MediaQuery.of(context).size.width * 0.75,
             ),
             decoration: BoxDecoration(
-              color: isUser ? const Color.fromARGB(255, 85, 194, 224) : const Color.fromARGB(255, 157, 219, 162),
+              color: isUser
+                  ? const Color.fromARGB(255, 85, 194, 224)
+                  : const Color.fromARGB(255, 157, 219, 162),
               borderRadius: BorderRadius.only(
                 topLeft: Radius.circular(15),
                 topRight: Radius.circular(15),
@@ -170,58 +182,53 @@ class _ChatScreenState extends State<ChatScreen> with SingleTickerProviderStateM
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: backgroundColor,
       appBar: AppBar(
-        backgroundColor: backgroundColor,
-        title: const CustomAppBar(),
+        title: const Text('Chat'),
       ),
-      body: Column(
-        children: [
-          Expanded(
-            child: AnimatedList(
-              key: _listKey,
-              reverse: true,
-              padding: const EdgeInsets.all(10.0),
-              initialItemCount: _messages.length,
-              itemBuilder: (context, index, animation) {
-                bool isUser = _messages[index].sender == "user";
-                return SlideTransition(
-                  position: Tween<Offset>(
-                    begin: const Offset(1, 0),
-                    end: Offset.zero,
-                  ).animate(animation),
-                  child: _buildChatBubble(_messages[index], isUser),
-                );
-              },
-            ),
-          ),
-          if (_isTyping)
-            Padding(
-              padding: const EdgeInsets.only(left: 12.0, bottom: 10.0),
-              child: Row(
-                children: [
-                  const CircleAvatar(
-                    backgroundImage: AssetImage('assets/logo.png'),
-                    radius: 15,
-                  ),
-                  const SizedBox(width: 8.0),
-                  Text("typing...", style: TextStyle(color: Colors.grey[600])),
-                ],
+      body: Consumer<ChatProvider>(
+        builder: (context, chatProvider, _) {
+          return Column(
+            children: [
+              Expanded(
+                child: ListView.builder(
+                  reverse: true,
+                  itemCount: chatProvider.messages.length,
+                  itemBuilder: (context, index) {
+                    final message = chatProvider.messages[index];
+                    bool isUser = message.sender == "user";
+                    return _buildChatBubble(message, isUser);
+                  },
+                ),
               ),
-            ),
-     ClipRRect(
-  borderRadius: const BorderRadius.only(
-    topLeft: Radius.circular(15.0),
-    topRight: Radius.circular(15.0),
-  ),
-  child: Container(
-    color: const Color.fromARGB(207, 4, 87, 231), // Transparent background (Alpha value: 150)
-    padding: const EdgeInsets.only(bottom: 5.0),
-    child: _buildTextComposer(),
-  ),
-),
-
-        ],
+              if (chatProvider.isTyping)
+                Padding(
+                  padding: const EdgeInsets.only(left: 12.0, bottom: 10.0),
+                  child: Row(
+                    children: [
+                      const CircleAvatar(
+                        backgroundImage: AssetImage('assets/logo.png'),
+                        radius: 15,
+                      ),
+                      const SizedBox(width: 8.0),
+                      Text("typing...",
+                          style: TextStyle(color: Colors.grey[600])),
+                    ],
+                  ),
+                ),
+              ClipRRect(
+                borderRadius: const BorderRadius.only(
+                  topLeft: Radius.circular(15.0),
+                  topRight: Radius.circular(15.0),
+                ),
+                child: Container(
+                  color: const Color.fromARGB(207, 4, 87, 231),
+                  padding: const EdgeInsets.only(bottom: 5.0),
+                  child: _buildTextComposer(context),
+                ),
+              ),
+            ],
+          );
+        },
       ),
     );
   }
