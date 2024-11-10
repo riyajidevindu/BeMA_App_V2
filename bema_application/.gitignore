@@ -46,6 +46,7 @@ app.*.map.json
 
 # venv related
 .venv
+.env
 
 
 
