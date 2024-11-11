@@ -1,6 +1,6 @@
 import json
 from fastapi import APIRouter, HTTPException
-from app.services.voice_service import transcribe_audio,text_to_speech
+from app.services.voice_service import transcribe_audio_data,text_to_speech
 from app.services.chat_service import answer_question
 
 router = APIRouter()
@@ -9,7 +9,7 @@ router = APIRouter()
 @router.post("/voice/")
 async def query_voice():
     try:
-        text = await transcribe_audio()
+        text = await transcribe_audio_data()
         response = await answer_question(question=text)
         if response['parsed']:
             response_text = response["parsed"]["answer"]
