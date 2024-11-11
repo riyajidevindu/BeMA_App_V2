@@ -28,34 +28,48 @@ class _DailytaskScreenState extends State<DailytaskScreen> {
     _generateAndLoadTasksForToday(); // Load or generate today's tasks
   }
 
-  /// Generate daily tasks if not already generated, then load them from Firestore
   Future<void> _generateAndLoadTasksForToday() async {
     setState(() {
       isLoading = true;
     });
 
-    // Define default tasks in case API or generation fails
     List<TaskModel> defaultTasks = [
-      TaskModel(title: "Water Intake", detail: "Drink 2.5 liters of water", icon: Icons.local_drink, type: "stepwise", total: 2500, progress: 0, stepAmount: 250),
-      TaskModel(title: "Walking Duration", detail: "45 mins or 6000 steps", icon: Icons.directions_walk, type: "regular"),
-      // Add other default tasks as needed...
+      TaskModel(
+        title: "Water Intake",
+        detail: "Drink 2.5 liters of water",
+        icon: Icons.local_drink,
+        type: "stepwise",
+        total: 2500,
+        progress: 0,
+        stepAmount: 250,
+      ),
+      TaskModel(
+        title: "Walking Duration",
+        detail: "Walk for 45 minutes or 6000 steps",
+        icon: Icons.directions_walk,
+        type: "regular",
+      ),
     ];
 
-    // Generate daily tasks if they haven't been generated today
-    await _taskService.generateDailyTasksIfNeeded(defaultTasks);
+    try {
+      await _taskService.generateDailyTasksIfNeeded(defaultTasks);
+      tasks = await _taskService.fetchUserTasks(defaultTasks);
 
-    // Fetch the generated tasks from Firestore
-    tasks = await _taskService.fetchUserTasks(defaultTasks);
-    
-    // Update points and completed tasks based on fetched data
-    _updateTaskStates();
+      print("Fetched tasks count: ${tasks.length}");
+      for (var task in tasks) {
+        print("Task: ${task.title}, Completed: ${task.completed}");
+      }
 
-    setState(() {
-      isLoading = false; // Stop loading once tasks are fetched
-    });
+      _updateTaskStates();
+    } catch (error) {
+      print("Error fetching or generating tasks: $error");
+    } finally {
+      setState(() {
+        isLoading = false;
+      });
+    }
   }
 
-  /// Update task states based on the fetched data from Firestore
   void _updateTaskStates() {
     int points = 0;
     Set<int> completed = Set();
@@ -73,12 +87,10 @@ class _DailytaskScreenState extends State<DailytaskScreen> {
     });
   }
 
-  /// Save individual task progress in Firestore
   Future<void> _saveTaskProgress(int index) async {
     await _taskService.saveTask(tasks[index]);
   }
 
-  /// Mark a task as complete and save it to Firestore
   void completeTask(int index) {
     setState(() {
       if (!completedTasks.contains(index)) {
@@ -90,7 +102,6 @@ class _DailytaskScreenState extends State<DailytaskScreen> {
     });
   }
 
-  /// Update progress for stepwise tasks (e.g., Water Intake)
   void updateStepwiseTask(int index, double selectedAmount) {
     setState(() {
       if (!completedTasks.contains(index)) {
@@ -102,7 +113,8 @@ class _DailytaskScreenState extends State<DailytaskScreen> {
           completedTasks.add(index);
           userPoints += 10;
         }
-        _saveTaskProgress(index); // Save updated progress to Firestore
+        print("Updated task progress: ${tasks[index].progress} / ${tasks[index].total}");
+        _saveTaskProgress(index);
       }
     });
   }
@@ -113,7 +125,8 @@ class _DailytaskScreenState extends State<DailytaskScreen> {
 
     int totalTasks = tasks.length;
     int completedCount = completedTasks.length;
-    double taskCompletionPercentage = totalTasks > 0 ? completedCount / totalTasks : 0;
+    double taskCompletionPercentage =
+        totalTasks > 0 ? completedCount / totalTasks : 0;
 
     return Scaffold(
       backgroundColor: backgroundColor,
@@ -123,10 +136,9 @@ class _DailytaskScreenState extends State<DailytaskScreen> {
         elevation: 0,
       ),
       body: isLoading
-          ? const Center(child: CircularProgressIndicator()) // Show loader while data is fetched
+          ? const Center(child: CircularProgressIndicator())
           : Column(
               children: [
-                // Points and Overall Progress Section
                 Padding(
                   padding: const EdgeInsets.all(16.0),
                   child: Column(
@@ -134,7 +146,6 @@ class _DailytaskScreenState extends State<DailytaskScreen> {
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          // Display user points in a badge
                           Chip(
                             label: Text(
                               'Points: $userPoints',
@@ -146,7 +157,6 @@ class _DailytaskScreenState extends State<DailytaskScreen> {
                             ),
                             backgroundColor: Colors.greenAccent.shade400,
                           ),
-                          // Circular progress for task completion
                           Stack(
                             alignment: Alignment.center,
                             children: [
@@ -180,8 +190,6 @@ class _DailytaskScreenState extends State<DailytaskScreen> {
                     ],
                   ),
                 ),
-
-                // PageView for tasks
                 Expanded(
                   child: Stack(
                     children: [
@@ -202,7 +210,8 @@ class _DailytaskScreenState extends State<DailytaskScreen> {
                               child: WaterIntakeCard(
                                 totalWaterGoal: task.total!.toDouble(),
                                 currentProgress: task.progress!.toDouble(),
-                                onProgressUpdate: (selectedAmount) => updateStepwiseTask(index, selectedAmount),
+                                onProgressUpdate: (selectedAmount) =>
+                                    updateStepwiseTask(index, selectedAmount),
                               ),
                             );
                           }
@@ -241,7 +250,8 @@ class _DailytaskScreenState extends State<DailytaskScreen> {
                                     const SizedBox(height: 20),
                                     completedTasks.contains(index)
                                         ? Container(
-                                            padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 20),
+                                            padding: const EdgeInsets.symmetric(
+                                                vertical: 10, horizontal: 20),
                                             decoration: BoxDecoration(
                                               color: Colors.greenAccent.shade400,
                                               borderRadius: BorderRadius.circular(30),
@@ -249,7 +259,8 @@ class _DailytaskScreenState extends State<DailytaskScreen> {
                                             child: Row(
                                               mainAxisSize: MainAxisSize.min,
                                               children: [
-                                                const Icon(Icons.check_circle, color: Colors.white, size: 24),
+                                                const Icon(Icons.check_circle,
+                                                    color: Colors.white, size: 24),
                                                 const SizedBox(width: 10),
                                                 const Text(
                                                   'Completed',
@@ -279,12 +290,12 @@ class _DailytaskScreenState extends State<DailytaskScreen> {
                           );
                         },
                       ),
-
                       if (currentPage > 0)
                         Align(
                           alignment: Alignment.centerLeft,
                           child: IconButton(
-                            icon: const Icon(Icons.arrow_back_ios, color: Colors.blueAccent),
+                            icon: const Icon(Icons.arrow_back_ios,
+                                color: Colors.blueAccent),
                             onPressed: () {
                               _pageController.previousPage(
                                 duration: const Duration(milliseconds: 300),
@@ -293,12 +304,12 @@ class _DailytaskScreenState extends State<DailytaskScreen> {
                             },
                           ),
                         ),
-
                       if (currentPage < tasks.length - 1)
                         Align(
                           alignment: Alignment.centerRight,
                           child: IconButton(
-                            icon: const Icon(Icons.arrow_forward_ios, color: Colors.blueAccent),
+                            icon: const Icon(Icons.arrow_forward_ios,
+                                color: Colors.blueAccent),
                             onPressed: () {
                               _pageController.nextPage(
                                 duration: const Duration(milliseconds: 300),

@@ -7,28 +7,122 @@ import 'package:flutter/material.dart';
 class TaskService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final User? currentUser = FirebaseAuth.instance.currentUser;
-  final ApiService apiService = ApiService(); // Instance of ApiService
+  final ApiService apiService = ApiService();
 
-  /// Check if tasks for today already exist
   Future<bool> _hasTasksForToday() async {
     if (currentUser != null) {
       String userId = currentUser!.uid;
       String currentDate = DateTime.now().toIso8601String().split('T')[0];
 
-      DocumentSnapshot taskSnapshot = await _firestore
+      print("Current User Id: ${userId} ");
+      print("Current date: ${currentDate} ");
+
+      DocumentSnapshot taskDocument = await _firestore
           .collection('users')
           .doc(userId)
           .collection('tasks')
           .doc(currentDate)
           .get();
 
-      print("Checking for existing tasks for today: ${taskSnapshot.exists}");
-      return taskSnapshot.exists;
+
+       print("Current tasks: ${taskDocument} ");
+       print("Current tasks exixsts: ${taskDocument.exists} ");
+
+      if (taskDocument.exists) {
+        QuerySnapshot taskListSnapshot = await _firestore
+            .collection('users')
+            .doc(userId)
+            .collection('tasks')
+            .doc(currentDate)
+            .collection('taskList')
+            .get();
+
+        //print("Task document exists for today: ${taskDocument.exists}");
+        //print("Number of tasks in 'taskList': ${taskListSnapshot.docs.length}");
+
+        return taskListSnapshot.docs.isNotEmpty;
+      } else {
+        print("No task document exists for today.");
+      }
     }
     return false;
   }
 
-  /// Fetch user's medical data from Firestore
+  Future<void> generateDailyTasksIfNeeded(List<TaskModel> defaultTasks) async {
+    bool hasTasks = await _hasTasksForToday();
+
+    if (hasTasks) {
+      print("Tasks for today already exist. Skipping task generation.");
+      return;
+    }
+
+    print("No tasks found for today. Generating new tasks...");
+
+    Map<String, dynamic>? medicalData = await fetchUserMedicalData();
+
+    if (medicalData != null) {
+      List<TaskModel>? recommendedTasks =
+          await fetchDailyTaskRecommendations(medicalData);
+
+      if (recommendedTasks != null && recommendedTasks.isNotEmpty) {
+        for (var task in recommendedTasks) {
+          await saveTask(task);
+        }
+      } else {
+        for (var task in defaultTasks) {
+          await saveTask(task);
+        }
+      }
+    } else {
+      for (var task in defaultTasks) {
+        await saveTask(task);
+      }
+    }
+  }
+
+  Future<List<TaskModel>> fetchUserTasks(List<TaskModel> defaultTasks) async {
+    if (currentUser != null) {
+      String userId = currentUser!.uid;
+      String currentDate = DateTime.now().toIso8601String().split('T')[0];
+
+      print("Fetching tasks for date: $currentDate");
+
+      QuerySnapshot taskSnapshot = await _firestore
+          .collection('users')
+          .doc(userId)
+          .collection('tasks')
+          .doc(currentDate)
+          .collection('taskList')
+          .get();
+
+      if (taskSnapshot.docs.isNotEmpty) {
+        //print("Tasks found for today. Task count: ${taskSnapshot.docs.length}");
+        return taskSnapshot.docs.map((doc) {
+          return TaskModel.fromFirestore(doc.data() as Map<String, dynamic>);
+        }).toList();
+      }
+    }
+    return defaultTasks;
+  }
+
+  Future<void> saveTask(TaskModel task) async {
+    if (currentUser != null) {
+      String userId = currentUser!.uid;
+      String currentDate = DateTime.now().toIso8601String().split('T')[0];
+
+      await _firestore
+          .collection('users')
+          .doc(userId)
+          .collection('tasks')
+          .doc(currentDate)
+          .collection('taskList')
+          .doc(task.title)
+          .set(task.toFirestore());
+
+      print("Saved task: ${task.title}");
+    }
+  }
+
   Future<Map<String, dynamic>?> fetchUserMedicalData() async {
     if (currentUser != null) {
       String userId = currentUser!.uid;
@@ -36,158 +130,46 @@ class TaskService {
           await _firestore.collection('userBasicData').doc(userId).get();
 
       if (medicalDataSnapshot.exists) {
-        print("Fetched user medical data: ${medicalDataSnapshot.data()}");
         return medicalDataSnapshot.data() as Map<String, dynamic>?;
       }
     }
-    print("No medical data found for the user.");
     return null;
   }
 
-  /// Fetch daily task recommendations by calling the API
   Future<List<TaskModel>?> fetchDailyTaskRecommendations(
       Map<String, dynamic> medicalData) async {
-    // Call the API service function to get daily task recommendations
     Map<String, dynamic>? apiData = await apiService.sendAgentData(medicalData);
 
     if (apiData != null) {
-      print("Received data from API: $apiData");
-
-      // Map the API response to TaskModel instances, handling potential null values
       return apiData.entries.map((entry) {
         String key = entry.key;
         Map<String, dynamic> data = entry.value;
 
-        // Safely extract values, providing default values if null
-        String title = data['title'] ?? key;
-        String detail = data['detail'] ?? '';
-        String type = data['type'] ?? 'regular';
-        int? total = data['total'] as int? ?? 0; // Default to 0 if null
-        int progress = data['progress'] as int? ?? 0;
-        int? stepAmount = data['stepAmount'] as int? ??
-            (type == 'stepwise' ? 1 : null); // Default stepAmount for stepwise
-
         return TaskModel(
-          title: title,
-          detail: detail,
+          title: data['title'] ?? key,
+          detail: data['detail'] ?? '',
           icon: _getIconForTask(key),
-          type: type,
-          total: total,
-          progress: progress,
-          stepAmount: stepAmount,
+          type: data['type'] ?? 'regular',
+          total: data['total'] as int? ?? 0,
+          progress: data['progress'] as int? ?? 0,
+          stepAmount: data['stepAmount'] as int? ??
+              (data['type'] == 'stepwise' ? 1 : null),
           completed: data['completed'] as bool? ?? false,
         );
       }).toList();
-    } else {
-      print("Failed to retrieve task recommendations from the API.");
-      return null;
     }
+    return null;
   }
 
-  /// Helper to get the icon based on task key
   IconData _getIconForTask(String key) {
     const Map<String, IconData> iconMapping = {
       "water_intake": Icons.local_drink,
       "walking_duration": Icons.directions_walk,
       "stretching_time": Icons.accessibility_new,
-      "stretching_duration": Icons.accessibility_new,
       "mindfulness_exercise": Icons.self_improvement,
       "nutrition_tip": Icons.local_dining,
       "sleep_reminder": Icons.bedtime,
-      "screen_time_break": Icons.tv_off,
-      "special_task": Icons.no_food,
-      "social_interaction": Icons.group,
-      "posture_reminder": Icons.accessibility,
     };
     return iconMapping[key] ?? Icons.help_outline;
-  }
-
-  /// Generate daily tasks if not set for today
-  Future<void> generateDailyTasksIfNeeded(List<TaskModel> defaultTasks) async {
-    bool hasTasks = await _hasTasksForToday();
-
-    if (!hasTasks) {
-      // Fetch user medical data
-      Map<String, dynamic>? medicalData = await fetchUserMedicalData();
-      print("User Exisitng medical data : $medicalData");
-
-      if (medicalData != null) {
-        // Fetch task recommendations based on medical data
-        List<TaskModel>? recommendedTasks =
-            await fetchDailyTaskRecommendations(medicalData);
-        print("Api tasks : $recommendedTasks");
-
-        if (recommendedTasks != null) {
-          print("Saving recommended tasks to Firestore...");
-          for (var task in recommendedTasks) {
-            await saveTask(task);
-          }
-        } else {
-          print("API failed; saving default tasks instead.");
-          for (var task in defaultTasks) {
-            await saveTask(task);
-          }
-        }
-      } else {
-        print("No medical data found; using default tasks.");
-        for (var task in defaultTasks) {
-          await saveTask(task);
-        }
-      }
-    } else {
-      print("Tasks for today already exist.");
-    }
-  }
-
-  /// Save a task for the current user
-  Future<void> saveTask(TaskModel task) async {
-    if (currentUser != null) {
-      String userId = currentUser!.uid;
-      String currentDate =
-          DateTime.now().toIso8601String().split('T')[0]; // YYYY-MM-DD format
-
-      await _firestore
-          .collection('users')
-          .doc(userId)
-          .collection('tasks')
-          .doc(currentDate)
-          .set({
-        task.title: task.toFirestore(),
-      }, SetOptions(merge: true)); // Use merge to avoid overwriting other tasks
-      print("Saved task: ${task.title}");
-    }
-  }
-
-  /// Fetch tasks for the current user for today's date
-  Future<List<TaskModel>> fetchUserTasks(List<TaskModel> defaultTasks) async {
-    if (currentUser != null) {
-      String userId = currentUser!.uid;
-      String currentDate = DateTime.now().toIso8601String().split('T')[0];
-
-      print("Current date $currentDate");
-
-      DocumentSnapshot taskSnapshot = await _firestore
-          .collection('users')
-          .doc(userId)
-          .collection('tasks')
-          .doc(currentDate)
-          .get();
-
-      if (taskSnapshot.exists) {
-        Map<String, dynamic> data = taskSnapshot.data() as Map<String, dynamic>;
-        print("Tasks found for today");
-
-        // Update default tasks with saved Firestore data
-        return defaultTasks.map((task) {
-          if (data.containsKey(task.title)) {
-            return TaskModel.fromFirestore(data[task.title]);
-          }
-          return task;
-        }).toList();
-      } else {
-        print("No tasks found for today; returning default tasks.");
-      }
-    }
-    return defaultTasks;
   }
 }

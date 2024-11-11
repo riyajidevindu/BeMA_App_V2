@@ -6,7 +6,7 @@ class TaskModel {
   final IconData icon;
   final String type; // "stepwise" or "regular"
   final int? total; // Total steps or amount (e.g., 2500ml for water intake)
-  final int? progress; // Current progress (e.g., 500ml for water intake)
+  final int progress; // Current progress (default to 0 if not provided)
   final int? stepAmount; // Amount to increment for stepwise tasks
   final bool completed; // If the task is completed or not
 
@@ -21,12 +21,12 @@ class TaskModel {
     this.completed = false,
   });
 
-  // Factory to create a TaskModel from Firestore data
+  /// Factory to create a TaskModel from Firestore data
   factory TaskModel.fromFirestore(Map<String, dynamic> data) {
     return TaskModel(
       title: data['title'] as String,
       detail: data['detail'] as String,
-      icon: IconData(data['icon'], fontFamily: 'MaterialIcons'),
+      icon: IconData(data['icon'], fontFamily: 'MaterialIcons'), // Ensure fontFamily is set
       type: data['type'] as String,
       total: data['total'] as int?,
       progress: data['progress'] as int? ?? 0,
@@ -35,7 +35,7 @@ class TaskModel {
     );
   }
 
-  // Convert TaskModel to Firestore format
+  /// Convert TaskModel to Firestore format
   Map<String, dynamic> toFirestore() {
     return {
       'title': title,
@@ -49,7 +49,7 @@ class TaskModel {
     };
   }
 
-  // Copy method to update task data
+  /// Copy method to update task data
   TaskModel copyWith({
     String? title,
     String? detail,
@@ -73,9 +73,8 @@ class TaskModel {
   }
 }
 
-// Function to convert LLM output to TaskModel
+/// Helper function to convert LLM output into TaskModel objects
 List<TaskModel> convertLLMOutputToTasks(Map<String, dynamic> llmOutput) {
-  // Mapping of task names to Material icons
   const Map<String, IconData> iconMapping = {
     "water_intake": Icons.local_drink,
     "walking_duration": Icons.directions_walk,
