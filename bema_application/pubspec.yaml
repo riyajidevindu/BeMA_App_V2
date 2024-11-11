@@ -49,8 +49,8 @@ dependencies:
   cached_network_image: ^3.4.1
   shared_preferences: ^2.3.2
   flutter_dotenv: ^5.2.1
-  # flutter_dotenv: ^5.0.2
-  # dart_openai: ^5.1.0
+  speech_to_text: ^7.0.0 
+  permission_handler: ^11.3.1 
 
   
 
