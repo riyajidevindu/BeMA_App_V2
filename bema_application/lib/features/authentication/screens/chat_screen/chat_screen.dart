@@ -6,6 +6,8 @@ import 'package:flutter/material.dart';
 import 'package:bema_application/services/api_service.dart';
 import 'package:bema_application/features/authentication/screens/chat_screen/chat_provider.dart';
 import 'package:provider/provider.dart';
+import 'package:speech_to_text/speech_to_text.dart' as stt;
+import 'package:permission_handler/permission_handler.dart';
 
 class ChatScreen extends StatefulWidget {
   const ChatScreen({super.key});
@@ -25,9 +27,16 @@ class _ChatScreenState extends State<ChatScreen>
   late final AnimationController _sendButtonController;
   late final Animation<double> _sendButtonAnimation;
 
+   // Speech recognition variables
+  late stt.SpeechToText _speech;
+  bool _isListening = false;
+
   @override
   void initState() {
     super.initState();
+    _speech = stt.SpeechToText();
+    _initializeSpeechRecognition();
+
     _sendButtonController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 100),
@@ -41,6 +50,21 @@ class _ChatScreenState extends State<ChatScreen>
         curve: Curves.easeInOut,
       ),
     );
+  }
+
+  // Helper function to request permission and initialize SpeechToText
+  Future<void> _initializeSpeechRecognition() async {
+    if (await Permission.microphone.request().isGranted) {
+      bool available = await _speech.initialize(
+        onStatus: (val) => print('onStatus: $val'),
+        onError: (val) => print('onError: $val'),
+      );
+      if (!available) {
+        print("Speech recognition not available.");
+      }
+    } else {
+      print("Microphone permission denied.");
+    }
   }
 
   @override
@@ -93,15 +117,66 @@ class _ChatScreenState extends State<ChatScreen>
     });
   }
 
+
+Future<void> _listen() async {
+  if (!_isListening) {
+    // Check if _speech is already initialized
+    if (!_speech.isAvailable) {
+      bool available = await _speech.initialize(
+        onStatus: (val) {
+          print('onStatus: $val');
+          if (val == "done" || val == "notListening") {
+            setState(() {
+              _isListening = false;
+            });
+          }
+        },
+        onError: (val) {
+          print('onError: $val');
+          setState(() {
+            _isListening = false;
+          });
+        },
+      );
+
+      if (!available) {
+        print("Speech recognition not available.");
+        return;
+      }
+    }
+
+    // Start listening if the SpeechToText instance is available
+    setState(() => _isListening = true);
+    print("Listening started...");
+    _speech.listen(
+      onResult: (val) {
+        setState(() {
+          _controller.text = val.recognizedWords;
+        });
+        print("Recognized words: ${val.recognizedWords}");
+      },
+    );
+  } else {
+    // Stop listening if already in progress
+    setState(() => _isListening = false);
+    _speech.stop();
+    print("Listening stopped.");
+  }
+}
+
+
   Widget _buildTextComposer(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 10.0),
       child: Row(
         children: [
           IconButton(
-            onPressed: () {},
-            icon: const Icon(Icons.mic_rounded, color: Colors.orangeAccent),
+            onPressed: _listen,
+            icon: Icon(
+              _isListening ? Icons.mic : Icons.mic_none,
+              color: Colors.orangeAccent,
           ),
+        ),
           Expanded(
             child: TextField(
               controller: _controller,
