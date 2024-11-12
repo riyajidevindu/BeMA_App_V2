@@ -82,7 +82,7 @@ class _WaterIntakeCardState extends State<WaterIntakeCard> {
                     value: currentWaterProgress / widget.totalWaterGoal,
                     strokeWidth: 10,
                     backgroundColor: Colors.grey[300],
-                    valueColor: AlwaysStoppedAnimation<Color>(
+                    valueColor: const AlwaysStoppedAnimation<Color>(
                       Colors.blueAccent,
                     ),
                   ),
@@ -150,12 +150,12 @@ class _WaterIntakeCardState extends State<WaterIntakeCard> {
                       color: Colors.greenAccent.shade400,
                       borderRadius: BorderRadius.circular(30),
                     ),
-                    child: Row(
+                    child: const Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        const Icon(Icons.check_circle, color: Colors.white, size: 24),
-                        const SizedBox(width: 10),
-                        const Text(
+                        Icon(Icons.check_circle, color: Colors.white, size: 24),
+                        SizedBox(width: 10),
+                        Text(
                           'Completed',
                           style: TextStyle(
                             fontSize: 18,

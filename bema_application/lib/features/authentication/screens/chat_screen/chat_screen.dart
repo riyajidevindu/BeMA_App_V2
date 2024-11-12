@@ -1,13 +1,13 @@
-import 'package:bema_application/common/config/colors.dart';
-import 'package:bema_application/common/widgets/app_bar.dart';
-import 'package:bema_application/features/authentication/screens/chat_screen/chat_message.dart';
-import 'package:bema_application/services/service.dart';
+import 'dart:io';
+import 'dart:typed_data';
 import 'package:flutter/material.dart';
-import 'package:bema_application/services/api_service.dart';
-import 'package:bema_application/features/authentication/screens/chat_screen/chat_provider.dart';
+import 'package:just_audio/just_audio.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:path/path.dart' as path;
 import 'package:provider/provider.dart';
-import 'package:speech_to_text/speech_to_text.dart' as stt;
-import 'package:permission_handler/permission_handler.dart';
+import 'package:record/record.dart';
+import 'chat_provider.dart';
+import 'chat_message.dart';
 
 class ChatScreen extends StatefulWidget {
   const ChatScreen({super.key});
@@ -16,303 +16,136 @@ class ChatScreen extends StatefulWidget {
   State<ChatScreen> createState() => _ChatScreenState();
 }
 
-class _ChatScreenState extends State<ChatScreen>
-    with SingleTickerProviderStateMixin {
+class _ChatScreenState extends State<ChatScreen> {
   final TextEditingController _controller = TextEditingController();
-  final List<ChatMessage> _messages = [];
-  final ApiService apiService = ApiService();
-  final GlobalKey<AnimatedListState> _listKey = GlobalKey<AnimatedListState>();
-  bool _isTyping = false;
+  final AudioRecorder _audioRecorder = AudioRecorder();
+  final AudioPlayer _audioPlayer = AudioPlayer();
+  String? recordingFilePath;
+  bool _isRecording = false;
 
-  late final AnimationController _sendButtonController;
-  late final Animation<double> _sendButtonAnimation;
-
-   // Speech recognition variables
-  late stt.SpeechToText _speech;
-  bool _isListening = false;
-
-  @override
-  void initState() {
-    super.initState();
-    _speech = stt.SpeechToText();
-    _initializeSpeechRecognition();
-
-    _sendButtonController = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 100),
-      lowerBound: 0.9,
-      upperBound: 1.0,
-    );
-
-    _sendButtonAnimation = Tween<double>(begin: 1.0, end: 1.1).animate(
-      CurvedAnimation(
-        parent: _sendButtonController,
-        curve: Curves.easeInOut,
-      ),
-    );
-  }
-
-  // Helper function to request permission and initialize SpeechToText
-  Future<void> _initializeSpeechRecognition() async {
-    if (await Permission.microphone.request().isGranted) {
-      bool available = await _speech.initialize(
-        onStatus: (val) => print('onStatus: $val'),
-        onError: (val) => print('onError: $val'),
-      );
-      if (!available) {
-        print("Speech recognition not available.");
-      }
-    } else {
-      print("Microphone permission denied.");
+  Future<void> _sendTextMessage(BuildContext context) async {
+    if (_controller.text.isNotEmpty) {
+      final chatProvider = Provider.of<ChatProvider>(context, listen: false);
+      await chatProvider.sendTextMessage(_controller.text);
+      _controller.clear();
     }
   }
 
-  @override
-  void dispose() {
-    _controller.dispose();
-    _sendButtonController.dispose();
-    super.dispose();
-  }
-
-    String _stripHtmlTags(String htmlText) {
-    final tagRegExp = RegExp(r'<[^>]*>', multiLine: true, caseSensitive: true);
-    return htmlText.replaceAll(tagRegExp, '');
-  }
-
-  Future<void> _sendMessage(BuildContext context) async {
-    if (_controller.text.isEmpty) return;
-    final chatProvider = Provider.of<ChatProvider>(context, listen: false);
-    await chatProvider.sendMessage(_controller.text);
-    _controller.clear();
-
-    ChatMessage userMessage =
-        ChatMessage(text: _controller.text, sender: "user");
-    setState(() {
-      _messages.insert(0, userMessage);
-      _listKey.currentState?.insertItem(0);
-      _isTyping = true; // Display typing indicator
-    });
-
-    String userInput = _controller.text;
-    _controller.clear();
-
-    final response = await apiService.askBotQuestion(userInput);
-
-       if (response != null && response.containsKey("answer")) {
-      // Clean the response text to remove HTML tags
-      String cleanResponseText = _stripHtmlTags(response["answer"]);
-      
-      ChatMessage aiMessage =
-          ChatMessage(text: cleanResponseText, sender: "AI");
-      setState(() {
-        _messages.insert(0, aiMessage);
-        _listKey.currentState?.insertItem(0);
-      });
-    } else {
-      print("Failed to get response from server.");
-    }
-
-    setState(() {
-      _isTyping = false; // Hide typing indicator
-    });
-  }
-
-
-Future<void> _listen() async {
-  if (!_isListening) {
-    // Check if _speech is already initialized
-    if (!_speech.isAvailable) {
-      bool available = await _speech.initialize(
-        onStatus: (val) {
-          print('onStatus: $val');
-          if (val == "done" || val == "notListening") {
-            setState(() {
-              _isListening = false;
-            });
-          }
-        },
-        onError: (val) {
-          print('onError: $val');
+  Future<void> _sendAudioMessage(BuildContext context) async {
+    if (recordingFilePath != null) {
+      final file = File(recordingFilePath!);
+      if (await file.exists()) {
+        final bytes = await file.readAsBytes();
+        if (bytes.isNotEmpty) {
+          print("Audio file size: ${bytes.length} bytes");
+          final chatProvider = Provider.of<ChatProvider>(context, listen: false);
+          await chatProvider.sendAudioMessage(bytes);
           setState(() {
-            _isListening = false;
+            recordingFilePath = null;
           });
-        },
-      );
-
-      if (!available) {
-        print("Speech recognition not available.");
-        return;
+        } else {
+          print("Error: Audio file is empty");
+        }
+      } else {
+        print("Error: Audio file does not exist at path: $recordingFilePath");
       }
+    } else {
+      print("Error: recordingFilePath is null");
     }
-
-    // Start listening if the SpeechToText instance is available
-    setState(() => _isListening = true);
-    print("Listening started...");
-    _speech.listen(
-      onResult: (val) {
-        setState(() {
-          _controller.text = val.recognizedWords;
-        });
-        print("Recognized words: ${val.recognizedWords}");
-      },
-    );
-  } else {
-    // Stop listening if already in progress
-    setState(() => _isListening = false);
-    _speech.stop();
-    print("Listening stopped.");
   }
-}
-
 
   Widget _buildTextComposer(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 10.0),
-      child: Row(
-        children: [
-          IconButton(
-            onPressed: _listen,
-            icon: Icon(
-              _isListening ? Icons.mic : Icons.mic_none,
-              color: Colors.orangeAccent,
+    return Row(
+      children: [
+        IconButton(
+          icon: Icon(_isRecording ? Icons.stop : Icons.mic),
+          onPressed: () async {
+            if (_isRecording) {
+              String? filePath = await _audioRecorder.stop();
+              if (filePath != null) {
+                setState(() {
+                  _isRecording = false;
+                  recordingFilePath = filePath;
+                });
+                await _sendAudioMessage(context);
+              }
+            } else {
+              if (await _audioRecorder.hasPermission()) {
+                final Directory appDocDir = await getApplicationDocumentsDirectory();
+                final String filePath = path.join(appDocDir.path, 'audio.wav');
+                await _audioRecorder.start(const RecordConfig(), path: filePath);
+                setState(() {
+                  _isRecording = true;
+                  recordingFilePath = filePath;
+                });
+              }
+            }
+          },
+          color: Colors.orangeAccent,
+        ),
+        Expanded(
+          child: TextField(
+            controller: _controller,
+            decoration: InputDecoration(
+              hintText: "Type a message...",
+              border: InputBorder.none,
+            ),
           ),
         ),
-          Expanded(
-            child: TextField(
-              controller: _controller,
-              onChanged: (text) {
-                Provider.of<ChatProvider>(context, listen: false)
-                    .setIsTyping(text.isNotEmpty);
-              },
-              onSubmitted: (value) => _sendMessage(context),
-              decoration: InputDecoration(
-                hintText: "Type a message...",
-                hintStyle: TextStyle(color: Colors.grey[400]),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(25.0),
-                  borderSide: BorderSide.none,
-                ),
-                filled: true,
-                fillColor: Colors.white,
-                contentPadding: const EdgeInsets.symmetric(
-                    vertical: 15.0, horizontal: 30.0),
-              ),
-            ),
-          ),
-          ScaleTransition(
-            scale: _sendButtonAnimation,
-            child: IconButton(
-              onPressed: () {
-                _sendButtonController.forward().then((_) {
-                  _sendButtonController.reverse();
-                  _sendMessage(context);
-                });
-              },
-              icon:
-                  const Icon(Icons.send, color: Color.fromARGB(255, 4, 8, 17)),
-            ),
-          ),
-        ],
-      ),
+        IconButton(
+          icon: Icon(Icons.send),
+          onPressed: () => _sendTextMessage(context),
+        ),
+      ],
     );
   }
 
-  Widget _buildChatBubble(ChatMessage message, bool isUser) {
-    return Align(
-      alignment: isUser ? Alignment.centerRight : Alignment.centerLeft,
-      child: Row(
-        mainAxisAlignment:
-            isUser ? MainAxisAlignment.end : MainAxisAlignment.start,
-        children: [
-          if (!isUser) ...[
-            const CircleAvatar(
-              backgroundImage: AssetImage('assets/logo.png'),
-              radius: 20,
-            ),
-            const SizedBox(width: 8.0),
-          ],
-          Container(
-            margin: const EdgeInsets.symmetric(vertical: 5.0),
-            padding: const EdgeInsets.all(10.0),
-            constraints: BoxConstraints(
-              maxWidth: MediaQuery.of(context).size.width * 0.75,
-            ),
-            decoration: BoxDecoration(
-              color: isUser
-                  ? const Color.fromARGB(255, 85, 194, 224)
-                  : const Color.fromARGB(255, 157, 219, 162),
-              borderRadius: BorderRadius.only(
-                topLeft: Radius.circular(15),
-                topRight: Radius.circular(15),
-                bottomLeft: Radius.circular(isUser ? 15 : 0),
-                bottomRight: Radius.circular(isUser ? 0 : 15),
-              ),
-            ),
-            child: Text(
-              message.text,
-              style: const TextStyle(fontSize: 16.0, color: Colors.black87),
-            ),
-          ),
-          if (isUser) ...[
-            const SizedBox(width: 8.0),
-            const Text('😊', style: TextStyle(fontSize: 20.0)),
-          ],
-        ],
-      ),
-    );
+  Future<void> _playAudio(Uint8List audioBytes) async {
+    final tempDir = await getTemporaryDirectory();
+    final tempFile = File('${tempDir.path}/temp_audio.mp3');
+    await tempFile.writeAsBytes(audioBytes);
+    await _audioPlayer.setFilePath(tempFile.path);
+    await _audioPlayer.play();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Chat'),
-      ),
-      body: Consumer<ChatProvider>(
-        builder: (context, chatProvider, _) {
-          return Column(
-            children: [
-              Expanded(
-                child: ListView.builder(
+      appBar: AppBar(title: const Text('Chat')),
+      body: Column(
+        children: [
+          Expanded(
+            child: Consumer<ChatProvider>(
+              builder: (context, chatProvider, _) {
+                return ListView.builder(
                   reverse: true,
                   itemCount: chatProvider.messages.length,
                   itemBuilder: (context, index) {
                     final message = chatProvider.messages[index];
-                    bool isUser = message.sender == "user";
-                    return _buildChatBubble(message, isUser);
+                    return ChatMessage(
+                      text: message.text,
+                      sender: message.sender,
+                      audioBytes: message.audioBytes,
+                      isAudioMessage: message.isAudioMessage,
+                      onPlay: message.audioBytes != null
+                          ? () => _playAudio(message.audioBytes!)
+                          : null,
+                    );
                   },
-                ),
-              ),
-              if (chatProvider.isTyping)
-                Padding(
-                  padding: const EdgeInsets.only(left: 12.0, bottom: 10.0),
-                  child: Row(
-                    children: [
-                      const CircleAvatar(
-                        backgroundImage: AssetImage('assets/logo.png'),
-                        radius: 15,
-                      ),
-                      const SizedBox(width: 8.0),
-                      Text("typing...",
-                          style: TextStyle(color: Colors.grey[600])),
-                    ],
-                  ),
-                ),
-              ClipRRect(
-                borderRadius: const BorderRadius.only(
-                  topLeft: Radius.circular(15.0),
-                  topRight: Radius.circular(15.0),
-                ),
-                child: Container(
-                  color: const Color.fromARGB(207, 4, 87, 231),
-                  padding: const EdgeInsets.only(bottom: 5.0),
-                  child: _buildTextComposer(context),
-                ),
-              ),
-            ],
-          );
-        },
+                );
+              },
+            ),
+          ),
+          _buildTextComposer(context),
+        ],
       ),
     );
+  }
+
+  @override
+  void dispose() {
+    _audioPlayer.dispose();
+    _audioRecorder.dispose();
+    super.dispose();
   }
 }

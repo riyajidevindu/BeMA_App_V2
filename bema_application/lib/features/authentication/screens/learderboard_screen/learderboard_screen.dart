@@ -72,9 +72,9 @@ class _LearderboardScreenState extends State<LearderboardScreen> {
                   color: Colors.transparent,
                   borderRadius: BorderRadius.circular(8),
                 ),
-                child: Text(
+                child: const Text(
                   "Your Daily Points",
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 24,
                     color: Color.fromARGB(255, 2, 150, 79),
                     fontWeight: FontWeight.bold,

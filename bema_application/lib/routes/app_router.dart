@@ -1,4 +1,3 @@
-import 'package:bema_application/common/widgets/tiles/bottom_navigation_bar.dart';
 import 'package:bema_application/features/authentication/screens/chat_screen/chat_screen.dart';
 import 'package:bema_application/features/authentication/screens/login_screen.dart';
 import 'package:bema_application/features/authentication/screens/profile_screen.dart';

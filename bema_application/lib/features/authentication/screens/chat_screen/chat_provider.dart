@@ -1,46 +1,46 @@
-import 'package:flutter/material.dart';
-import 'package:bema_application/features/authentication/screens/chat_screen/chat_message.dart';
+import 'dart:typed_data';
 import 'package:bema_application/services/api_service.dart';
+import 'package:flutter/material.dart';
+import 'chat_message.dart';
 
 class ChatProvider extends ChangeNotifier {
   final List<ChatMessage> _messages = [];
-  final ApiService apiService = ApiService();
+  final ApiService _apiService = ApiService();
   bool _isTyping = false;
 
   List<ChatMessage> get messages => _messages;
   bool get isTyping => _isTyping;
 
-  // Method to set typing status
-  void setIsTyping(bool isTyping) {
-    _isTyping = isTyping;
+  Future<void> sendTextMessage(String userInput) async {
+    ChatMessage userMessage = ChatMessage(text: userInput, sender: "user");
+    _messages.insert(0, userMessage);
+    _isTyping = true;
+    notifyListeners();
+
+    var response = await _apiService.askBotQuestion(userInput);
+    if (response != null && response.containsKey("answer")) {
+      _messages.insert(0, ChatMessage(text: response["answer"].join("\n"), sender: "AI"));
+    } else {
+      _messages.insert(0, ChatMessage(text: "Sorry, I couldn't process your request.", sender: "AI"));
+    }
+
+    _isTyping = false;
     notifyListeners();
   }
 
-  // Method to send a message and handle the response
-  Future<void> sendMessage(String userInput) async {
-    // Add user message to chat history
-    ChatMessage userMessage = ChatMessage(text: userInput, sender: "user");
-    _messages.insert(0, userMessage);
-    setIsTyping(true); // Show typing indicator
+  Future<void> sendAudioMessage(Uint8List audioData) async {
+    _messages.insert(0, ChatMessage(sender: "user", isAudioMessage: true));
+    _isTyping = true;
     notifyListeners();
 
-    // Fetch AI response from API
-    final response = await apiService.askBotQuestion(userInput);
-
-  // Check if response is not null and contains "answer" key
-    if (response != null && response.containsKey("answer")) {
-      List<String> points = List<String>.from(response["answer"]);
-
-      // Insert each point as a separate message
-      for (String point in points.reversed) {
-        ChatMessage aiMessage = ChatMessage(text: point, sender: "AI");
-        _messages.insert(0, aiMessage);
-      }
+    Uint8List? audioResponse = await _apiService.sendAudioAndGetResponse(audioData);
+    if (audioResponse != null) {
+      _messages.insert(0, ChatMessage(sender: "AI", audioBytes: audioResponse));
     } else {
-      print("Failed to get response from server.");
+      _messages.insert(0, ChatMessage(text: "Sorry, I couldn't process your audio message.", sender: "AI"));
     }
 
-    setIsTyping(false); // Hide typing indicator
+    _isTyping = false;
     notifyListeners();
   }
 }

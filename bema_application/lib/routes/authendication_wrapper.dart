@@ -1,5 +1,4 @@
 import 'package:bema_application/features/authentication/screens/welcome_screen.dart';
-import 'package:bema_application/features/home/screens/home_screen.dart';
 import 'package:bema_application/routes/route_names.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';

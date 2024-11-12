@@ -28,6 +28,8 @@ create an env file and add 'GROQ_API_KEY' taking from the groq website
 install packages - pip install -r requirements.txt
 run app using uvicron - uvicorn app.main:app --reload 
 
+when using your mobile phone run backend using this -uvicorn main:app --host 0.0.0.0 --port 8000
+
 
 before using change the data file path as of your local machine
 
