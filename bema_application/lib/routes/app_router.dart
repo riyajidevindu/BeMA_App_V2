@@ -28,6 +28,7 @@ import 'package:bema_application/features/home/screens/home_screen.dart';
 import 'package:bema_application/features/instant_stress_release/screens/instant_stress_release_screen.dart';
 import 'package:bema_application/features/navbar/bottom_navbar.dart';
 import 'package:bema_application/routes/authendication_wrapper.dart';
+import 'package:bema_application/features/authentication/screens/mood_screen/mood_friend.dart';
 import 'package:bema_application/routes/route_names.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
@@ -37,10 +38,10 @@ final goRouter = GoRouter(initialLocation: '/${RouteNames.wrapper}', routes: [
     path: '/${RouteNames.bottomNavigationBarScreen}',
     name: RouteNames.bottomNavigationBarScreen,
     pageBuilder: (context, state) {
-      int id = state.extra as int;  // Pass index for initial tab
+      int id = state.extra as int; // Pass index for initial tab
       return MaterialPage(
         child: BNavbarScreen(
-          initialIndex: id,  // Specify the initial tab
+          initialIndex: id, // Specify the initial tab
         ),
       );
     },
@@ -246,6 +247,13 @@ final goRouter = GoRouter(initialLocation: '/${RouteNames.wrapper}', routes: [
     name: RouteNames.stressReleaseScreen,
     pageBuilder: (context, state) => const MaterialPage(
       child: StressReleaseScreen(),
+    ),
+  ),
+  GoRoute(
+    path: '/${RouteNames.moodFriendScreen}',
+    name: RouteNames.moodFriendScreen,
+    pageBuilder: (context, state) => const MaterialPage(
+      child: MoodFriend(),
     ),
   ),
   // GoRoute(

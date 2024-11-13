@@ -1,3 +1,4 @@
+
 class RouteNames {
   static const wrapper = 'wrapper';
 
@@ -7,6 +8,7 @@ class RouteNames {
   static const profileScreen = 'profileScreen';
 
   static const bottomNavigationBarScreen = 'bottomNavigationBarScreen';
+  static const moodFriendScreen = 'moodFriendScreen';
 
   static const questionScreen2 = 'questionScreen2';
   static const questionScreen3 = 'questionScreen3';

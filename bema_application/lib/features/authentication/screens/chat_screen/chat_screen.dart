@@ -3,7 +3,6 @@ import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:path/path.dart' as path;
 import 'package:provider/provider.dart';
 import 'package:record/record.dart';
 import 'chat_provider.dart';
@@ -30,59 +29,10 @@ class _ChatScreenState extends State<ChatScreen> {
       _controller.clear();
     }
   }
-
-  Future<void> _sendAudioMessage(BuildContext context) async {
-    if (recordingFilePath != null) {
-      final file = File(recordingFilePath!);
-      if (await file.exists()) {
-        final bytes = await file.readAsBytes();
-        if (bytes.isNotEmpty) {
-          print("Audio file size: ${bytes.length} bytes");
-          final chatProvider = Provider.of<ChatProvider>(context, listen: false);
-          await chatProvider.sendAudioMessage(bytes);
-          setState(() {
-            recordingFilePath = null;
-          });
-        } else {
-          print("Error: Audio file is empty");
-        }
-      } else {
-        print("Error: Audio file does not exist at path: $recordingFilePath");
-      }
-    } else {
-      print("Error: recordingFilePath is null");
-    }
-  }
-
   Widget _buildTextComposer(BuildContext context) {
     return Row(
       children: [
-        IconButton(
-          icon: Icon(_isRecording ? Icons.stop : Icons.mic),
-          onPressed: () async {
-            if (_isRecording) {
-              String? filePath = await _audioRecorder.stop();
-              if (filePath != null) {
-                setState(() {
-                  _isRecording = false;
-                  recordingFilePath = filePath;
-                });
-                await _sendAudioMessage(context);
-              }
-            } else {
-              if (await _audioRecorder.hasPermission()) {
-                final Directory appDocDir = await getApplicationDocumentsDirectory();
-                final String filePath = path.join(appDocDir.path, 'audio.wav');
-                await _audioRecorder.start(const RecordConfig(), path: filePath);
-                setState(() {
-                  _isRecording = true;
-                  recordingFilePath = filePath;
-                });
-              }
-            }
-          },
-          color: Colors.orangeAccent,
-        ),
+
         Expanded(
           child: TextField(
             controller: _controller,

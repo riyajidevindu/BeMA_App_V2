@@ -181,7 +181,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     color: Colors.orangeAccent,
                     onTap: () {
                       // Navigate to Mood tab (index 2)
-                      context.goNamed(RouteNames.bottomNavigationBarScreen, extra: 2);
+                      context.goNamed(RouteNames.moodFriendScreen);
                     },
                   ),
                   _buildCard(
