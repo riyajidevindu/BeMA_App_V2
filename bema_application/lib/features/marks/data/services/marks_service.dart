@@ -47,9 +47,12 @@ class MarkService {
     return defaultTasks;
   }
 
-  /// Calculate points for completed tasks in a list
+  /// Calculate points for completed tasks in a list for the day
   double _calculatePoints(List<TaskModel> tasks) {
-    return tasks.where((task) => task.completed).length * 10.0;
+    if (tasks.isEmpty) return 0;
+    double totalDailyMarks = 100; // Total marks for a day
+    double taskMarks = totalDailyMarks / tasks.length;
+    return tasks.where((task) => task.completed).length * taskMarks;
   }
 
   /// Calculate points earned over the past 7 days
@@ -57,9 +60,47 @@ class MarkService {
     return _fetchPointsForPeriod(days: 7);
   }
 
-  /// Calculate points earned over the past 30 days
+  /// Calculate marks for the current month based on completed tasks
   Future<double> calculateMonthlyPoints() async {
-    return _fetchPointsForPeriod(days: 30);
+    if (currentUser == null) return 0;
+
+    String userId = currentUser!.uid;
+    DateTime now = DateTime.now();
+    double monthlyMarks = 0;
+
+    // Get the start and end of the current month
+    DateTime startOfMonth = DateTime(now.year, now.month, 1);
+    DateTime endOfMonth = DateTime(now.year, now.month + 1, 0); // Last day of the month
+
+    // Loop through each day of the month
+    for (DateTime date = startOfMonth;
+        date.isBefore(endOfMonth) || date.isAtSameMomentAs(endOfMonth);
+        date = date.add(Duration(days: 1))) {
+      
+      String dateString = date.toIso8601String().split('T')[0];
+      
+      // Fetch tasks for the current date
+      QuerySnapshot taskSnapshot = await _firestore
+          .collection('users')
+          .doc(userId)
+          .collection('tasks')
+          .doc(dateString)
+          .collection('taskList')
+          .get();
+
+      if (taskSnapshot.docs.isNotEmpty) {
+        List<TaskModel> tasks = taskSnapshot.docs.map((doc) {
+          return TaskModel.fromFirestore(doc.data() as Map<String, dynamic>);
+        }).toList();
+
+        // Calculate daily marks and add to monthly total
+        double dailyMarks = _calculatePoints(tasks);
+        monthlyMarks += dailyMarks;
+      }
+    }
+
+    // Cap the monthly marks at 100 if you want a max limit for the month
+    return monthlyMarks.clamp(0, 100);
   }
 
   /// Helper function to fetch points for a specified number of days
@@ -89,7 +130,14 @@ class MarkService {
           .where((task) => task.completed)
           .length;
 
-      points += completedTasks * 10.0; // Assuming 10 points per completed task
+      // Calculate daily points and add to the cumulative total
+      if (completedTasks > 0) {
+        double dailyPoints = _calculatePoints(taskListSnapshot.docs
+            .map((doc) =>
+                TaskModel.fromFirestore(doc.data() as Map<String, dynamic>))
+            .toList());
+        points += dailyPoints;
+      }
     }
 
     return points;
