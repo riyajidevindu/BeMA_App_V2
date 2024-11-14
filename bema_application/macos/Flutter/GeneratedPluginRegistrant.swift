@@ -15,7 +15,7 @@ import path_provider_foundation
 import record_darwin
 import shared_preferences_foundation
 import speech_to_text
-import sqflite
+import sqflite_darwin
 import url_launcher_macos
 import webview_flutter_wkwebview
 

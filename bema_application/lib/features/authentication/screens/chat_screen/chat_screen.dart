@@ -22,31 +22,51 @@ class _ChatScreenState extends State<ChatScreen> {
   String? recordingFilePath;
   bool _isRecording = false;
 
-  Future<void> _sendTextMessage(BuildContext context) async {
-    if (_controller.text.isNotEmpty) {
-      final chatProvider = Provider.of<ChatProvider>(context, listen: false);
-      await chatProvider.sendTextMessage(_controller.text);
-      _controller.clear();
-    }
-  }
-  Widget _buildTextComposer(BuildContext context) {
-    return Row(
-      children: [
+ Future<void> _sendTextMessage(BuildContext context) async {
+  if (_controller.text.isNotEmpty) {
+    final text = _controller.text;  // Save the text to send
+    _controller.clear();  // Clear the text field immediately
 
-        Expanded(
-          child: TextField(
-            controller: _controller,
-            decoration: InputDecoration(
-              hintText: "Type a message...",
-              border: InputBorder.none,
+    // Trigger a UI update to show the cleared text field
+    setState(() {});
+
+    final chatProvider = Provider.of<ChatProvider>(context, listen: false);
+    await chatProvider.sendTextMessage(text);  // Send the message in the background
+  }
+}
+
+  Widget _buildTextComposer(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 10.0),
+      child: Row(
+        children: [
+          Expanded(
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12.0),
+              decoration: BoxDecoration(
+                color: const Color.fromARGB(255, 117, 209, 105),
+                borderRadius: BorderRadius.circular(24.0),
+              ),
+              child: TextField(
+                controller: _controller,
+                decoration: const InputDecoration(
+                  hintText: "Type a message...",
+                  border: InputBorder.none,
+                ),
+              ),
             ),
           ),
-        ),
-        IconButton(
-          icon: Icon(Icons.send),
-          onPressed: () => _sendTextMessage(context),
-        ),
-      ],
+          const SizedBox(width: 8.0), // Space between text field and send button
+          CircleAvatar(
+            radius: 24.0,
+            backgroundColor: Colors.blue,
+            child: IconButton(
+              icon: const Icon(Icons.send, color: Colors.white),
+              onPressed: () => _sendTextMessage(context),
+            ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -56,6 +76,53 @@ class _ChatScreenState extends State<ChatScreen> {
     await tempFile.writeAsBytes(audioBytes);
     await _audioPlayer.setFilePath(tempFile.path);
     await _audioPlayer.play();
+  }
+
+  Widget _buildChatBubble(ChatMessage message, bool isUser) {
+    return Align(
+      alignment: isUser ? Alignment.centerRight : Alignment.centerLeft,
+      child: Row(
+        mainAxisAlignment:
+            isUser ? MainAxisAlignment.end : MainAxisAlignment.start,
+        children: [
+          if (!isUser) ...[
+            const CircleAvatar(
+              backgroundColor: Colors.grey,
+              child: Icon(Icons.android, color: Colors.white),
+            ),
+            const SizedBox(width: 8.0),
+          ],
+          Container(
+            padding: const EdgeInsets.all(12.0),
+            margin: const EdgeInsets.symmetric(vertical: 4.0),
+            constraints: BoxConstraints(
+              maxWidth: MediaQuery.of(context).size.width * 0.75,
+            ),
+            decoration: BoxDecoration(
+              color: isUser ? Colors.blueAccent : Colors.greenAccent,
+              borderRadius: BorderRadius.only(
+                topLeft: const Radius.circular(16.0),
+                topRight: const Radius.circular(16.0),
+                bottomLeft: Radius.circular(isUser ? 16.0 : 0),
+                bottomRight: Radius.circular(isUser ? 0 : 16.0),
+              ),
+            ),
+          child: Text(
+          message.text ?? "",
+          style: const TextStyle(color: Colors.white, fontSize: 16.0),
+        ),
+
+          ),
+          if (isUser) ...[
+            const SizedBox(width: 8.0),
+            const CircleAvatar(
+              backgroundColor: Colors.blue,
+              child: Icon(Icons.person, color: Colors.white),
+            ),
+          ],
+        ],
+      ),
+    );
   }
 
   @override
@@ -72,15 +139,8 @@ class _ChatScreenState extends State<ChatScreen> {
                   itemCount: chatProvider.messages.length,
                   itemBuilder: (context, index) {
                     final message = chatProvider.messages[index];
-                    return ChatMessage(
-                      text: message.text,
-                      sender: message.sender,
-                      audioBytes: message.audioBytes,
-                      isAudioMessage: message.isAudioMessage,
-                      onPlay: message.audioBytes != null
-                          ? () => _playAudio(message.audioBytes!)
-                          : null,
-                    );
+                    final isUser = message.sender == "user";
+                    return _buildChatBubble(message, isUser);
                   },
                 );
               },
