@@ -198,6 +198,19 @@ class _HomeScreenState extends State<HomeScreen> {
                     },
                   ),
                   _buildCard(
+                  avatar: const CircleAvatar(
+                    radius: 35,
+                    backgroundImage: AssetImage('assets/chat.png'),
+                  ),
+                  title: "Chat with Me",
+                  subtitle: "Ask Your Problem",
+                  color: Colors.lightBlueAccent,
+                  onTap: () {
+                    // Navigate to Daily Task tab (index 3)
+                    context.goNamed(RouteNames.bottomNavigationBarScreen, extra: 2);
+                  },
+                ),
+                  _buildCard(
                     avatar: const CircleAvatar(
                       radius: 35,
                       backgroundImage: AssetImage('assets/score.png'),
