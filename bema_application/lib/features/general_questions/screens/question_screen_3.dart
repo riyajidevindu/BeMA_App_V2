@@ -172,7 +172,7 @@ class _QuestionScreen3State extends State<QuestionScreen3> {
                     // Weight input field
                     TextFormField(
                       controller: _weightController,
-                      keyboardType: TextInputType.numberWithOptions(decimal: true),
+                      keyboardType: const TextInputType.numberWithOptions(decimal: true),
                       decoration: InputDecoration(
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
