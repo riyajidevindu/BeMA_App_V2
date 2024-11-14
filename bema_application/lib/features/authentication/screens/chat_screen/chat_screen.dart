@@ -172,8 +172,8 @@ Future<void> _loadAudioDuration(Uint8List audioBytes, int messageId) async {
             ),
             decoration: BoxDecoration(
               color: isUser
-                  ? const Color.fromARGB(255, 68, 153, 222)
-                  : const Color.fromARGB(255, 98, 164, 31),
+                 ? const Color.fromARGB(255, 70, 168, 195)
+                  : const Color.fromARGB(255, 78, 166, 87),
               borderRadius: BorderRadius.only(
                 topLeft: const Radius.circular(16.0),
                 topRight: const Radius.circular(16.0),
