@@ -1,4 +1,5 @@
 import 'package:bema_application/common/config/colors.dart';
+import 'package:bema_application/common/widgets/connectivity_checker.dart';
 import 'package:bema_application/features/authentication/providers/authentication_provider.dart';
 import 'package:bema_application/features/general_questions/providers/questioneer_provider.dart';
 import 'package:bema_application/routes/app_router.dart';
@@ -12,7 +13,7 @@ Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   // Load the .env file before initializing Firebase
- await dotenv.load(fileName: ".env");
+  await dotenv.load(fileName: ".env");
 
   await Firebase.initializeApp();
 
@@ -22,9 +23,9 @@ Future<void> main() async {
         ChangeNotifierProvider(
             create: (_) => AuthenticationProvider()), // Authentication
         ChangeNotifierProvider(
-            create: (_) =>
-                QuestionnaireProvider()), // Add QuestionnaireProvider
-        ChangeNotifierProvider(create: (_) => ChatProvider()),
+            create: (_) => QuestionnaireProvider()), // Add QuestionnaireProvider
+        ChangeNotifierProvider(
+          create: (_) => ChatProvider()),
       ],
       child: const MyApp(),
     ),
@@ -36,12 +37,14 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp.router(
-      title: 'BeMA',
-      routerConfig: goRouter, // Your GoRouter configuration
-      theme: ThemeData(
-        scaffoldBackgroundColor: backgroundColor,
-        primaryColor: primaryColor,
+    return ConnectivityCheck(
+      child: MaterialApp.router(
+        title: 'BeMA',
+        routerConfig: goRouter, // Your GoRouter configuration
+        theme: ThemeData(
+          scaffoldBackgroundColor: backgroundColor,
+          primaryColor: primaryColor,
+        ),
       ),
     );
   }
