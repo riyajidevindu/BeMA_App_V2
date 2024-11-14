@@ -1,6 +1,6 @@
 import 'package:bema_application/common/config/colors.dart';
 import 'package:bema_application/features/authentication/screens/chat_screen/chat_screen.dart';
-import 'package:bema_application/features/authentication/screens/learderboard_screen/learderboard_screen.dart';
+import 'package:bema_application/features/marks/screens/learderboard_screen.dart';
 import 'package:bema_application/features/authentication/screens/profile_screen.dart';
 import 'package:bema_application/features/daily_suggestions/screens/daily_suggestions_screen.dart';
 import 'package:bema_application/features/home/screens/home_screen.dart';
