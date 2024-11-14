@@ -21,7 +21,7 @@ class _BottomNavigationBarScreenState extends State<BottomNavigationBarScreen> {
   static final List<Widget> _widgetOptions = <Widget>[
     const HomeScreen(),
     const ChatScreen(),
-    const LearderboardScreen(),
+    const LeaderboardScreen(),
     const ProfileViewScreen(),
     const DailytaskScreen(),
   ];
