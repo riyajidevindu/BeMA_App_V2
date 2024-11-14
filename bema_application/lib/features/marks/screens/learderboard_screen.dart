@@ -1,5 +1,6 @@
 import 'package:bema_application/common/config/colors.dart';
 import 'package:bema_application/common/widgets/app_bar.dart';
+import 'package:bema_application/common/widgets/progress_indicator/custom_progress_indicator.dart';
 import 'package:bema_application/features/daily_suggestions/data/models/daily_task.dart';
 import 'package:bema_application/features/marks/data/services/marks_service.dart';
 import 'package:flutter/material.dart';
@@ -24,12 +25,12 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
   @override
   void initState() {
     super.initState();
-    loadUserData();
+    loadUserData(); // Initiate data loading
   }
 
   /// Fetch daily and monthly points along with daily tasks
   Future<void> loadUserData() async {
-    setState(() => isLoading = true);
+    setState(() => isLoading = true); // Start loading
     try {
       final taskSummary = await markService.fetchTaskSummary();
 
@@ -37,11 +38,11 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
         dailyTasks = taskSummary['dailyTasks'];
         dailyPoints = taskSummary['dailyPoints'];
         monthlyPoints = taskSummary['monthlyPoints'];
+        isLoading = false; // Stop loading when data is ready
       });
     } catch (error) {
       debugPrint("Error fetching task summary: $error");
-    } finally {
-      setState(() => isLoading = false);
+      setState(() => isLoading = false); // Stop loading even on error
     }
   }
 
@@ -60,11 +61,13 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
         title: const CustomAppBar(),
         elevation: 0,
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: isLoading
-            ? Center(child: CircularProgressIndicator()) // Loading indicator
-            : Column(
+      body: isLoading
+          ? const Center(
+              child: CustomProgressIndicator( ),
+            )
+          : Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
                 children: [
                   // Points Display (Daily and Monthly) with Arrow Indicators
                   Stack(
@@ -76,15 +79,24 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
                           controller: _pageController,
                           scrollDirection: Axis.horizontal,
                           children: [
-                            buildPointsBox("Daily Points", "$dailyPoints / $totalDailyMarks", fontSizeTitle, fontSizePoints),
-                            buildPointsBox("Monthly Points", "$monthlyPoints / $totalMonthlyMarks", fontSizeTitle, fontSizePoints),
+                            buildPointsBox(
+                                "Daily Points",
+                                "$dailyPoints / $totalDailyMarks",
+                                fontSizeTitle,
+                                fontSizePoints),
+                            buildPointsBox(
+                                "Monthly Points",
+                                "$monthlyPoints / $totalMonthlyMarks",
+                                fontSizeTitle,
+                                fontSizePoints),
                           ],
                         ),
                       ),
                       Positioned(
                         left: 0,
                         child: IconButton(
-                          icon: Icon(Icons.arrow_back_ios, color: Colors.blueAccent, size: 24),
+                          icon: Icon(Icons.arrow_back_ios,
+                              color: Colors.blueAccent, size: 24),
                           onPressed: () {
                             _pageController.previousPage(
                               duration: Duration(milliseconds: 300),
@@ -96,7 +108,8 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
                       Positioned(
                         right: 0,
                         child: IconButton(
-                          icon: Icon(Icons.arrow_forward_ios, color: Colors.blueAccent, size: 24),
+                          icon: Icon(Icons.arrow_forward_ios,
+                              color: Colors.blueAccent, size: 24),
                           onPressed: () {
                             _pageController.nextPage(
                               duration: Duration(milliseconds: 300),
@@ -122,8 +135,17 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
                                 : 0;
 
                         // Calculate marks for the task
-                        double taskMarks = (totalDailyMarks / dailyTasks.length).isNaN ? 0.0 : (totalDailyMarks / dailyTasks.length);
-                        double obtainedMarks = task.completed ? taskMarks : (task.progress / (task.total ?? 1) * taskMarks).isNaN ? 0.0 : (task.progress / (task.total ?? 1) * taskMarks);
+                        double taskMarks = (totalDailyMarks / dailyTasks.length)
+                                .isNaN
+                            ? 0.0
+                            : (totalDailyMarks / dailyTasks.length);
+                        double obtainedMarks = task.completed
+                            ? taskMarks
+                            : (task.progress / (task.total ?? 1) * taskMarks)
+                                    .isNaN
+                                ? 0.0
+                                : (task.progress / (task.total ?? 1) *
+                                    taskMarks);
 
                         return buildAchievementRow(
                           task.title,
@@ -139,17 +161,18 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
                   ),
                 ],
               ),
-      ),
+            ),
     );
   }
 
   /// Responsive points box with dynamic font size
-  Widget buildPointsBox(String title, String pointsText, double fontSizeTitle, double fontSizePoints) {
+  Widget buildPointsBox(String title, String pointsText, double fontSizeTitle,
+      double fontSizePoints) {
     return Container(
       padding: const EdgeInsets.all(20.0),
       decoration: BoxDecoration(
         gradient: LinearGradient(
-          colors: [const Color.fromARGB(255, 201, 212, 49).withOpacity(0.3), const Color.fromARGB(255, 56, 214, 82).withOpacity(0.1)],
+          colors: [Colors.blueGrey.withOpacity(0.3), Colors.blueGrey.withOpacity(0.1)],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
@@ -189,7 +212,8 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
   }
 
   /// Updated task card with responsive elements
-  Widget buildAchievementRow(String title, String marksText, double progress, IconData icon, bool completed, double fontSizeTitle, double iconSize) {
+  Widget buildAchievementRow(String title, String marksText, double progress,
+      IconData icon, bool completed, double fontSizeTitle, double iconSize) {
     int progressPercentage = (progress * 100).round();
 
     return Container(
@@ -231,7 +255,7 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                 decoration: BoxDecoration(
-                  color: completed ? Colors.green : const Color.fromARGB(255, 255, 64, 64),
+                  color: completed ? Colors.green : Colors.orangeAccent,
                   borderRadius: BorderRadius.circular(6),
                 ),
                 child: Text(
@@ -245,7 +269,6 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
             ],
           ),
           const SizedBox(height: 12),
-          // Progress Indicator
           LinearProgressIndicator(
             value: progress,
             backgroundColor: Colors.grey[200],
@@ -253,7 +276,6 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
             minHeight: 8,
           ),
           const SizedBox(height: 8),
-          // Progress Percentage
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
