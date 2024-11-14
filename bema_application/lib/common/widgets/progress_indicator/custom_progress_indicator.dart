@@ -45,7 +45,7 @@ class _CustomProgressIndicatorState extends State<CustomProgressIndicator>
   @override
   Widget build(BuildContext context) {
     // Responsive size scaling
-    final double size = MediaQuery.of(context).size.width * 0.4;
+    final double size = MediaQuery.of(context).size.width * 0.35;
 
     return Stack(
       children: [
@@ -95,7 +95,7 @@ class _CustomProgressIndicatorState extends State<CustomProgressIndicator>
                   ),
                   // Center logo
                   CircleAvatar(
-                    radius: size * 0.35, // Increased logo size
+                    radius: size * 0.30, // Increased logo size
                     backgroundImage: AssetImage(widget.logoPath),
                     backgroundColor: Colors.white,
                   ),
