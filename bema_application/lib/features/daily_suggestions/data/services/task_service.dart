@@ -9,13 +9,11 @@ class TaskService {
   final User? currentUser = FirebaseAuth.instance.currentUser;
   final ApiService apiService = ApiService();
 
+  /// Checks if tasks for the current date are already created
   Future<bool> _hasTasksForToday() async {
     if (currentUser != null) {
       String userId = currentUser!.uid;
       String currentDate = DateTime.now().toIso8601String().split('T')[0];
-
-      print("Current User Id: ${userId} ");
-      print("Current date: ${currentDate} ");
 
       DocumentSnapshot taskDocument = await _firestore
           .collection('users')
@@ -24,30 +22,19 @@ class TaskService {
           .doc(currentDate)
           .get();
 
-
-       print("Current tasks: ${taskDocument} ");
-       print("Current tasks exixsts: ${taskDocument.exists} ");
-
       if (taskDocument.exists) {
-        QuerySnapshot taskListSnapshot = await _firestore
-            .collection('users')
-            .doc(userId)
-            .collection('tasks')
-            .doc(currentDate)
-            .collection('taskList')
-            .get();
-
-        //print("Task document exists for today: ${taskDocument.exists}");
-        //print("Number of tasks in 'taskList': ${taskListSnapshot.docs.length}");
-
-        return taskListSnapshot.docs.isNotEmpty;
-      } else {
-        print("No task document exists for today.");
+        // Check the dailyTaskCreated field to see if tasks were already created for today
+        bool dailyTaskCreated = taskDocument.get('dailyTaskCreated') ?? false;
+        if (dailyTaskCreated) {
+          print("Tasks have already been created for today.");
+          return true;
+        }
       }
     }
     return false;
   }
 
+  /// Generates daily tasks if they haven't been created today
   Future<void> generateDailyTasksIfNeeded(List<TaskModel> defaultTasks) async {
     bool hasTasks = await _hasTasksForToday();
 
@@ -78,8 +65,29 @@ class TaskService {
         await saveTask(task);
       }
     }
+
+    // After creating tasks, set dailyTaskCreated to true in Firestore
+    await _setDailyTaskCreatedFlag();
   }
 
+  /// Sets the dailyTaskCreated flag to true in Firestore
+  Future<void> _setDailyTaskCreatedFlag() async {
+    if (currentUser != null) {
+      String userId = currentUser!.uid;
+      String currentDate = DateTime.now().toIso8601String().split('T')[0];
+
+      await _firestore
+          .collection('users')
+          .doc(userId)
+          .collection('tasks')
+          .doc(currentDate)
+          .set({'dailyTaskCreated': true}, SetOptions(merge: true));
+
+      print("Set dailyTaskCreated to true for today's tasks.");
+    }
+  }
+
+  /// Fetches the tasks for the current date; if none exist, returns default tasks
   Future<List<TaskModel>> fetchUserTasks(List<TaskModel> defaultTasks) async {
     if (currentUser != null) {
       String userId = currentUser!.uid;
@@ -96,7 +104,6 @@ class TaskService {
           .get();
 
       if (taskSnapshot.docs.isNotEmpty) {
-        //print("Tasks found for today. Task count: ${taskSnapshot.docs.length}");
         return taskSnapshot.docs.map((doc) {
           return TaskModel.fromFirestore(doc.data() as Map<String, dynamic>);
         }).toList();
@@ -105,6 +112,7 @@ class TaskService {
     return defaultTasks;
   }
 
+  /// Saves an individual task to Firestore
   Future<void> saveTask(TaskModel task) async {
     if (currentUser != null) {
       String userId = currentUser!.uid;
@@ -123,6 +131,7 @@ class TaskService {
     }
   }
 
+  /// Fetches user medical data from Firestore
   Future<Map<String, dynamic>?> fetchUserMedicalData() async {
     if (currentUser != null) {
       String userId = currentUser!.uid;
@@ -136,6 +145,7 @@ class TaskService {
     return null;
   }
 
+  /// Fetches daily task recommendations from ApiService based on medical data
   Future<List<TaskModel>?> fetchDailyTaskRecommendations(
       Map<String, dynamic> medicalData) async {
     Map<String, dynamic>? apiData = await apiService.sendAgentData(medicalData);
@@ -161,6 +171,7 @@ class TaskService {
     return null;
   }
 
+  /// Helper method to get icon for each task type
   IconData _getIconForTask(String key) {
     const Map<String, IconData> iconMapping = {
       "water_intake": Icons.local_drink,

@@ -1,6 +1,7 @@
 import 'package:bema_application/common/config/colors.dart';
 import 'package:bema_application/common/widgets/app_bar.dart';
 import 'package:bema_application/common/widgets/cards/water_intake_card.dart';
+import 'package:bema_application/common/widgets/progress_indicator/custom_progress_indicator.dart';
 import 'package:bema_application/features/daily_suggestions/data/models/daily_task.dart';
 import 'package:bema_application/features/daily_suggestions/data/services/task_service.dart';
 import 'package:flutter/material.dart';
@@ -113,7 +114,8 @@ class _DailytaskScreenState extends State<DailytaskScreen> {
           completedTasks.add(index);
           userPoints += 10;
         }
-        print("Updated task progress: ${tasks[index].progress} / ${tasks[index].total}");
+        print(
+            "Updated task progress: ${tasks[index].progress} / ${tasks[index].total}");
         _saveTaskProgress(index);
       }
     });
@@ -136,7 +138,9 @@ class _DailytaskScreenState extends State<DailytaskScreen> {
         elevation: 0,
       ),
       body: isLoading
-          ? const Center(child: CircularProgressIndicator())
+          ? const Center(
+              child: CustomProgressIndicator(),
+            )
           : Column(
               children: [
                 Padding(
@@ -185,7 +189,8 @@ class _DailytaskScreenState extends State<DailytaskScreen> {
                       const SizedBox(height: 10),
                       Text(
                         'Completed $completedCount / $totalTasks tasks',
-                        style: const TextStyle(fontSize: 16, color: Colors.blueGrey),
+                        style: const TextStyle(
+                            fontSize: 16, color: Colors.blueGrey),
                       ),
                     ],
                   ),
@@ -228,7 +233,8 @@ class _DailytaskScreenState extends State<DailytaskScreen> {
                                 child: Column(
                                   mainAxisAlignment: MainAxisAlignment.center,
                                   children: [
-                                    Icon(task.icon, size: 40, color: Colors.blueAccent),
+                                    Icon(task.icon,
+                                        size: 40, color: Colors.blueAccent),
                                     const SizedBox(height: 10),
                                     Text(
                                       task.title,
@@ -253,14 +259,17 @@ class _DailytaskScreenState extends State<DailytaskScreen> {
                                             padding: const EdgeInsets.symmetric(
                                                 vertical: 10, horizontal: 20),
                                             decoration: BoxDecoration(
-                                              color: Colors.greenAccent.shade400,
-                                              borderRadius: BorderRadius.circular(30),
+                                              color:
+                                                  Colors.greenAccent.shade400,
+                                              borderRadius:
+                                                  BorderRadius.circular(30),
                                             ),
                                             child: const Row(
                                               mainAxisSize: MainAxisSize.min,
                                               children: [
                                                 const Icon(Icons.check_circle,
-                                                    color: Colors.white, size: 24),
+                                                    color: Colors.white,
+                                                    size: 24),
                                                 const SizedBox(width: 10),
                                                 const Text(
                                                   'Completed',
@@ -274,13 +283,15 @@ class _DailytaskScreenState extends State<DailytaskScreen> {
                                             ),
                                           )
                                         : FloatingActionButton.extended(
-                                            onPressed: () => completeTask(index),
+                                            onPressed: () =>
+                                                completeTask(index),
                                             label: const Text('Mark as Done'),
                                             icon: const Icon(Icons.check),
                                             backgroundColor: Colors.blueAccent,
                                             elevation: 4,
                                             shape: RoundedRectangleBorder(
-                                              borderRadius: BorderRadius.circular(30),
+                                              borderRadius:
+                                                  BorderRadius.circular(30),
                                             ),
                                           ),
                                   ],
