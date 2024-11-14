@@ -3,8 +3,8 @@ import 'dart:typed_data';
 import 'package:http/http.dart' as http;
 
 class ApiService {
-  final String baseUrl = "http://192.168.1.3:8000"; // For Emulator
-//  final String baseUrl = 'https://a0fa-101-2-191-32.ngrok-free.app'; //This is for when you run in physical device
+  //final String baseUrl = "http://192.168.1.3:8000"; // For Emulator
+  final String baseUrl = 'https://2f4a-123-231-105-70.ngrok-free.app'; //This is for when you run in physical device
 
   // Function to ask a question to the bot
   Future<Map<String, dynamic>?> askBotQuestion(String question) async {
