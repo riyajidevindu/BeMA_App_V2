@@ -159,8 +159,8 @@ Future<void> _loadAudioDuration(Uint8List audioBytes, int messageId) async {
         children: [
           if (!isUser) ...[
             const CircleAvatar(
-              backgroundColor: Colors.grey,
-              child: Icon(Icons.android, color: Colors.white),
+              backgroundImage: AssetImage('assets/logo.png'),
+              radius: 20,
             ),
             const SizedBox(width: 8.0),
           ],
@@ -190,10 +190,7 @@ Future<void> _loadAudioDuration(Uint8List audioBytes, int messageId) async {
           ),
           if (isUser) ...[
             const SizedBox(width: 8.0),
-            const CircleAvatar(
-              backgroundColor: Colors.blue,
-              child: Icon(Icons.person, color: Colors.white),
-            ),
+           const Text('😊', style: TextStyle(fontSize: 20.0)),
           ],
         ],
       ),
