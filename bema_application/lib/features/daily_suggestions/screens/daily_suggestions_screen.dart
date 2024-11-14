@@ -14,7 +14,7 @@ class DailytaskScreen extends StatefulWidget {
 
 class _DailytaskScreenState extends State<DailytaskScreen> {
   int userPoints = 0;
-  Set<int> completedTasks = Set();
+  Set<int> completedTasks = {};
   int currentPage = 0;
   final PageController _pageController = PageController();
   final TaskService _taskService = TaskService(); // TaskService for Firestore
@@ -72,7 +72,7 @@ class _DailytaskScreenState extends State<DailytaskScreen> {
 
   void _updateTaskStates() {
     int points = 0;
-    Set<int> completed = Set();
+    Set<int> completed = {};
 
     for (int i = 0; i < tasks.length; i++) {
       if (tasks[i].completed) {
@@ -256,7 +256,7 @@ class _DailytaskScreenState extends State<DailytaskScreen> {
                                               color: Colors.greenAccent.shade400,
                                               borderRadius: BorderRadius.circular(30),
                                             ),
-                                            child: Row(
+                                            child: const Row(
                                               mainAxisSize: MainAxisSize.min,
                                               children: [
                                                 const Icon(Icons.check_circle,

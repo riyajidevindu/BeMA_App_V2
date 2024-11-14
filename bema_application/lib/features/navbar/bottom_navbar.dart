@@ -36,11 +36,11 @@ class _BNavbarScreenState extends State<BNavbarScreen> {
 
   // List of screens for navigation
   static final List<Widget> _widgetOptions = <Widget>[
-    HomeScreen(),
-    StressReleaseScreen(),
-    ChatScreen(),
-    DailytaskScreen(),
-    LearderboardScreen(),
+    const HomeScreen(),
+    const StressReleaseScreen(),
+    const ChatScreen(),
+    const DailytaskScreen(),
+    const LearderboardScreen(),
   ];
 
   // Update index when navigation item is tapped

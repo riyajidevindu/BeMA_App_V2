@@ -1,7 +1,6 @@
 import 'package:bema_application/common/config/colors.dart';
 import 'package:bema_application/common/widgets/app_bar.dart';
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
 
 class StressReleaseScreen extends StatefulWidget {
   const StressReleaseScreen({Key? key}) : super(key: key);
@@ -250,7 +249,7 @@ class _StressReleaseScreenState extends State<StressReleaseScreen>
                           height: screenWidth * 0.4,
                           decoration: BoxDecoration(
                             shape: BoxShape.circle,
-                            gradient: RadialGradient(
+                            gradient: const RadialGradient(
                               colors: [Colors.blueAccent, Colors.purpleAccent],
                               center: Alignment.center,
                               radius: 0.6,
