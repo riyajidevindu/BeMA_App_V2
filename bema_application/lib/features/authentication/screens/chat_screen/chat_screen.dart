@@ -18,10 +18,10 @@ class ChatScreen extends StatefulWidget {
 
 class _ChatScreenState extends State<ChatScreen> {
   final TextEditingController _controller = TextEditingController();
-  final AudioPlayer _audioPlayer = AudioPlayer();
-  bool _isPlayingAudio = false;
-  Duration _audioDuration = Duration.zero;
-  Duration _audioPosition = Duration.zero;
+  final Map<int, AudioPlayer> _audioPlayers = {};
+  final Map<int, bool> _isPlayingMap = {};
+  final Map<int, Duration> _audioDurations = {};
+  final Map<int, Duration> _audioPositions = {};
 
   Future<void> _sendTextMessage(BuildContext context) async {
     if (_controller.text.isNotEmpty) {
@@ -33,35 +33,40 @@ class _ChatScreenState extends State<ChatScreen> {
     }
   }
 
-  Future<void> _playAudio(Uint8List audioBytes) async {
+  Future<void> _playAudio(Uint8List audioBytes, int messageId) async {
+    if (_audioPlayers[messageId] == null) {
+      _audioPlayers[messageId] = AudioPlayer();
+    }
+
+    final player = _audioPlayers[messageId]!;
     final tempDir = await getTemporaryDirectory();
-    final tempFile = File('${tempDir.path}/temp_audio.mp3');
+    final tempFile = File('${tempDir.path}/temp_audio_$messageId.mp3');
     await tempFile.writeAsBytes(audioBytes);
 
     try {
-      await _audioPlayer.setFilePath(tempFile.path);
-      _audioPlayer.play();
-      _isPlayingAudio = true;
+      await player.setFilePath(tempFile.path);
+      player.play();
+      _isPlayingMap[messageId] = true;
 
-      _audioPlayer.durationStream.listen((duration) {
+      player.durationStream.listen((duration) {
         setState(() {
-          _audioDuration = duration ?? Duration.zero;
+          _audioDurations[messageId] = duration ?? Duration.zero;
         });
       });
 
-      _audioPlayer.positionStream.listen((position) {
+      player.positionStream.listen((position) {
         setState(() {
-          _audioPosition = position;
-          if (position >= _audioDuration) {
-            _isPlayingAudio = false;
+          _audioPositions[messageId] = position;
+          if (position >= _audioDurations[messageId]!) {
+            _isPlayingMap[messageId] = false;
           }
         });
       });
 
-      _audioPlayer.playerStateStream.listen((state) {
+      player.playerStateStream.listen((state) {
         if (state.processingState == ProcessingState.completed) {
           setState(() {
-            _isPlayingAudio = false;
+            _isPlayingMap[messageId] = false;
           });
         }
       });
@@ -70,53 +75,81 @@ class _ChatScreenState extends State<ChatScreen> {
     }
   }
 
-  Widget _buildVoiceMessageBubble(Uint8List audioBytes) {
-    return Row(
-      children: [
-        IconButton(
-          icon: Icon(
-            _isPlayingAudio
-                ? Icons.pause_circle_filled
-                : Icons.play_circle_filled,
-            color: Colors.blueAccent,
-            size: 28.0,
-          ),
-          onPressed: () async {
-            if (_isPlayingAudio) {
-              await _audioPlayer.pause();
-              setState(() {
-                _isPlayingAudio = false;
-              });
-            } else {
-              await _playAudio(audioBytes);
-            }
-          },
-        ),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              LinearProgressIndicator(
-                value: _audioDuration.inSeconds > 0
-                    ? _audioPosition.inSeconds / _audioDuration.inSeconds
-                    : 0.0,
-                backgroundColor: Colors.grey.shade300,
-                color: Colors.blueAccent,
-              ),
-              const SizedBox(height: 4.0),
-              Text(
-                '${_audioPosition.inMinutes}:${_audioPosition.inSeconds.remainder(60).toString().padLeft(2, '0')} / '
-                '${_audioDuration.inMinutes}:${_audioDuration.inSeconds.remainder(60).toString().padLeft(2, '0')}',
-                style: const TextStyle(color: Colors.black, fontSize: 12.0),
-              ),
-            ],
-          ),
-        ),
-      ],
-    );
+  Widget _buildVoiceMessageBubble(Uint8List audioBytes, int messageId) {
+  final isPlaying = _isPlayingMap[messageId] ?? false;
+  final audioDuration = _audioDurations[messageId] ?? Duration.zero;
+  final audioPosition = _audioPositions[messageId] ?? Duration.zero;
+
+  // If the duration is not yet loaded, load it when the widget is built
+  if (audioDuration == Duration.zero) {
+    _loadAudioDuration(audioBytes, messageId);
   }
 
-  Widget _buildChatBubble(ChatMessage message, bool isUser) {
+  return Row(
+    children: [
+      IconButton(
+        icon: Icon(
+          isPlaying ? Icons.pause_circle_filled : Icons.play_circle_filled,
+          color: const Color.fromARGB(255, 181, 18, 140),
+          size: 28.0,
+        ),
+        onPressed: () async {
+          if (isPlaying) {
+            await _audioPlayers[messageId]?.pause();
+            setState(() {
+              _isPlayingMap[messageId] = false;
+            });
+          } else {
+            await _playAudio(audioBytes, messageId);
+          }
+        },
+      ),
+      Expanded(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            LinearProgressIndicator(
+              value: audioDuration.inSeconds > 0
+                  ? audioPosition.inSeconds / audioDuration.inSeconds
+                  : 0.0,
+              backgroundColor: Colors.grey.shade300,
+              color: const Color.fromARGB(255, 221, 255, 68),
+            ),
+            const SizedBox(height: 4.0),
+            Text(
+              '${audioPosition.inMinutes}:${audioPosition.inSeconds.remainder(60).toString().padLeft(2, '0')} / '
+              '${audioDuration.inMinutes}:${audioDuration.inSeconds.remainder(60).toString().padLeft(2, '0')}',
+              style: const TextStyle(color: Colors.black, fontSize: 12.0),
+            ),
+          ],
+        ),
+      ),
+    ],
+  );
+}
+
+Future<void> _loadAudioDuration(Uint8List audioBytes, int messageId) async {
+  if (_audioPlayers[messageId] == null) {
+    _audioPlayers[messageId] = AudioPlayer();
+  }
+
+  final player = _audioPlayers[messageId]!;
+  final tempDir = await getTemporaryDirectory();
+  final tempFile = File('${tempDir.path}/temp_audio_$messageId.mp3');
+  await tempFile.writeAsBytes(audioBytes);
+
+  try {
+    await player.setFilePath(tempFile.path);
+    final duration = player.duration ?? Duration.zero;
+    setState(() {
+      _audioDurations[messageId] = duration;
+    });
+  } catch (e) {
+    print("Error loading audio duration: $e");
+  }
+}
+
+  Widget _buildChatBubble(ChatMessage message, bool isUser, int index) {
     final isVoiceMessage = message.audioBytes != null;
     return Align(
       alignment: isUser ? Alignment.centerRight : Alignment.centerLeft,
@@ -149,7 +182,7 @@ class _ChatScreenState extends State<ChatScreen> {
               ),
             ),
             child: isVoiceMessage
-                ? _buildVoiceMessageBubble(message.audioBytes!)
+                ? _buildVoiceMessageBubble(message.audioBytes!, index)
                 : Text(
                     message.text ?? "",
                     style: const TextStyle(color: Colors.white, fontSize: 16.0),
@@ -206,10 +239,10 @@ class _ChatScreenState extends State<ChatScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-     backgroundColor: backgroundColor, // Use background color from theme
+      backgroundColor: backgroundColor,
       appBar: AppBar(
-        backgroundColor: backgroundColor, // Consistent background color
-        title: const CustomAppBar(), // Custom AppBar from previous screen
+        backgroundColor: backgroundColor,
+        title: const CustomAppBar(),
       ),
       body: Column(
         children: [
@@ -222,7 +255,7 @@ class _ChatScreenState extends State<ChatScreen> {
                   itemBuilder: (context, index) {
                     final message = chatProvider.messages[index];
                     final isUser = message.sender == "user";
-                    return _buildChatBubble(message, isUser);
+                    return _buildChatBubble(message, isUser, index);
                   },
                 );
               },
@@ -236,7 +269,9 @@ class _ChatScreenState extends State<ChatScreen> {
 
   @override
   void dispose() {
-    _audioPlayer.dispose();
+    for (var player in _audioPlayers.values) {
+      player.dispose();
+    }
     super.dispose();
   }
 }
