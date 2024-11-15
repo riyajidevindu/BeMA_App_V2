@@ -130,6 +130,7 @@ def get_response(user_health_profile: UserHealthProfile):
         {{
           "water_intake": {{"title": "", "detail": "", "type": "", "total": null}},
           "walking_duration": {{"title": "", "detail": "", "type": "", "total": null}},
+          "stretching_time": {{"title": "", "detail": "", "type": "", "total": null}},
           "stretching_duration": {{"title": "", "detail": "", "type": "", "total": null}},
           "mindfulness_exercise": {{"title": "", "detail": "", "type": "", "total": null}},
           "nutrition_tip": {{"title": "", "detail": "", "type": "", "total": null}},
