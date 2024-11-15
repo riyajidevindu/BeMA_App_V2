@@ -38,6 +38,7 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
         dailyTasks = taskSummary['dailyTasks'];
         dailyPoints = taskSummary['dailyPoints'];
         monthlyPoints = taskSummary['monthlyPoints'];
+        totalMonthlyMarks = taskSummary['monthlyTotalPoints'];
         isLoading = false; // Stop loading when data is ready
       });
     } catch (error) {

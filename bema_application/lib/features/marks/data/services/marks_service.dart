@@ -12,12 +12,14 @@ class MarkService {
     final dailyPoints = _calculatePoints(dailyTasks);
     final weeklyPoints = await calculateWeeklyPoints();
     final monthlyPoints = await calculateMonthlyPoints();
+    final monthlyTotalPoints = await calculateTotalMonthlyMarks();
 
     return {
       'dailyTasks': dailyTasks,
       'dailyPoints': double.parse(dailyPoints.toStringAsFixed(1)),
       'weeklyPoints': double.parse(weeklyPoints.toStringAsFixed(1)),
       'monthlyPoints': double.parse(monthlyPoints.toStringAsFixed(1)),
+      'monthlyTotalPoints': double.parse(monthlyTotalPoints.toStringAsFixed(2)),
     };
   }
 
@@ -60,6 +62,40 @@ class MarkService {
     return _fetchPointsForPeriod(days: 7);
   }
 
+  /// Function to calculate total possible marks for the current month based on days with tasks.
+  Future<double> calculateTotalMonthlyMarks() async {
+    if (currentUser == null) return 0.0;
+
+    String userId = currentUser!.uid;
+    DateTime now = DateTime.now();
+    int daysWithTasks = 0;
+
+    // Start from the first day to the last day of the current month
+    DateTime startOfMonth = DateTime(now.year, now.month, 1);
+    DateTime endOfMonth = DateTime(now.year, now.month + 1, 0);
+
+    for (DateTime date = startOfMonth;
+        date.isBefore(endOfMonth) || date.isAtSameMomentAs(endOfMonth);
+        date = date.add(Duration(days: 1))) {
+
+      String dateString = date.toIso8601String().split('T')[0];
+      QuerySnapshot taskSnapshot = await _firestore
+          .collection('users')
+          .doc(userId)
+          .collection('tasks')
+          .doc(dateString)
+          .collection('taskList')
+          .get();
+
+      if (taskSnapshot.docs.isNotEmpty) {
+        daysWithTasks += 1;
+      }
+    }
+
+    return daysWithTasks * 100.0; // Each day contributes 100 points
+  }
+
+
   /// Calculate marks for the current month based on completed tasks
   Future<double> calculateMonthlyPoints() async {
     if (currentUser == null) return 0;
@@ -100,7 +136,7 @@ class MarkService {
     }
 
     // Cap the monthly marks at 100 if you want a max limit for the month
-    return monthlyMarks.clamp(0, 100);
+    return monthlyMarks;
   }
 
   /// Helper function to fetch points for a specified number of days
