@@ -1,6 +1,8 @@
 import 'dart:io';
 import 'dart:math';
 import 'dart:typed_data';
+import 'package:bema_application/common/config/colors.dart';
+import 'package:bema_application/common/widgets/app_bar.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:just_audio/just_audio.dart';
@@ -33,6 +35,8 @@ class _MoodFriendState extends State<MoodFriend> with TickerProviderStateMixin {
   late Animation<double> _bounceAnimation;
   late AnimationController _waveAnimationController;
   late Animation<double> _waveAnimation;
+  
+  String? _statusText; // Nullable to hide the cloud when null
 
   @override
   void initState() {
@@ -54,11 +58,26 @@ class _MoodFriendState extends State<MoodFriend> with TickerProviderStateMixin {
         setState(() {
           _isPlaying = state.playing;
           if (_isPlaying) {
+            _statusText = "Talking...";
             _waveAnimationController.repeat(reverse: true);
             _bounceAnimationController.repeat(reverse: true);
           } else {
             _waveAnimationController.stop();
             _bounceAnimationController.stop();
+          }
+        });
+      }
+    });
+
+    _audioPlayer.positionStream.listen((newPosition) {
+      if (mounted) {
+        setState(() {
+          _position = newPosition;
+
+          // Hide wave and cloud when playback completes
+          if (_position >= _duration && _duration > Duration.zero) {
+            _statusText = null;
+            _waveAnimationController.stop();
           }
         });
       }
@@ -71,14 +90,6 @@ class _MoodFriendState extends State<MoodFriend> with TickerProviderStateMixin {
         });
       }
     });
-
-    _audioPlayer.positionStream.listen((newPosition) {
-      if (mounted) {
-        setState(() {
-          _position = newPosition;
-        });
-      }
-    });
   }
 
   Future<void> _sendAudioMessage(BuildContext context) async {
@@ -87,16 +98,17 @@ class _MoodFriendState extends State<MoodFriend> with TickerProviderStateMixin {
       if (await file.exists()) {
         final bytes = await file.readAsBytes();
         if (bytes.isNotEmpty) {
-          print("Audio file size: ${bytes.length} bytes");
           final chatProvider = Provider.of<ChatProvider>(context, listen: false);
           setState(() {
             _isLoading = true;
             _isModelRotating = true;
+            _statusText = "Thinking...";
           });
           await chatProvider.sendAudioMessage(bytes);
           setState(() {
             _isLoading = false;
             _isModelRotating = false;
+            _statusText = null; // Hide cloud when done
           });
 
           if (chatProvider.messages.isNotEmpty) {
@@ -105,14 +117,8 @@ class _MoodFriendState extends State<MoodFriend> with TickerProviderStateMixin {
               _playAudio(lastMessage.audioBytes!);
             }
           }
-        } else {
-          print("Error: Audio file is empty");
         }
-      } else {
-        print("Error: Audio file does not exist at path: $recordingFilePath");
       }
-    } else {
-      print("Error: recordingFilePath is null");
     }
   }
 
@@ -137,7 +143,7 @@ class _MoodFriendState extends State<MoodFriend> with TickerProviderStateMixin {
       builder: (context, child) {
         return CustomPaint(
           size: Size(100, 50),
-          painter: SoundWavePainter(_waveAnimation.value),
+          painter: ModernSoundWavePainter(_waveAnimation.value),
         );
       },
     );
@@ -146,8 +152,10 @@ class _MoodFriendState extends State<MoodFriend> with TickerProviderStateMixin {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: backgroundColor,
       appBar: AppBar(
-        title: const Text('Mood Friend'),
+        backgroundColor: backgroundColor,
+        title: const CustomAppBar(),
         leading: IconButton(
           icon: Icon(Icons.arrow_back),
           onPressed: () {
@@ -167,7 +175,7 @@ class _MoodFriendState extends State<MoodFriend> with TickerProviderStateMixin {
                     return Transform.translate(
                       offset: Offset(0, _bounceAnimation.value),
                       child: ModelViewer(
-                        backgroundColor: Color.fromARGB(0xFF, 0xEE, 0xEE, 0xEE),
+                        backgroundColor: backgroundColor,
                         src: 'assets/white_cartoon_dog.glb',
                         alt: 'A 3D model of a dog',
                         ar: false,
@@ -177,9 +185,32 @@ class _MoodFriendState extends State<MoodFriend> with TickerProviderStateMixin {
                     );
                   },
                 ),
+                if (_statusText != null) // Show the cloud only if text is present
+                  Positioned(
+                    top: 40,
+                    left: MediaQuery.of(context).size.width * 0.4,
+                    child: CustomPaint(
+                      size: Size(200, 100), // Increased size
+                      painter: ThinkingCloudPainter(),
+                      child: Padding(
+                        padding: const EdgeInsets.all(16.0),
+                        child: Center(
+                          child: Text(
+                            _statusText!,
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.blueGrey,
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
                 if (_isPlaying)
                   Positioned(
-                    bottom: 50, // Adjust this value to position the wave near the dog's mouth
+                    bottom: 50,
                     child: _buildSoundWave(),
                   ),
               ],
@@ -223,32 +254,42 @@ class _MoodFriendState extends State<MoodFriend> with TickerProviderStateMixin {
             padding: const EdgeInsets.all(16.0),
             child: _isLoading
                 ? CircularProgressIndicator()
-                : IconButton(
-                    icon: Icon(_isRecording ? Icons.stop : Icons.mic),
-                    onPressed: () async {
-                      if (_isRecording) {
-                        String? filePath = await _audioRecorder.stop();
-                        if (filePath != null) {
-                          setState(() {
-                            _isRecording = false;
-                            recordingFilePath = filePath;
-                          });
-                          await _sendAudioMessage(context);
-                        }
-                      } else {
-                        if (await _audioRecorder.hasPermission()) {
-                          final Directory appDocDir = await getApplicationDocumentsDirectory();
-                          final String filePath = path.join(appDocDir.path, 'audio.wav');
-                          await _audioRecorder.start(const RecordConfig(), path: filePath);
-                          setState(() {
-                            _isRecording = true;
-                            recordingFilePath = filePath;
-                          });
-                        }
-                      }
-                    },
-                    color: Colors.orangeAccent,
-                    iconSize: 48,
+                : Column(
+                    children: [
+                      IconButton(
+                        icon: Icon(_isRecording ? Icons.stop : Icons.mic),
+                        onPressed: () async {
+                          if (_isRecording) {
+                            String? filePath = await _audioRecorder.stop();
+                            if (filePath != null) {
+                              setState(() {
+                                _isRecording = false;
+                                recordingFilePath = filePath;
+                                _statusText = "Thinking...";
+                              });
+                              await _sendAudioMessage(context);
+                            }
+                          } else {
+                            if (await _audioRecorder.hasPermission()) {
+                              final Directory appDocDir = await getApplicationDocumentsDirectory();
+                              final String filePath = path.join(appDocDir.path, 'audio.wav');
+                              await _audioRecorder.start(const RecordConfig(), path: filePath);
+                              setState(() {
+                                _isRecording = true;
+                                recordingFilePath = filePath;
+                                _statusText = "Listening...";
+                              });
+                            }
+                          }
+                        },
+                        color: Colors.orangeAccent,
+                        iconSize: 48,
+                      ),
+                      Text(
+                        _isRecording ? "Tap to stop recording" : "Tap to ask question",
+                        style: TextStyle(fontSize: 16, color: Colors.blueGrey),
+                      ),
+                    ],
                   ),
           ),
         ],
@@ -258,37 +299,56 @@ class _MoodFriendState extends State<MoodFriend> with TickerProviderStateMixin {
 
   @override
   void dispose() {
-    _audioPlayer.dispose();
-    _audioRecorder.dispose();
     _bounceAnimationController.dispose();
     _waveAnimationController.dispose();
+    _audioPlayer.dispose();
     super.dispose();
   }
 }
 
-class SoundWavePainter extends CustomPainter {
+class ThinkingCloudPainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..shader = LinearGradient(
+        colors: [Colors.white, Colors.lightBlueAccent],
+        stops: [0.5, 1.0],
+      ).createShader(Rect.fromLTWH(0, 0, size.width, size.height))
+      ..style = PaintingStyle.fill;
+
+    final path = Path();
+    path.addOval(Rect.fromLTWH(0, 0, size.width, size.height));
+    canvas.drawPath(path, paint);
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
+}
+
+class ModernSoundWavePainter extends CustomPainter {
   final double animationValue;
 
-  SoundWavePainter(this.animationValue);
+  ModernSoundWavePainter(this.animationValue);
 
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
-      ..color = Colors.blue
-      ..strokeWidth = 2
+      ..shader = LinearGradient(
+        colors: [Colors.blue, Colors.lightBlueAccent],
+        stops: [0.0, 1.0],
+      ).createShader(Rect.fromLTWH(0, 0, size.width, size.height))
+      ..strokeWidth = 3
       ..style = PaintingStyle.stroke;
 
     final path = Path();
-    final width = size.width;
-    final height = size.height;
+    final midHeight = size.height / 2;
 
-    path.moveTo(0, height / 2);
-
-    for (double i = 0; i < width; i++) {
-      path.lineTo(
-        i, 
-        height / 2 + sin((i / width * 2 * pi + animationValue * 2 * pi) * 2) * height / 4
-      );
+    for (double i = 0; i <= size.width; i++) {
+      final y = midHeight +
+          sin((i / size.width * 2 * pi) + animationValue * 2 * pi) *
+              midHeight *
+              0.4;
+      path.lineTo(i, y);
     }
 
     canvas.drawPath(path, paint);
