@@ -25,14 +25,14 @@ class _CustomAppBarState extends State<CustomAppBar> {
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.2),
-            spreadRadius: 2,
-            blurRadius: 5,
-            offset: const Offset(0, 3), // Shadow position
-          ),
-        ],
+        // boxShadow: [
+        //   BoxShadow(
+        //     color: Colors.black.withOpacity(0.2),
+        //     spreadRadius: 2,
+        //     blurRadius: 5,
+        //     offset: const Offset(0, 3), // Shadow position
+        //   ),
+        // ],
         borderRadius: BorderRadius.circular(12), // Rounded corners for entire AppBar
       ),
       height: 60, // Consistent height
