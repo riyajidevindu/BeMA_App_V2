@@ -3,8 +3,8 @@ import 'dart:typed_data';
 import 'package:http/http.dart' as http;
 
 class ApiService {
-  final String baseUrl = "http://192.168.1.60:8000"; // For Emulator
-//  final String baseUrl = 'https://a0fa-101-2-191-32.ngrok-free.app'; //This is for when you run in physical device
+  // final String baseUrl = "http://192.168.1.60:8000"; // For Emulator
+     final String baseUrl = 'https://3c1f-2402-4000-b2c0-179e-754f-7eff-e511-10fd.ngrok-free.app';  //This is for when you run in physical device
 
   // Function to ask a question to the bot
   Future<Map<String, dynamic>?> askBotQuestion(String question) async {
@@ -40,7 +40,7 @@ class ApiService {
             .toList();
 
 // Reverse the list of points to display them in ascending order
-        points = points.reversed.toList();
+        // points = points.reversed.toList();
 
 // Return the list of points
         return {"answer": points};
