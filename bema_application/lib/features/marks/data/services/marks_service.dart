@@ -15,9 +15,9 @@ class MarkService {
 
     return {
       'dailyTasks': dailyTasks,
-      'dailyPoints': dailyPoints,
-      'weeklyPoints': weeklyPoints,
-      'monthlyPoints': monthlyPoints,
+      'dailyPoints': double.parse(dailyPoints.toStringAsFixed(1)),
+      'weeklyPoints': double.parse(weeklyPoints.toStringAsFixed(1)),
+      'monthlyPoints': double.parse(monthlyPoints.toStringAsFixed(1)),
     };
   }
 
