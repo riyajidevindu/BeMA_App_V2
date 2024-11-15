@@ -14,25 +14,23 @@ class DailytaskScreen extends StatefulWidget {
 }
 
 class _DailytaskScreenState extends State<DailytaskScreen> {
-  int userPoints = 0;
+  double userPoints = 0;
   Set<int> completedTasks = {};
   int currentPage = 0;
   final PageController _pageController = PageController();
-  final TaskService _taskService = TaskService(); // TaskService for Firestore
+  final TaskService _taskService = TaskService();
 
-  bool isLoading = true; // Track loading state
-  List<TaskModel> tasks = []; // Initialize empty list to hold tasks
+  bool isLoading = true;
+  List<TaskModel> tasks = [];
 
   @override
   void initState() {
     super.initState();
-    _generateAndLoadTasksForToday(); // Load or generate today's tasks
+    _generateAndLoadTasksForToday();
   }
 
   Future<void> _generateAndLoadTasksForToday() async {
-    setState(() {
-      isLoading = true;
-    });
+    setState(() => isLoading = true);
 
     List<TaskModel> defaultTasks = [
       TaskModel(
@@ -55,35 +53,28 @@ class _DailytaskScreenState extends State<DailytaskScreen> {
     try {
       await _taskService.generateDailyTasksIfNeeded(defaultTasks);
       tasks = await _taskService.fetchUserTasks(defaultTasks);
-
-      print("Fetched tasks count: ${tasks.length}");
-      for (var task in tasks) {
-        print("Task: ${task.title}, Completed: ${task.completed}");
-      }
-
       _updateTaskStates();
     } catch (error) {
       print("Error fetching or generating tasks: $error");
     } finally {
-      setState(() {
-        isLoading = false;
-      });
+      setState(() => isLoading = false);
     }
   }
 
   void _updateTaskStates() {
-    int points = 0;
+    double points = 0;
     Set<int> completed = {};
+    double pointsPerTask = tasks.isNotEmpty ? 100 / tasks.length : 0;
 
     for (int i = 0; i < tasks.length; i++) {
       if (tasks[i].completed) {
         completed.add(i);
-        points += 10; // Assuming 10 points per completed task
+        points += pointsPerTask;
       }
     }
 
     setState(() {
-      userPoints = points;
+      userPoints = double.parse(points.toStringAsFixed(1)); // Round to 1 decimal
       completedTasks = completed;
     });
   }
@@ -93,14 +84,17 @@ class _DailytaskScreenState extends State<DailytaskScreen> {
   }
 
   void completeTask(int index) {
-    setState(() {
-      if (!completedTasks.contains(index)) {
+    if (!completedTasks.contains(index)) {
+      setState(() {
         completedTasks.add(index);
         tasks[index] = tasks[index].copyWith(completed: true);
-        userPoints += 10;
-        _saveTaskProgress(index); // Save task completion to Firestore
-      }
-    });
+
+        double pointsPerTask = tasks.isNotEmpty ? 100 / tasks.length : 0;
+        userPoints = double.parse((userPoints + pointsPerTask).toStringAsFixed(1)); // Rounded
+
+        _saveTaskProgress(index);
+      });
+    }
   }
 
   void updateStepwiseTask(int index, double selectedAmount) {
@@ -111,11 +105,8 @@ class _DailytaskScreenState extends State<DailytaskScreen> {
         tasks[index] = tasks[index].copyWith(progress: updatedProgress);
 
         if (updatedProgress >= tasks[index].total!) {
-          completedTasks.add(index);
-          userPoints += 10;
+          completeTask(index); // Mark as completed if goal reached
         }
-        print(
-            "Updated task progress: ${tasks[index].progress} / ${tasks[index].total}");
         _saveTaskProgress(index);
       }
     });
@@ -138,11 +129,10 @@ class _DailytaskScreenState extends State<DailytaskScreen> {
         elevation: 0,
       ),
       body: isLoading
-          ? const Center(
-              child: CustomProgressIndicator(),
-            )
+          ? const Center(child: CustomProgressIndicator())
           : Column(
               children: [
+                // Header showing points and task progress
                 Padding(
                   padding: const EdgeInsets.all(16.0),
                   child: Column(
@@ -159,7 +149,7 @@ class _DailytaskScreenState extends State<DailytaskScreen> {
                                 color: Colors.white,
                               ),
                             ),
-                            backgroundColor: Colors.greenAccent.shade400,
+                            backgroundColor: Colors.blueAccent.shade200,
                           ),
                           Stack(
                             alignment: Alignment.center,
@@ -170,8 +160,8 @@ class _DailytaskScreenState extends State<DailytaskScreen> {
                                 child: CircularProgressIndicator(
                                   value: taskCompletionPercentage,
                                   backgroundColor: Colors.grey[200],
-                                  color: Colors.blueAccent,
-                                  strokeWidth: 10,
+                                  color: Colors.greenAccent.shade400,
+                                  strokeWidth: 8,
                                 ),
                               ),
                               Text(
@@ -190,7 +180,9 @@ class _DailytaskScreenState extends State<DailytaskScreen> {
                       Text(
                         'Completed $completedCount / $totalTasks tasks',
                         style: const TextStyle(
-                            fontSize: 16, color: Colors.blueGrey),
+                          fontSize: 16,
+                          color: Colors.blueGrey,
+                        ),
                       ),
                     ],
                   ),
@@ -198,13 +190,10 @@ class _DailytaskScreenState extends State<DailytaskScreen> {
                 Expanded(
                   child: Stack(
                     children: [
+                      // PageView for displaying task cards
                       PageView.builder(
                         controller: _pageController,
-                        onPageChanged: (index) {
-                          setState(() {
-                            currentPage = index;
-                          });
-                        },
+                        onPageChanged: (index) => setState(() => currentPage = index),
                         itemCount: tasks.length,
                         itemBuilder: (context, index) {
                           final task = tasks[index];
@@ -228,13 +217,14 @@ class _DailytaskScreenState extends State<DailytaskScreen> {
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(16),
                               ),
+                              color: Colors.white,
                               child: Padding(
                                 padding: const EdgeInsets.all(16.0),
                                 child: Column(
                                   mainAxisAlignment: MainAxisAlignment.center,
                                   children: [
                                     Icon(task.icon,
-                                        size: 40, color: Colors.blueAccent),
+                                        size: 50, color: Colors.blueAccent),
                                     const SizedBox(height: 10),
                                     Text(
                                       task.title,
@@ -244,12 +234,12 @@ class _DailytaskScreenState extends State<DailytaskScreen> {
                                         color: Colors.blueGrey,
                                       ),
                                     ),
-                                    const SizedBox(height: 16),
+                                    const SizedBox(height: 8),
                                     Text(
                                       task.detail,
                                       textAlign: TextAlign.center,
                                       style: const TextStyle(
-                                        fontSize: 18,
+                                        fontSize: 16,
                                         color: Colors.grey,
                                       ),
                                     ),
@@ -259,22 +249,21 @@ class _DailytaskScreenState extends State<DailytaskScreen> {
                                             padding: const EdgeInsets.symmetric(
                                                 vertical: 10, horizontal: 20),
                                             decoration: BoxDecoration(
-                                              color:
-                                                  Colors.greenAccent.shade400,
+                                              color: Colors.greenAccent,
                                               borderRadius:
                                                   BorderRadius.circular(30),
                                             ),
-                                            child: const Row(
+                                            child: Row(
                                               mainAxisSize: MainAxisSize.min,
                                               children: [
                                                 const Icon(Icons.check_circle,
                                                     color: Colors.white,
                                                     size: 24),
-                                                const SizedBox(width: 10),
+                                                const SizedBox(width: 8),
                                                 const Text(
                                                   'Completed',
                                                   style: TextStyle(
-                                                    fontSize: 18,
+                                                    fontSize: 16,
                                                     fontWeight: FontWeight.bold,
                                                     color: Colors.white,
                                                   ),
@@ -282,16 +271,25 @@ class _DailytaskScreenState extends State<DailytaskScreen> {
                                               ],
                                             ),
                                           )
-                                        : FloatingActionButton.extended(
-                                            onPressed: () =>
-                                                completeTask(index),
-                                            label: const Text('Mark as Done'),
+                                        : ElevatedButton.icon(
+                                            onPressed: () => completeTask(index),
+                                            label: const Text(
+                                              'Mark as Done',
+                                              style: TextStyle(
+                                                  fontSize: 16,
+                                                  fontWeight: FontWeight.bold),
+                                            ),
                                             icon: const Icon(Icons.check),
-                                            backgroundColor: Colors.blueAccent,
-                                            elevation: 4,
-                                            shape: RoundedRectangleBorder(
-                                              borderRadius:
-                                                  BorderRadius.circular(30),
+                                            style: ElevatedButton.styleFrom(
+                                              shape: RoundedRectangleBorder(
+                                                borderRadius:
+                                                    BorderRadius.circular(30),
+                                              ),
+                                              padding:
+                                                  const EdgeInsets.symmetric(
+                                                      vertical: 12,
+                                                      horizontal: 24),
+                                              elevation: 5,
                                             ),
                                           ),
                                   ],
