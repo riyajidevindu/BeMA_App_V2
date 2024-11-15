@@ -1,5 +1,7 @@
-from pydantic import BaseModel
 from typing import Optional
+
+from pydantic import BaseModel
+
 
 class UserHealthProfile(BaseModel):
     age: int
@@ -12,7 +14,7 @@ class UserHealthProfile(BaseModel):
     familyMedicalHistoryDiscription: Optional[str]
     favoriteExercise: Optional[str]
     gender: str
-    glassesPerWeek: Optional[int]
+    glassesPerWeek: Optional[str]
     hadSurgeries: bool
     hasAllergies: bool
     hasCholesterol: bool
