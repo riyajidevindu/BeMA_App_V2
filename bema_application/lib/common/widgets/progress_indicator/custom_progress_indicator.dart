@@ -1,5 +1,5 @@
+import 'dart:math';
 import 'dart:ui';
-
 import 'package:flutter/material.dart';
 
 class CustomProgressIndicator extends StatefulWidget {
@@ -18,21 +18,48 @@ class CustomProgressIndicator extends StatefulWidget {
 class _CustomProgressIndicatorState extends State<CustomProgressIndicator>
     with SingleTickerProviderStateMixin {
   late AnimationController _controller;
+  late Animation<double> _waterFillAnimation;
   bool _isVisible = false;
+
+  final List<String> _messages = [
+    "Please hold on...",
+    "Almost there...",
+    "Thanks for your patience!",
+    "Loading, just a moment..."
+  ];
+  int _currentMessageIndex = 0;
 
   @override
   void initState() {
     super.initState();
     _controller = AnimationController(
-      duration: const Duration(seconds: 2),
+      duration: const Duration(seconds: 3),
       vsync: this,
-    )..repeat();
+    )..repeat(reverse: true);
 
-    // Delay to show progress indicator
+    _waterFillAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(
+        parent: _controller,
+        curve: Curves.easeInOut,
+      ),
+    );
+
+    _startMessageTimer();
+
     WidgetsBinding.instance.addPostFrameCallback((_) {
       setState(() {
         _isVisible = true;
       });
+    });
+  }
+
+  void _startMessageTimer() {
+    Future.delayed(const Duration(seconds: 2), () {
+      setState(() {
+        _currentMessageIndex =
+            (_currentMessageIndex + 1) % _messages.length;
+      });
+      _startMessageTimer();
     });
   }
 
@@ -44,7 +71,6 @@ class _CustomProgressIndicatorState extends State<CustomProgressIndicator>
 
   @override
   Widget build(BuildContext context) {
-    // Responsive size scaling
     final double size = MediaQuery.of(context).size.width * 0.35;
 
     return Stack(
@@ -57,50 +83,64 @@ class _CustomProgressIndicatorState extends State<CustomProgressIndicator>
             child: BackdropFilter(
               filter: ImageFilter.blur(sigmaX: 10.0, sigmaY: 10.0),
               child: Container(
-                color: Colors.black.withOpacity(0.3),
+                color: Colors.black.withOpacity(0.1),
               ),
             ),
           ),
         ),
-        // Centered progress indicator
+        // Centered logo with circular water fill effect and animated waves
         Center(
           child: AnimatedScale(
             scale: _isVisible ? 1.0 : 0.8,
             duration: const Duration(milliseconds: 500),
-            child: SizedBox(
-              width: size,
-              height: size,
-              child: Stack(
-                alignment: Alignment.center,
-                children: [
-                  // Rotating circular progress indicator
-                  AnimatedBuilder(
-                    animation: _controller,
-                    builder: (context, child) {
-                      return Transform.rotate(
-                        angle: _controller.value * 2 * 3.141592653589793,
-                        child: CustomPaint(
-                          size: Size(size, size),
-                          painter: _ModernCircularPainter(
-                            gradientColors: [
-                              Colors.blueAccent,
-                              Colors.blueAccent.shade200,
-                              Colors.blueAccent.withOpacity(0.5),
-                            ],
-                            strokeWidth: size * 0.08, // Increased width
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Circular water fill within the logo
+                SizedBox(
+                  width: size,
+                  height: size,
+                  child: ClipOval(
+                    child: Stack(
+                      alignment: Alignment.center,
+                      children: [
+                        // Display the logo
+                        CircleAvatar(
+                          radius: size * 0.5,
+                          backgroundImage: AssetImage(widget.logoPath),
+                          backgroundColor: Colors.transparent,
+                        ),
+                        // Circular water fill overlay with waves
+                        Positioned.fill(
+                          child: AnimatedBuilder(
+                            animation: _waterFillAnimation,
+                            builder: (context, child) {
+                              return ClipPath(
+                                clipper: WaveClipper(_waterFillAnimation.value),
+                                child: Container(
+                                  color: Colors.blueAccent.withOpacity(0.5),
+                                ),
+                              );
+                            },
                           ),
                         ),
-                      );
-                    },
+                      ],
+                    ),
                   ),
-                  // Center logo
-                  CircleAvatar(
-                    radius: size * 0.30, // Increased logo size
-                    backgroundImage: AssetImage(widget.logoPath),
-                    backgroundColor: Colors.white,
+                ),
+                // Text message below the logo
+                Padding(
+                  padding: const EdgeInsets.only(top: 16.0),
+                  child: Text(
+                    _messages[_currentMessageIndex],
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: size * 0.1,
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
           ),
         ),
@@ -109,57 +149,36 @@ class _CustomProgressIndicatorState extends State<CustomProgressIndicator>
   }
 }
 
-// Custom painter for modern circular progress
-class _ModernCircularPainter extends CustomPainter {
-  final List<Color> gradientColors;
-  final double strokeWidth;
+class WaveClipper extends CustomClipper<Path> {
+  final double animationValue;
 
-  _ModernCircularPainter({
-    required this.gradientColors,
-    this.strokeWidth = 6.0,
-  });
+  WaveClipper(this.animationValue);
 
   @override
-  void paint(Canvas canvas, Size size) {
-    final Paint paint = Paint()
-      ..shader = SweepGradient(
-        colors: gradientColors,
-        startAngle: 0.0,
-        endAngle: 2 * 3.141592653589793,
-        tileMode: TileMode.repeated,
-      ).createShader(Rect.fromCircle(
-        center: Offset(size.width / 2, size.height / 2),
-        radius: size.width / 2,
-      ))
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = strokeWidth
-      ..strokeCap = StrokeCap.round;
+  Path getClip(Size size) {
+    final Path path = Path();
+    final double waveHeight = size.height * 0.05; // Adjust wave height
+    final double frequency = 2 * pi / size.width; // Frequency of wave oscillations
 
-    final double radius = size.width / 2;
-    canvas.drawArc(
-      Rect.fromCircle(center: Offset(radius, radius), radius: radius - strokeWidth / 2),
-      -3.14 / 2,
-      2 * 3.14 * 0.75, // 75% progress arc
-      false,
-      paint,
-    );
+    // Start from the bottom left corner of the circular area
+    path.moveTo(0, size.height);
 
-    // Add shadow for a 3D effect
-    final shadowPaint = Paint()
-      ..color = Colors.black.withOpacity(0.1)
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = strokeWidth
-      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 4);
+    // Loop through the width and create sine waves for the top edge of the water
+    for (double x = 0; x <= size.width; x++) {
+      double y = size.height * (1 - animationValue) +
+          waveHeight * sin(x * frequency + animationValue * 2 * pi);
+      path.lineTo(x, y);
+    }
 
-    canvas.drawArc(
-      Rect.fromCircle(center: Offset(radius, radius), radius: radius - strokeWidth / 2),
-      -3.14 / 2,
-      2 * 3.14 * 0.75, // 75% progress arc
-      false,
-      shadowPaint,
-    );
+    // Close the path from the end to the bottom right corner
+    path.lineTo(size.width, size.height);
+    path.close();
+
+    return path;
   }
 
   @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => true;
+  bool shouldReclip(WaveClipper oldClipper) {
+    return oldClipper.animationValue != animationValue;
+  }
 }
