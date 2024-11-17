@@ -1,0 +1,11 @@
+fastapi[standard]
+uvicorn   
+groq
+langchain-groq
+langchain-huggingface
+langchain-core
+langchain-chroma
+langchain-community
+python-dotenv
+pypdf
+gtts

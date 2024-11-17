@@ -1,3 +1,4 @@
+
 class RouteNames {
   static const wrapper = 'wrapper';
 
@@ -5,6 +6,9 @@ class RouteNames {
   static const loginScreen = 'loginScreen';
   static const userWelcomeScreen = 'userWelcomeScreen';
   static const profileScreen = 'profileScreen';
+
+  static const bottomNavigationBarScreen = 'bottomNavigationBarScreen';
+  static const moodFriendScreen = 'moodFriendScreen';
 
   static const questionScreen2 = 'questionScreen2';
   static const questionScreen3 = 'questionScreen3';
@@ -26,6 +30,10 @@ class RouteNames {
   static const questionScreen19 = 'questionScreen19';
   static const questionScreen20 = 'questionScreen20';
   static const thankYouScreen = 'thankYouScreen';
+  static const homeScreen = 'homeScreen';
 
   static const chatScreen = 'chatScreen';
+  static const dailyTaskScreen = 'dailyTaskScreen';
+  static const stressReleaseScreen = 'stressReleaseScreen';
+  static const LearderboardScreen = 'LearderboardScreen';
 }

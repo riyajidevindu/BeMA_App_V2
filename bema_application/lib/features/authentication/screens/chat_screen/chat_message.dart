@@ -1,45 +1,44 @@
+import 'dart:typed_data';
 import 'package:flutter/material.dart';
 
 class ChatMessage extends StatelessWidget {
-  const ChatMessage({super.key, required this.text, required this.sender});
+  const ChatMessage({
+    Key? key,
+    this.text,
+    required this.sender,
+    this.audioBytes,
+    this.isAudioMessage = false,
+    this.onPlay,
+  }) : super(key: key);
 
-  final String text;
+  final String? text;
   final String sender;
+  final Uint8List? audioBytes;
+  final bool isAudioMessage;
+  final VoidCallback? onPlay;
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 10.0),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Sender's avatar
-          Container(
-            margin: const EdgeInsets.only(right: 16.0),
-            child: CircleAvatar(
-              child: Text(sender[0]), // Display the first letter of the sender's name
-            ),
-          ),
-          // Chat message bubble
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Sender's name
-                Text(
-                  sender,
-                  style: Theme.of(context).textTheme.bodyMedium,
-                ),
-                // Message text
-                Container(
-                  margin: const EdgeInsets.only(top: 5.0),
-                  child: Text(text),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
+    return ListTile(
+      title: Text(sender),
+      subtitle: _buildMessageContent(),
     );
+  }
+
+  Widget _buildMessageContent() {
+    if (text != null && text!.isNotEmpty) {
+      return Text(text!);
+    } else if (isAudioMessage || audioBytes != null) {
+      if (audioBytes != null) {
+        return IconButton(
+          icon: Icon(Icons.play_arrow),
+          onPressed: onPlay,
+        );
+      } else {
+        return Text('Audio message (processing...)');
+      }
+    } else {
+      return Text('Unknown message type');
+    }
   }
 }

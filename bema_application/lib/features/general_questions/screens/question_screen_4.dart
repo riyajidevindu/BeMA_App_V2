@@ -19,7 +19,7 @@ class _QuestionScreen4State extends State<QuestionScreen4> {
     final questionnaireProvider = Provider.of<QuestionnaireProvider>(context);
 
     // Retrieve the selected gender from the provider
-    String? _selectedGender = questionnaireProvider.selectedGender;
+    String? selectedGender = questionnaireProvider.selectedGender;
 
     // Get the screen width and height for responsive design
     final screenWidth = MediaQuery.of(context).size.width;
@@ -118,7 +118,7 @@ class _QuestionScreen4State extends State<QuestionScreen4> {
                           emoji: "👨",
                           label: "I'm male",
                           option: 'male',
-                          selectedOption: _selectedGender,
+                          selectedOption: selectedGender,
                           emojiSize: emojiSize,
                           onSelect: () {
                             setState(() {
@@ -131,7 +131,7 @@ class _QuestionScreen4State extends State<QuestionScreen4> {
                           emoji: "👩",
                           label: "I'm female",
                           option: 'female',
-                          selectedOption: _selectedGender,
+                          selectedOption: selectedGender,
                           emojiSize: emojiSize,
                           onSelect: () {
                             setState(() {
@@ -150,7 +150,7 @@ class _QuestionScreen4State extends State<QuestionScreen4> {
                           emoji: "🧑",
                           label: "I'm non-binary",
                           option: 'non-binary',
-                          selectedOption: _selectedGender,
+                          selectedOption: selectedGender,
                           emojiSize: emojiSize,
                           onSelect: () {
                             setState(() {
@@ -163,7 +163,7 @@ class _QuestionScreen4State extends State<QuestionScreen4> {
                           emoji: "❓",
                           label: "Prefer not to say",
                           option: 'prefer-not',
-                          selectedOption: _selectedGender,
+                          selectedOption: selectedGender,
                           emojiSize: emojiSize,
                           onSelect: () {
                             setState(() {
@@ -176,7 +176,7 @@ class _QuestionScreen4State extends State<QuestionScreen4> {
                     ),
                     SizedBox(height: screenHeight * 0.05),
                     ElevatedButton(
-                      onPressed: _selectedGender != null
+                      onPressed: selectedGender != null
                           ? () {
                               context.goNamed(RouteNames.questionScreen5);
                             }

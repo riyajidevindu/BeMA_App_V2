@@ -1,7 +1,8 @@
 import 'package:bema_application/features/authentication/screens/welcome_screen.dart';
-import 'package:bema_application/features/authentication/screens/login_screen.dart';
+import 'package:bema_application/routes/route_names.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';  // Import GoRouter
 
 class AuthenticationWrapper extends StatelessWidget {
   const AuthenticationWrapper({super.key});
@@ -13,13 +14,15 @@ class AuthenticationWrapper extends StatelessWidget {
         stream: FirebaseAuth.instance.authStateChanges(),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
-            // Loading state
-            return const CircularProgressIndicator();
+            return const CircularProgressIndicator();  // Loading state
           } else if (snapshot.hasData) {
-            // User is signed in
-            return const LoginScreen();
+            // User is signed in, navigate to BottomNavigationBarScreen
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              context.go('/${RouteNames.bottomNavigationBarScreen}', extra: 0); 
+            });
+            return Container(); // Empty container while redirecting
           } else {
-            // User is not signed in
+            // User is not signed in, show WelcomeScreen
             return const WelcomeScreen();
           }
         },
@@ -27,18 +30,3 @@ class AuthenticationWrapper extends StatelessWidget {
     );
   }
 }
-// body: FutureBuilder(
-//         future: Provider.of<AuthenticationProvider>(context, listen: false)
-//             .checkAuthToken(),
-//         builder: (context, snapshot) {
-//           if (snapshot.connectionState == ConnectionState.done) {
-//             if ((snapshot.hasData && snapshot.data == true)) {
-//               return const SelectionScreen();
-//             } else {
-//               return const WelcomeScreen();
-//             }
-//           } else {
-//             return const CircularProgressIndicator();
-//           }
-//         },
-//       ),

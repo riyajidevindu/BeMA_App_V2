@@ -14,7 +14,7 @@ class QuestionScreen6 extends StatefulWidget {
 
 class _QuestionScreen6State extends State<QuestionScreen6> {
   final profileService = ProfileService();
-  String userName = '';
+  String? userName;
   bool isLoading = true;
 
   @override
@@ -24,28 +24,36 @@ class _QuestionScreen6State extends State<QuestionScreen6> {
   }
 
   Future<void> getUser() async {
-    UserModel? user =
-        await profileService.getUser(FirebaseAuth.instance.currentUser!.uid);
+    try {
+      UserModel? user =
+          await profileService.getUser(FirebaseAuth.instance.currentUser!.uid);
 
-    // Debug the fetched user details
-    debugPrint('Fetched user: ${user?.name}');
+      // Debug the fetched user details
+      debugPrint('Fetched user: ${user?.name}');
 
-    if (user != null && user.name.isNotEmpty) {
+      if (user != null && user.name.isNotEmpty) {
+        setState(() {
+          userName = user.name;
+        });
+      } else {
+        setState(() {
+          userName = 'User'; // Default name if none is available
+        });
+      }
+    } catch (e) {
+      debugPrint("Error fetching user: $e");
       setState(() {
-        userName = user.name;
-        isLoading = false; // Set loading to false once name is fetched
+        userName = 'User'; // Use default name on error
       });
-    } else {
+    } finally {
       setState(() {
-        userName = 'User'; // Set a default name if none is available
-        isLoading = false;
+        isLoading = false; // Stop loading
       });
     }
   }
 
   @override
   Widget build(BuildContext context) {
-
     final double screenWidth = MediaQuery.of(context).size.width;
     final double screenHeight = MediaQuery.of(context).size.height;
     final double emojiSize = screenWidth * 0.1;
@@ -53,8 +61,7 @@ class _QuestionScreen6State extends State<QuestionScreen6> {
     return Scaffold(
       backgroundColor: const Color(0xFFE6F0FF), // Light blue background
       body: Column(
-        children: [          
- 
+        children: [
           const SizedBox(height: 50),
           
           // Row for Back button and Progress bar
@@ -79,8 +86,7 @@ class _QuestionScreen6State extends State<QuestionScreen6> {
                     ),
                   ),
                 ),
-
-                SizedBox(width: screenWidth * 0.025), // Space between back button and progress bar
+                SizedBox(width: screenWidth * 0.025),
 
                 // Progress bar with increased width
                 const Expanded(
@@ -88,7 +94,6 @@ class _QuestionScreen6State extends State<QuestionScreen6> {
                     value: 0.25, // Progress (next step)
                     backgroundColor: Colors.grey,
                     color: Colors.blue, // Progress bar color
-                    //minHeight: 8, // Slightly increase the height of the progress bar
                   ),
                 ),
               ],
@@ -108,14 +113,18 @@ class _QuestionScreen6State extends State<QuestionScreen6> {
                       textAlign: TextAlign.center,
                     ),
                     SizedBox(height: screenHeight * 0.03),
-                    Text(
-                      "Hey Mr. ${userName}", // Greet the user by name from widget
-                      textAlign: TextAlign.center,
-                      style: const TextStyle(
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
+
+                    // Display placeholder text while loading
+                    isLoading
+                      ? const CircularProgressIndicator() // Loading indicator
+                      : Text(
+                          "Hey Mr. ${userName ?? 'User'}", // Show the username or default
+                          textAlign: TextAlign.center,
+                          style: const TextStyle(
+                            fontSize: 24,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
                     SizedBox(height: screenHeight * 0.02),
 
                     const Text(
@@ -163,8 +172,7 @@ class _QuestionScreen6State extends State<QuestionScreen6> {
                       },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.blue, // Blue button color
-                        minimumSize:
-                            const Size(double.infinity, 50), // Full-width button
+                        minimumSize: const Size(double.infinity, 50), // Full-width button
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12),
                         ),
@@ -174,13 +182,11 @@ class _QuestionScreen6State extends State<QuestionScreen6> {
                         style: TextStyle(fontSize: 18),
                       ),
                     ),
-
                   ],
                 ),
               ),
             ),
           ),
-                 
         ],
       ),
     );

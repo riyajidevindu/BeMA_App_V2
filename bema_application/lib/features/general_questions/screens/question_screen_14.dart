@@ -30,17 +30,14 @@ class _QuestionScreen14State extends State<QuestionScreen14> {
     // Debug the fetched user details
     debugPrint('Fetched user: ${user?.name}');
 
-    if (user != null && user.name.isNotEmpty) {
-      setState(() {
+    setState(() {
+      if (user != null && user.name.isNotEmpty) {
         userName = user.name;
-        isLoading = false; // Set loading to false once name is fetched
-      });
-    } else {
-      setState(() {
+      } else {
         userName = 'User'; // Set a default name if none is available
-        isLoading = false;
-      });
-    }
+      }
+      isLoading = false; // Set loading to false once name is fetched
+    });
   }
 
   @override
@@ -51,14 +48,13 @@ class _QuestionScreen14State extends State<QuestionScreen14> {
 
     return Scaffold(
       backgroundColor: const Color(0xFFE6F0FF), // Light blue background
-      body: Column(
-        children: [
-          const SizedBox(height: 50),
-          
-          // Row for Back button and Progress bar
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20.0),
-            child: Row(
+      body: Padding(
+        padding: const EdgeInsets.all(20.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+             // Row for Back button and Progress bar
+            Row(
               children: [
                 // Back button inside a transparent circle
                 GestureDetector(
@@ -89,12 +85,12 @@ class _QuestionScreen14State extends State<QuestionScreen14> {
                 ),
               ],
             ),
-          ),
 
-          Expanded(
-            child: SingleChildScrollView(
-              child: Padding(
-                padding: const EdgeInsets.all(20.0),
+            const SizedBox(height: 30),
+
+            // Main content
+            Expanded(
+              child: SingleChildScrollView(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
@@ -107,15 +103,22 @@ class _QuestionScreen14State extends State<QuestionScreen14> {
                       ),
                     ),
 
-                    Text(
-                      "Let's talk about your habits, ${userName}!",
-                      textAlign: TextAlign.center,
-                      style: const TextStyle(
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
+                    SizedBox(height: screenHeight * 0.02),
+
+                    // Show placeholder text while username is loading
+                    isLoading
+                        ? const CircularProgressIndicator() // Show loader while username is being fetched
+                        : Text(
+                            "Let's talk about your habits, $userName!",
+                            textAlign: TextAlign.center,
+                            style: const TextStyle(
+                              fontSize: 24,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+
                     SizedBox(height: screenHeight * 0.05),
+
                     const Text(
                       "We'd like to ask a few questions ",
                       textAlign: TextAlign.center,
@@ -132,16 +135,20 @@ class _QuestionScreen14State extends State<QuestionScreen14> {
                         color: Colors.grey,
                       ),
                     ),
+
                     SizedBox(height: screenHeight * 0.05),
+
+                    // Emojis for lifestyle habits
                     Text(
                       "🚬🍷", // Smoking and alcohol emojis
                       style: TextStyle(fontSize: emojiSize), // Emoji size
                       textAlign: TextAlign.center,
                     ),
+
                     SizedBox(height: screenHeight * 0.05),
 
                     const Text(
-                      "This will help us to give you more tailored advice!",
+                      "This will help us give you more tailored advice!",
                       textAlign: TextAlign.center,
                       style: TextStyle(
                         fontSize: 18,
@@ -149,8 +156,10 @@ class _QuestionScreen14State extends State<QuestionScreen14> {
                         color: Colors.grey,
                       ),
                     ),
+
                     SizedBox(height: screenHeight * 0.05),
 
+                    // Continue button
                     ElevatedButton(
                       onPressed: () {
                         context.goNamed(RouteNames.questionScreen15); // Navigate to behavioral questions
@@ -167,13 +176,12 @@ class _QuestionScreen14State extends State<QuestionScreen14> {
                         style: TextStyle(fontSize: 18),
                       ),
                     ),
-
                   ],
                 ),
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

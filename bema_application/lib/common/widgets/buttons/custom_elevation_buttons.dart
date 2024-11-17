@@ -28,9 +28,8 @@ class _CustomElevationBtnState extends State<CustomElevationBtn> {
         style: ElevatedButton.styleFrom(
           backgroundColor: primaryColor,
         ),
-        
         onPressed: () {
-          widget.isSubmitting ?null: widget.onClick();
+          widget.isSubmitting ? null : widget.onClick();
         },
         child: Padding(
           padding: const EdgeInsets.symmetric(vertical: 12),
