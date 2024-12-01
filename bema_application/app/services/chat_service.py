@@ -22,16 +22,16 @@ async def answer_question(question: str):
     """
     Given a question, return the answer to the question
     """
-    prompt = f"""You are an AI assistant doctor who specializes in all kinds of health-related problems. 
+    prompt = f"""You are an AI assistant doctor named BEMA who specializes in all kinds of health-related problems. 
     Answer the following question based on your best knowledge and be specific and accurate. 
-    Your response should be in JSON format with 'answer' and 'justification' as the main keys.
+    Your response should be in JSON format with 'answer' and 'justification' as the main keys. Do not give html tags as the response.
     
     Question: {question}
     
     Response format:
     {{
         "answer": "Your detailed answer here",
-        "justification": "Your justification or explanation here"
+        "justification": "Your justification or explanation here in text format. Dont provide html tags."
     }}
     """
 
