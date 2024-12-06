@@ -223,6 +223,19 @@ class _HomeScreenState extends State<HomeScreen> {
                       context.goNamed(RouteNames.bottomNavigationBarScreen, extra: 4);
                     },
                   ),
+                  _buildCard(
+                    avatar: const CircleAvatar(
+                      radius: 35,
+                      backgroundImage: AssetImage('assets/exersize.png'),
+                    ),
+                    title: "Workout Plans",
+                    subtitle: "Practice with",
+                    color: Colors.orange,
+                    onTap: () {
+                      // Navigate to Points tab (index 5)
+                      context.goNamed(RouteNames.bottomNavigationBarScreen, extra: 5);
+                    },
+                  ),
                 ],
               ),
             ),
