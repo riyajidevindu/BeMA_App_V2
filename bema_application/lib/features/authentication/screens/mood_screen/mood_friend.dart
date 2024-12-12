@@ -153,144 +153,167 @@ class _MoodFriendState extends State<MoodFriend> with TickerProviderStateMixin {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: backgroundColor,
-      appBar: AppBar(
-        backgroundColor: backgroundColor,
-        title: const CustomAppBar(),
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () {
-            context.go('/${RouteNames.homeScreen}');
-          },
-        ),
-      ),
-      body: Column(
+      body: Stack(
         children: [
-          Expanded(
-            child: Stack(
-              alignment: Alignment.center,
-              children: [
-                AnimatedBuilder(
-                  animation: _bounceAnimation,
-                  builder: (context, child) {
-                    return Transform.translate(
-                      offset: Offset(0, _bounceAnimation.value),
-                      child: ModelViewer(
-                        backgroundColor: backgroundColor,
-                        src: 'assets/white_cartoon_dog.glb',
-                        alt: 'A 3D model of a dog',
-                        ar: false,
-                        autoRotate: _isModelRotating,
-                        disableZoom: true,
-                      ),
-                    );
-                  },
-                ),
-                if (_statusText != null) // Show the cloud only if text is present
-                  Positioned(
-                    top: 40,
-                    left: MediaQuery.of(context).size.width * 0.4,
-                    child: CustomPaint(
-                      size: const Size(200, 100), // Increased size
-                      painter: ThinkingCloudPainter(),
-                      child: Padding(
-                        padding: const EdgeInsets.all(16.0),
-                        child: Center(
-                          child: Text(
-                            _statusText!,
-                            style: const TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.blueGrey,
+          Column(
+            children: [
+              const SizedBox(height: 56), // Height of the AppBar
+              Expanded(
+                child: Stack(
+                  alignment: Alignment.center,
+                  children: [
+                    AnimatedBuilder(
+                      animation: _bounceAnimation,
+                      builder: (context, child) {
+                        return Transform.translate(
+                          offset: Offset(0, _bounceAnimation.value),
+                          child: ModelViewer(
+                            backgroundColor: backgroundColor,
+                            src: 'assets/white_cartoon_dog.glb',
+                            alt: 'A 3D model of a dog',
+                            ar: false,
+                            autoRotate: _isModelRotating,
+                            disableZoom: true,
+                          ),
+                        );
+                      },
+                    ),
+                    if (_statusText != null) // Show the cloud only if text is present
+                      Positioned(
+                        top: 40,
+                        left: MediaQuery.of(context).size.width * 0.4,
+                        child: CustomPaint(
+                          size: const Size(200, 100), // Increased size
+                          painter: ThinkingCloudPainter(),
+                          child: Padding(
+                            padding: const EdgeInsets.all(16.0),
+                            child: Center(
+                              child: Text(
+                                _statusText!,
+                                style: const TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.blueGrey,
+                                ),
+                                textAlign: TextAlign.center,
+                              ),
                             ),
-                            textAlign: TextAlign.center,
                           ),
                         ),
                       ),
+                    if (_isPlaying)
+                      Positioned(
+                        bottom: 50,
+                        child: _buildSoundWave(),
+                      ),
+                  ],
+                ),
+              ),
+              if (_isPlaying || _position > Duration.zero)
+                Column(
+                  children: [
+                    Slider(
+                      value: _position.inSeconds.toDouble(),
+                      min: 0,
+                      max: _duration.inSeconds.toDouble(),
+                      onChanged: (value) {
+                        final position = Duration(seconds: value.toInt());
+                        _audioPlayer.seek(position);
+                      },
                     ),
-                  ),
-                if (_isPlaying)
-                  Positioned(
-                    bottom: 50,
-                    child: _buildSoundWave(),
-                  ),
-              ],
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(_formatDuration(_position)),
+                          IconButton(
+                            icon: Icon(_isPlaying ? Icons.pause : Icons.play_arrow),
+                            onPressed: () {
+                              if (_isPlaying) {
+                                _audioPlayer.pause();
+                              } else {
+                                _audioPlayer.play();
+                              }
+                            },
+                          ),
+                          Text(_formatDuration(_duration)),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: _isLoading
+                    ? const CircularProgressIndicator()
+                    : Column(
+                        children: [
+                          IconButton(
+                            icon: Icon(_isRecording ? Icons.stop : Icons.mic),
+                            onPressed: () async {
+                              if (_isRecording) {
+                                String? filePath = await _audioRecorder.stop();
+                                if (filePath != null) {
+                                  setState(() {
+                                    _isRecording = false;
+                                    recordingFilePath = filePath;
+                                    _statusText = "Thinking...";
+                                  });
+                                  await _sendAudioMessage(context);
+                                }
+                              } else {
+                                if (await _audioRecorder.hasPermission()) {
+                                  final Directory appDocDir = await getApplicationDocumentsDirectory();
+                                  final String filePath = path.join(appDocDir.path, 'audio.wav');
+                                  await _audioRecorder.start(const RecordConfig(), path: filePath);
+                                  setState(() {
+                                    _isRecording = true;
+                                    recordingFilePath = filePath;
+                                    _statusText = "Listening...";
+                                  });
+                                }
+                              }
+                            },
+                            color: Colors.orangeAccent,
+                            iconSize: 48,
+                          ),
+                          Text(
+                            _isRecording ? "Tap to stop recording" : "Tap to ask question",
+                            style: const TextStyle(fontSize: 16, color: Colors.blueGrey),
+                          ),
+                        ],
+                      ),
+              ),
+            ],
+          ),
+          Positioned(
+            top: 0,
+            left: 0,
+            right: 0,
+            child: AppBar(
+              backgroundColor: backgroundColor,
+              title: const CustomAppBar(),
+              automaticallyImplyLeading: false, // Remove the default back arrow
             ),
           ),
-          if (_isPlaying || _position > Duration.zero)
-            Column(
-              children: [
-                Slider(
-                  value: _position.inSeconds.toDouble(),
-                  min: 0,
-                  max: _duration.inSeconds.toDouble(),
-                  onChanged: (value) {
-                    final position = Duration(seconds: value.toInt());
-                    _audioPlayer.seek(position);
-                  },
-                ),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(_formatDuration(_position)),
-                      IconButton(
-                        icon: Icon(_isPlaying ? Icons.pause : Icons.play_arrow),
-                        onPressed: () {
-                          if (_isPlaying) {
-                            _audioPlayer.pause();
-                          } else {
-                            _audioPlayer.play();
-                          }
-                        },
-                      ),
-                      Text(_formatDuration(_duration)),
-                    ],
-                  ),
-                ),
-              ],
+          Positioned(
+            top: 36,
+            left: 25,
+            child: Container(
+              width: 40, // Adjust the width of the circle
+              height: 40, // Adjust the height of the circle
+              decoration: BoxDecoration(
+                color: Colors.grey.shade300.withOpacity(0.5), // Transparent ash color background
+                shape: BoxShape.circle,
+              ),
+              child: IconButton(
+                icon: const Icon(Icons.arrow_back, color: Colors.black),
+                onPressed: () {
+                  context.go('/${RouteNames.bottomNavigationBarScreen}', extra: 0);
+                },
+              ),
             ),
-          Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: _isLoading
-                ? const CircularProgressIndicator()
-                : Column(
-                    children: [
-                      IconButton(
-                        icon: Icon(_isRecording ? Icons.stop : Icons.mic),
-                        onPressed: () async {
-                          if (_isRecording) {
-                            String? filePath = await _audioRecorder.stop();
-                            if (filePath != null) {
-                              setState(() {
-                                _isRecording = false;
-                                recordingFilePath = filePath;
-                                _statusText = "Thinking...";
-                              });
-                              await _sendAudioMessage(context);
-                            }
-                          } else {
-                            if (await _audioRecorder.hasPermission()) {
-                              final Directory appDocDir = await getApplicationDocumentsDirectory();
-                              final String filePath = path.join(appDocDir.path, 'audio.wav');
-                              await _audioRecorder.start(const RecordConfig(), path: filePath);
-                              setState(() {
-                                _isRecording = true;
-                                recordingFilePath = filePath;
-                                _statusText = "Listening...";
-                              });
-                            }
-                          }
-                        },
-                        color: Colors.orangeAccent,
-                        iconSize: 48,
-                      ),
-                      Text(
-                        _isRecording ? "Tap to stop recording" : "Tap to ask question",
-                        style: const TextStyle(fontSize: 16, color: Colors.blueGrey),
-                      ),
-                    ],
-                  ),
           ),
         ],
       ),
