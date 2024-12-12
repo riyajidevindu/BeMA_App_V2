@@ -14,10 +14,10 @@ class AuthenticationWrapper extends StatelessWidget {
         stream: FirebaseAuth.instance.authStateChanges(),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
-            return const CircularProgressIndicator();  // Loading state
+            return const Center(child: CircularProgressIndicator());  // Loading state
           } else if (snapshot.hasData) {
             // User is signed in, navigate to BottomNavigationBarScreen
-            WidgetsBinding.instance.addPostFrameCallback((_) {
+            Future.delayed(Duration.zero, () {
               context.go('/${RouteNames.bottomNavigationBarScreen}', extra: 0); 
             });
             return Container(); // Empty container while redirecting

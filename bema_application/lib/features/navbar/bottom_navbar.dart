@@ -9,8 +9,7 @@ import 'package:flutter/material.dart';
 
 class BNavbarScreen extends StatefulWidget {
   final int initialIndex; // Pass initial index for default tab
-  const BNavbarScreen(
-      {super.key, this.initialIndex = 0}); // Default to 0 (Home)
+  const BNavbarScreen({super.key, this.initialIndex = 0}); // Default to 0 (Home)
 
   @override
   State<BNavbarScreen> createState() => _BNavbarScreenState();
@@ -55,8 +54,7 @@ class _BNavbarScreenState extends State<BNavbarScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: backgroundColor,
-      body: _widgetOptions
-          .elementAt(_selectedIndex), // Load the selected screen dynamically
+      body: _widgetOptions.elementAt(_selectedIndex), // Load the selected screen dynamically
       bottomNavigationBar: Container(
         margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
         decoration: BoxDecoration(

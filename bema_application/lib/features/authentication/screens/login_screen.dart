@@ -45,7 +45,7 @@ class _LoginScreenState extends State<LoginScreen> {
             await state.checkQuestionnaireCompletion(auth.firebaseUser!);
 
         if (isQuestionnaireCompleted) {
-          context.goNamed(RouteNames.homeScreen); // Redirect to home if questionnaire is completed
+          context.go('/${RouteNames.bottomNavigationBarScreen}', extra: 0); 
         } else {
           context.goNamed(RouteNames.userWelcomeScreen); // Redirect to questionnaire
         }
