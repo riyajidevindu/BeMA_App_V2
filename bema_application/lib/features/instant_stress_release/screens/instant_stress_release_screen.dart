@@ -188,6 +188,7 @@ class _StressReleaseScreenState extends State<StressReleaseScreen>
         //   },
         // ),
         title: const CustomAppBar(),
+        automaticallyImplyLeading: false
       ),
       body: Column(
         mainAxisAlignment: MainAxisAlignment.center,

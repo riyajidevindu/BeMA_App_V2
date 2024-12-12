@@ -60,6 +60,7 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
       appBar: AppBar(
         backgroundColor: backgroundColor,
         title: const CustomAppBar(),
+        automaticallyImplyLeading: false,
         elevation: 0,
       ),
       body: Padding(

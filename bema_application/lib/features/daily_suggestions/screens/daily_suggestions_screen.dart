@@ -135,6 +135,7 @@ class _DailytaskScreenState extends State<DailytaskScreen> {
       appBar: AppBar(
         backgroundColor: backgroundColor,
         title: const CustomAppBar(),
+        automaticallyImplyLeading: false,
         elevation: 0,
       ),
       body: isLoading
