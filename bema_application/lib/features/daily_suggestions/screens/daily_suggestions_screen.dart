@@ -2,6 +2,7 @@ import 'package:bema_application/common/config/colors.dart';
 import 'package:bema_application/common/widgets/app_bar.dart';
 import 'package:bema_application/common/widgets/cards/water_intake_card.dart';
 import 'package:bema_application/common/widgets/progress_indicator/custom_progress_indicator.dart';
+import 'package:bema_application/common/widgets/snackbar%20messages/snackbar_message.dart';
 import 'package:bema_application/features/daily_suggestions/data/models/daily_task.dart';
 import 'package:bema_application/features/daily_suggestions/data/services/task_service.dart';
 import 'package:flutter/material.dart';
@@ -94,6 +95,14 @@ class _DailytaskScreenState extends State<DailytaskScreen> {
 
         _saveTaskProgress(index);
       });
+
+     showSuccessSnackBarMessage(context, '${tasks[index].title} marked as completed!');
+    // ScaffoldMessenger.of(context).showSnackBar(
+    //   SnackBar(
+    //     content: Text('${tasks[index].title} marked as completed!'),
+    //     backgroundColor: Colors.green,
+    //   ),
+    // );
     }
   }
 
