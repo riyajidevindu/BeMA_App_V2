@@ -4,6 +4,7 @@ import 'package:bema_application/features/daily_suggestions/screens/daily_sugges
 import 'package:bema_application/features/home/screens/home_screen.dart';
 import 'package:bema_application/features/instant_stress_release/screens/instant_stress_release_screen.dart';
 import 'package:bema_application/features/marks/screens/learderboard_screen.dart';
+import 'package:bema_application/features/workout_plan/screens/workout_screen.dart';
 import 'package:custom_navigation_bar/custom_navigation_bar.dart';
 import 'package:flutter/material.dart';
 
@@ -41,6 +42,7 @@ class _BNavbarScreenState extends State<BNavbarScreen> {
     const ChatScreen(),
     const DailytaskScreen(),
     const LeaderboardScreen(),
+    const WorkoutPlanScreen(),
   ];
 
   // Update index when navigation item is tapped
@@ -108,6 +110,16 @@ class _BNavbarScreenState extends State<BNavbarScreen> {
                 style: TextStyle(fontSize: 12, color: secondaryTextColor),
               ),
             ),
+            CustomNavigationBarItem(
+              icon:const Icon(Icons.work_outline_outlined, size: 24,
+              color: secondaryTextColor),
+              title: const Text(
+                'Workouts',
+                style: TextStyle(
+                  fontSize: 12, color: secondaryTextColor
+                ),
+              ),
+            )
           ],
           selectedColor: primaryColor,
           unSelectedColor: secondaryTextColor,
