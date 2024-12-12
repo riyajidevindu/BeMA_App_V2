@@ -8,18 +8,26 @@ class MarkService {
 
   /// Fetches the daily, weekly, and monthly points and today's tasks
   Future<Map<String, dynamic>> fetchTaskSummary() async {
-    final dailyTasks = await fetchUserTasks([]);
-    final dailyPoints = _calculatePoints(dailyTasks);
-    final weeklyPoints = await calculateWeeklyPoints();
-    final monthlyPoints = await calculateMonthlyPoints();
-    final monthlyTotalPoints = await calculateTotalMonthlyMarks();
+    final dailyTasksFuture = fetchUserTasks([]);
+    final dailyPointsFuture = dailyTasksFuture.then((tasks) => _calculatePoints(tasks));
+    final weeklyPointsFuture = calculateWeeklyPoints();
+    final monthlyPointsFuture = calculateMonthlyPoints();
+    final monthlyTotalPointsFuture = calculateTotalMonthlyMarks();
+
+    final results = await Future.wait([
+      dailyTasksFuture,
+      dailyPointsFuture,
+      weeklyPointsFuture,
+      monthlyPointsFuture,
+      monthlyTotalPointsFuture,
+    ]);
 
     return {
-      'dailyTasks': dailyTasks,
-      'dailyPoints': double.parse(dailyPoints.toStringAsFixed(1)),
-      'weeklyPoints': double.parse(weeklyPoints.toStringAsFixed(1)),
-      'monthlyPoints': double.parse(monthlyPoints.toStringAsFixed(1)),
-      'monthlyTotalPoints': double.parse(monthlyTotalPoints.toStringAsFixed(2)),
+      'dailyTasks': results[0],
+      'dailyPoints': double.parse((results[1] as double).toStringAsFixed(1)),
+      'weeklyPoints': double.parse((results[1] as double).toStringAsFixed(1)),
+      'monthlyPoints': double.parse((results[1] as double).toStringAsFixed(1)),
+      'monthlyTotalPoints': double.parse((results[1] as double).toStringAsFixed(1)),
     };
   }
 
@@ -94,7 +102,6 @@ class MarkService {
 
     return daysWithTasks * 100.0; // Each day contributes 100 points
   }
-
 
   /// Calculate marks for the current month based on completed tasks
   Future<double> calculateMonthlyPoints() async {
