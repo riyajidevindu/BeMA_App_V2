@@ -233,7 +233,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     color: Colors.orange,
                     onTap: () {
                       // Navigate to Points tab (index 5)
-                      context.goNamed(RouteNames.WorkoutPlanScreen);
+                      context.goNamed(RouteNames.bottomNavigationBarScreen,extra: 5);
                     },
                   ),
                 ],
