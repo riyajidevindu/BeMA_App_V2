@@ -27,6 +27,7 @@ import 'package:bema_application/features/general_questions/screens/thank_you_sc
 import 'package:bema_application/features/home/screens/home_screen.dart';
 import 'package:bema_application/features/instant_stress_release/screens/instant_stress_release_screen.dart';
 import 'package:bema_application/features/navbar/bottom_navbar.dart';
+import 'package:bema_application/features/workout_plan/screens/workout_screen.dart';
 import 'package:bema_application/routes/authendication_wrapper.dart';
 import 'package:bema_application/features/authentication/screens/mood_screen/mood_friend.dart';
 import 'package:bema_application/routes/route_names.dart';
@@ -256,56 +257,12 @@ final goRouter = GoRouter(initialLocation: '/${RouteNames.wrapper}', routes: [
       child: MoodFriend(),
     ),
   ),
-  // GoRoute(
-  //   path: '/${RouteNames.LearderboardScreen}',
-  //   name: RouteNames.LearderboardScreen,
-  //   pageBuilder: (context, state) => const MaterialPage(
-  //     child: LearderboardScreen(),
-  //   ),
-  // ),
-
-// final goRouter = GoRouter(initialLocation: '/${RouteNames.wrapper}', routes: [
-//   GoRoute(
-//     path: '/${RouteNames.wrapper}',
-//     name: RouteNames.wrapper,
-//     pageBuilder: (context, builder) => const MaterialPage(
-//       child: AuthenticationWrapper(),
-//     ),
-//   ),
-//   GoRoute(
-//     path: '/${RouteNames.registerScreen}',
-//     name: RouteNames.registerScreen,
-//     pageBuilder: (context, state) => const MaterialPage(
-//       child: SignupScreen(),
-//     ),
-//   ),
-//   GoRoute(
-//     path: '/${RouteNames.loginScreen}',
-//     name: RouteNames.loginScreen,
-//     pageBuilder: (context, state) => const MaterialPage(
-//       child: LoginScreen(),
-//     ),
-//   ),
-//   GoRoute(
-//     path: '/${RouteNames.userWelcomeScreen}',
-//     name: RouteNames.userWelcomeScreen,
-//     pageBuilder: (context, state) => MaterialPage(
-//       child: UserWelcomeScreen(),
-//     ),
-//   ),
-//   GoRoute(
-//       path: '/${RouteNames.profileScreen}',
-//       name: RouteNames.profileScreen,
-//       pageBuilder: (context, state) {
-//         return const MaterialPage(
-//           child: ProfileViewScreen(),
-//         );
-//       }),
-//   GoRoute(
-//     path: '/${RouteNames.questionScreen2}',
-//     name: RouteNames.questionScreen2,
-//     pageBuilder: (context, state) => const MaterialPage(
-//       child: QuestionScreen2(),
-//     ),
-//   ),
+  GoRoute(
+    path: '/${RouteNames.WorkoutPlanScreen}',
+    name: RouteNames.WorkoutPlanScreen,
+    pageBuilder: (context, state) => const MaterialPage(
+      child: WorkoutPlanScreen(),
+    ),
+  ),
+  
 ]);
