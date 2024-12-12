@@ -22,7 +22,7 @@ class _WorkoutPlanScreenState extends State<WorkoutPlanScreen> {
         title: const CustomAppBar(),
         elevation: 0,
       ),
-      body: Column(
+      body: const Column(
         children: [],
       ),
     );

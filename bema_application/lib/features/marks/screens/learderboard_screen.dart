@@ -300,8 +300,9 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
 
   /// Color based on progress for the progress bar
   Color getProgressColor(double progress) {
-    if (progress >= 0.7) return Colors.green;
-    else if (progress >= 0.3) return Colors.blue;
+    if (progress >= 0.7) {
+      return Colors.green;
+    } else if (progress >= 0.3) return Colors.blue;
     else return Colors.redAccent;
   }
 }
