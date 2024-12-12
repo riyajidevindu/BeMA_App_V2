@@ -142,7 +142,7 @@ class _MoodFriendState extends State<MoodFriend> with TickerProviderStateMixin {
       animation: _waveAnimation,
       builder: (context, child) {
         return CustomPaint(
-          size: Size(100, 50),
+          size: const Size(100, 50),
           painter: ModernSoundWavePainter(_waveAnimation.value),
         );
       },
@@ -157,7 +157,7 @@ class _MoodFriendState extends State<MoodFriend> with TickerProviderStateMixin {
         backgroundColor: backgroundColor,
         title: const CustomAppBar(),
         leading: IconButton(
-          icon: Icon(Icons.arrow_back),
+          icon: const Icon(Icons.arrow_back),
           onPressed: () {
             context.go('/${RouteNames.homeScreen}');
           },
@@ -190,14 +190,14 @@ class _MoodFriendState extends State<MoodFriend> with TickerProviderStateMixin {
                     top: 40,
                     left: MediaQuery.of(context).size.width * 0.4,
                     child: CustomPaint(
-                      size: Size(200, 100), // Increased size
+                      size: const Size(200, 100), // Increased size
                       painter: ThinkingCloudPainter(),
                       child: Padding(
                         padding: const EdgeInsets.all(16.0),
                         child: Center(
                           child: Text(
                             _statusText!,
-                            style: TextStyle(
+                            style: const TextStyle(
                               fontSize: 18,
                               fontWeight: FontWeight.bold,
                               color: Colors.blueGrey,
@@ -253,7 +253,7 @@ class _MoodFriendState extends State<MoodFriend> with TickerProviderStateMixin {
           Padding(
             padding: const EdgeInsets.all(16.0),
             child: _isLoading
-                ? CircularProgressIndicator()
+                ? const CircularProgressIndicator()
                 : Column(
                     children: [
                       IconButton(
@@ -287,7 +287,7 @@ class _MoodFriendState extends State<MoodFriend> with TickerProviderStateMixin {
                       ),
                       Text(
                         _isRecording ? "Tap to stop recording" : "Tap to ask question",
-                        style: TextStyle(fontSize: 16, color: Colors.blueGrey),
+                        style: const TextStyle(fontSize: 16, color: Colors.blueGrey),
                       ),
                     ],
                   ),
@@ -310,7 +310,7 @@ class ThinkingCloudPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
-      ..shader = LinearGradient(
+      ..shader = const LinearGradient(
         colors: [Colors.white, Colors.lightBlueAccent],
         stops: [0.5, 1.0],
       ).createShader(Rect.fromLTWH(0, 0, size.width, size.height))
@@ -333,7 +333,7 @@ class ModernSoundWavePainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
-      ..shader = LinearGradient(
+      ..shader = const LinearGradient(
         colors: [Colors.blue, Colors.lightBlueAccent],
         stops: [0.0, 1.0],
       ).createShader(Rect.fromLTWH(0, 0, size.width, size.height))

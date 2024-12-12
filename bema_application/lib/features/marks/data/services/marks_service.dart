@@ -76,7 +76,7 @@ class MarkService {
 
     for (DateTime date = startOfMonth;
         date.isBefore(endOfMonth) || date.isAtSameMomentAs(endOfMonth);
-        date = date.add(Duration(days: 1))) {
+        date = date.add(const Duration(days: 1))) {
 
       String dateString = date.toIso8601String().split('T')[0];
       QuerySnapshot taskSnapshot = await _firestore
@@ -111,7 +111,7 @@ class MarkService {
     // Loop through each day of the month
     for (DateTime date = startOfMonth;
         date.isBefore(endOfMonth) || date.isAtSameMomentAs(endOfMonth);
-        date = date.add(Duration(days: 1))) {
+        date = date.add(const Duration(days: 1))) {
       
       String dateString = date.toIso8601String().split('T')[0];
       
@@ -162,7 +162,7 @@ class MarkService {
       // Count completed tasks and accumulate points
       final completedTasks = taskListSnapshot.docs
           .map((doc) =>
-              TaskModel.fromFirestore(doc.data() as Map<String, dynamic>))
+              TaskModel.fromFirestore(doc.data()))
           .where((task) => task.completed)
           .length;
 
@@ -170,7 +170,7 @@ class MarkService {
       if (completedTasks > 0) {
         double dailyPoints = _calculatePoints(taskListSnapshot.docs
             .map((doc) =>
-                TaskModel.fromFirestore(doc.data() as Map<String, dynamic>))
+                TaskModel.fromFirestore(doc.data()))
             .toList());
         points += dailyPoints;
       }

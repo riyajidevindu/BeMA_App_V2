@@ -96,11 +96,11 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
                       Positioned(
                         left: 0,
                         child: IconButton(
-                          icon: Icon(Icons.arrow_back_ios,
+                          icon: const Icon(Icons.arrow_back_ios,
                               color: Colors.blueAccent, size: 24),
                           onPressed: () {
                             _pageController.previousPage(
-                              duration: Duration(milliseconds: 300),
+                              duration: const Duration(milliseconds: 300),
                               curve: Curves.easeInOut,
                             );
                           },
@@ -109,11 +109,11 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
                       Positioned(
                         right: 0,
                         child: IconButton(
-                          icon: Icon(Icons.arrow_forward_ios,
+                          icon: const Icon(Icons.arrow_forward_ios,
                               color: Colors.blueAccent, size: 24),
                           onPressed: () {
                             _pageController.nextPage(
-                              duration: Duration(milliseconds: 300),
+                              duration: const Duration(milliseconds: 300),
                               curve: Curves.easeInOut,
                             );
                           },
@@ -178,12 +178,12 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
           end: Alignment.bottomRight,
         ),
         borderRadius: BorderRadius.circular(20),
-        boxShadow: [
+        boxShadow: const [
           BoxShadow(
             color: Colors.black12,
             spreadRadius: 1,
             blurRadius: 8,
-            offset: const Offset(0, 4),
+            offset: Offset(0, 4),
           ),
         ],
       ),
@@ -224,7 +224,7 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
         color: Colors.white,
         borderRadius: BorderRadius.circular(15),
         border: Border.all(color: completed ? Colors.green : Colors.blueGrey, width: 1.5),
-        boxShadow: [
+        boxShadow: const [
           BoxShadow(
             color: Colors.black12,
             blurRadius: 10,
@@ -301,8 +301,9 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
 
   /// Color based on progress for the progress bar
   Color getProgressColor(double progress) {
-    if (progress >= 0.7) return Colors.green;
-    else if (progress >= 0.3) return Colors.blue;
+    if (progress >= 0.7) {
+      return Colors.green;
+    } else if (progress >= 0.3) return Colors.blue;
     else return Colors.redAccent;
   }
 }

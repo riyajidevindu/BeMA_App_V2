@@ -109,7 +109,7 @@ class _DailytaskScreenState extends State<DailytaskScreen> {
   void updateStepwiseTask(int index, double selectedAmount) {
     setState(() {
       if (!completedTasks.contains(index)) {
-        int updatedProgress = tasks[index].progress! + selectedAmount.toInt();
+        int updatedProgress = tasks[index].progress + selectedAmount.toInt();
 
         tasks[index] = tasks[index].copyWith(progress: updatedProgress);
 
@@ -212,7 +212,7 @@ class _DailytaskScreenState extends State<DailytaskScreen> {
                               padding: const EdgeInsets.symmetric(vertical: 10),
                               child: WaterIntakeCard(
                                 totalWaterGoal: task.total!.toDouble(),
-                                currentProgress: task.progress!.toDouble(),
+                                currentProgress: task.progress.toDouble(),
                                 onProgressUpdate: (selectedAmount) =>
                                     updateStepwiseTask(index, selectedAmount),
                               ),
@@ -262,14 +262,14 @@ class _DailytaskScreenState extends State<DailytaskScreen> {
                                               borderRadius:
                                                   BorderRadius.circular(30),
                                             ),
-                                            child: Row(
+                                            child: const Row(
                                               mainAxisSize: MainAxisSize.min,
                                               children: [
-                                                const Icon(Icons.check_circle,
+                                                Icon(Icons.check_circle,
                                                     color: Colors.white,
                                                     size: 24),
-                                                const SizedBox(width: 8),
-                                                const Text(
+                                                SizedBox(width: 8),
+                                                Text(
                                                   'Completed',
                                                   style: TextStyle(
                                                     fontSize: 16,

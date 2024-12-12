@@ -26,7 +26,7 @@ class ChatProvider extends ChangeNotifier {
         _messages.insert(0, ChatMessage(text: answerParts[i], sender: "AI"));
       }
     } else {
-      _messages.insert(0, ChatMessage(text: "Sorry, I couldn't process your request.", sender: "AI"));
+      _messages.insert(0, const ChatMessage(text: "Sorry, I couldn't process your request.", sender: "AI"));
     }
 
     _isTyping = false;
@@ -34,7 +34,7 @@ class ChatProvider extends ChangeNotifier {
   }
 
   Future<void> sendAudioMessage(Uint8List audioData) async {
-    _messages.insert(0, ChatMessage(sender: "user", isAudioMessage: true));
+    _messages.insert(0, const ChatMessage(sender: "user", isAudioMessage: true));
     _isTyping = true;
     notifyListeners();
 
@@ -42,7 +42,7 @@ class ChatProvider extends ChangeNotifier {
     if (audioResponse != null) {
       _messages.insert(0, ChatMessage(sender: "AI", audioBytes: audioResponse));
     } else {
-      _messages.insert(0, ChatMessage(text: "Sorry, I couldn't process your audio message.", sender: "AI"));
+      _messages.insert(0, const ChatMessage(text: "Sorry, I couldn't process your audio message.", sender: "AI"));
     }
 
     _isTyping = false;

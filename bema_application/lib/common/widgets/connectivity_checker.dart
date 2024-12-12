@@ -45,7 +45,7 @@ class _ConnectivityCheckState extends State<ConnectivityCheck> {
   }
 
   Widget _buildLoadingScreen() {
-    return MaterialApp(
+    return const MaterialApp(
       home: Scaffold(
         body: Center(
           child: CircularProgressIndicator(),
@@ -61,14 +61,14 @@ class _ConnectivityCheckState extends State<ConnectivityCheck> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(Icons.wifi_off, size: 80, color: Colors.redAccent),
+              const Icon(Icons.wifi_off, size: 80, color: Colors.redAccent),
               const SizedBox(height: 20),
-              Text(
+              const Text(
                 "No Internet Connection",
                 style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 10),
-              Text(
+              const Text(
                 "Please enable WiFi or Mobile Data to proceed.",
                 style: TextStyle(fontSize: 16),
                 textAlign: TextAlign.center,
@@ -79,7 +79,7 @@ class _ConnectivityCheckState extends State<ConnectivityCheck> {
                   // Optionally, force a rebuild to check connectivity again
                   setState(() {});
                 },
-                child: Text("Retry"),
+                child: const Text("Retry"),
               ),
             ],
           ),
