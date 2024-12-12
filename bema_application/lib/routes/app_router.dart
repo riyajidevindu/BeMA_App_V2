@@ -34,25 +34,23 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 final goRouter = GoRouter(initialLocation: '/${RouteNames.wrapper}', routes: [
-  GoRoute(
-    path: '/${RouteNames.bottomNavigationBarScreen}',
-    name: RouteNames.bottomNavigationBarScreen,
-    pageBuilder: (context, state) {
-      int id = state.extra as int; // Pass index for initial tab
-      return MaterialPage(
-        child: BNavbarScreen(
-          initialIndex: id, // Specify the initial tab
-        ),
-      );
-    },
-  ),
-  GoRoute(
-    path: '/${RouteNames.wrapper}',
-    name: RouteNames.wrapper,
-    pageBuilder: (context, builder) => const MaterialPage(
-      child: AuthenticationWrapper(),
+      GoRoute(
+      path: '/${RouteNames.bottomNavigationBarScreen}',
+      name: RouteNames.bottomNavigationBarScreen,
+      pageBuilder: (context, state) {
+        int id = state.extra as int; // Pass index for initial tab
+        return MaterialPage(
+          child: BNavbarScreen(initialIndex: id),
+        );
+      },
     ),
-  ),
+    GoRoute(
+      path: '/${RouteNames.wrapper}',
+      name: RouteNames.wrapper,
+      pageBuilder: (context, state) => const MaterialPage(
+        child: AuthenticationWrapper(),
+      ),
+    ),
   GoRoute(
     path: '/${RouteNames.registerScreen}',
     name: RouteNames.registerScreen,

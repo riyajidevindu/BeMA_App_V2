@@ -105,7 +105,8 @@ class _ThankYouScreenState extends State<ThankYouScreen> {
       print('Data and questionnaire status saved successfully!');
 
       // Navigate to the home screen
-      context.goNamed(RouteNames.homeScreen);
+      //context.goNamed(RouteNames.homeScreen);
+      context.go('/${RouteNames.bottomNavigationBarScreen}', extra: 0); 
     } catch (e) {
       showErrorSnackBarMessage(context, 'Error saving data: $e');
       print('Error saving data: $e');
