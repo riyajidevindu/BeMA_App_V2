@@ -1,12 +1,8 @@
 import 'package:bema_application/common/config/colors.dart';
-import 'package:bema_application/features/authentication/screens/chat_screen/chat_screen.dart';
-import 'package:bema_application/features/daily_suggestions/screens/daily_suggestions_screen.dart';
 import 'package:bema_application/features/home/screens/home_screen.dart';
-import 'package:bema_application/features/instant_stress_release/screens/instant_stress_release_screen.dart';
 import 'package:bema_application/features/intermediate_screens/screens/relax_section_screen.dart';
 import 'package:bema_application/features/intermediate_screens/screens/task_section_screen.dart';
 import 'package:bema_application/features/marks/screens/learderboard_screen.dart';
-import 'package:bema_application/features/workout_plan/screens/workout_screen.dart';
 import 'package:custom_navigation_bar/custom_navigation_bar.dart';
 import 'package:flutter/material.dart';
 
@@ -41,8 +37,8 @@ class _BNavbarScreenState extends State<BNavbarScreen> {
   static final List<Widget> _widgetOptions = <Widget>[
     const HomeScreen(),
     const RelaxSectionScreen(),
-    const TasksSectionScreen(),
     const LeaderboardScreen(),
+    const TasksSectionScreen(),
   ];
 
   // Update index when navigation item is tapped
@@ -90,16 +86,16 @@ class _BNavbarScreenState extends State<BNavbarScreen> {
               ),
             ),
             CustomNavigationBarItem(
-              icon: const Icon(Icons.work, size: 24),
+              icon: const Icon(Icons.list, size: 24),
               title: const Text(
-                'Tasks',
+                'Points',
                 style: TextStyle(fontSize: 12, color: secondaryTextColor),
               ),
             ),
             CustomNavigationBarItem(
-              icon: const Icon(Icons.list, size: 24),
+              icon: const Icon(Icons.work, size: 24),
               title: const Text(
-                'Points',
+                'Tasks',
                 style: TextStyle(fontSize: 12, color: secondaryTextColor),
               ),
             ),

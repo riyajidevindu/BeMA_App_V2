@@ -1,11 +1,31 @@
+import 'package:bema_application/features/daily_suggestions/screens/daily_suggestions_screen.dart';
+import 'package:bema_application/features/workout_plan/screens/workout_screen.dart';
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
 import 'package:bema_application/routes/route_names.dart';
 import 'package:bema_application/common/config/colors.dart';
 import 'package:bema_application/common/widgets/app_bar.dart';
 
 class TasksSectionScreen extends StatelessWidget {
   const TasksSectionScreen({Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Navigator(
+      onGenerateRoute: (settings) {
+        Widget page = const TasksSectionHome();
+        if (settings.name == RouteNames.dailyTaskScreen) {
+          page = const DailytaskScreen();
+        } else if (settings.name == RouteNames.WorkoutPlanScreen) {
+          page = const WorkoutPlanScreen();
+        }
+        return MaterialPageRoute(builder: (_) => page);
+      },
+    );
+  }
+}
+
+class TasksSectionHome extends StatelessWidget {
+  const TasksSectionHome({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -79,7 +99,7 @@ class TasksSectionScreen extends StatelessWidget {
                     subtitle: "Your Health Guide",
                     color: Colors.lightBlueAccent,
                     onTap: () {
-                      context.push('/${RouteNames.dailyTaskScreen}');
+                      Navigator.pushNamed(context, RouteNames.dailyTaskScreen);
                     },
                   ),
                   _buildCard(
@@ -91,7 +111,7 @@ class TasksSectionScreen extends StatelessWidget {
                     subtitle: "Practice with",
                     color: Colors.redAccent,
                     onTap: () {
-                      context.push('/${RouteNames.WorkoutPlanScreen}');
+                      Navigator.pushNamed(context, RouteNames.WorkoutPlanScreen);
                     },
                   ),
                 ],

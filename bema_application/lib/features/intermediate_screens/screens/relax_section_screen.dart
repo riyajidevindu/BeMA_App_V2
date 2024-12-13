@@ -1,11 +1,34 @@
+import 'package:bema_application/features/authentication/screens/chat_screen/chat_screen.dart';
+import 'package:bema_application/features/authentication/screens/mood_screen/mood_friend.dart';
+import 'package:bema_application/features/instant_stress_release/screens/instant_stress_release_screen.dart';
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
 import 'package:bema_application/routes/route_names.dart';
 import 'package:bema_application/common/config/colors.dart';
 import 'package:bema_application/common/widgets/app_bar.dart';
 
 class RelaxSectionScreen extends StatelessWidget {
   const RelaxSectionScreen({Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Navigator(
+      onGenerateRoute: (settings) {
+        Widget page = const RelaxSectionHome();
+        if (settings.name == RouteNames.stressReleaseScreen) {
+          page = const StressReleaseScreen();
+        } else if (settings.name == RouteNames.chatScreen) {
+          page = const ChatScreen();
+        } else if (settings.name == RouteNames.moodFriendScreen) {
+          page = const MoodFriend();
+        }
+        return MaterialPageRoute(builder: (_) => page);
+      },
+    );
+  }
+}
+
+class RelaxSectionHome extends StatelessWidget {
+  const RelaxSectionHome({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -79,7 +102,7 @@ class RelaxSectionScreen extends StatelessWidget {
                     subtitle: "Relax Your Mind",
                     color: Colors.orange,
                     onTap: () {
-                      context.push('/${RouteNames.stressReleaseScreen}');
+                      Navigator.pushNamed(context, RouteNames.stressReleaseScreen);
                     },
                   ),
                   _buildCard(
@@ -91,7 +114,7 @@ class RelaxSectionScreen extends StatelessWidget {
                     subtitle: "Ask Your Problem",
                     color: Colors.lightBlueAccent,
                     onTap: () {
-                      context.push('/${RouteNames.chatScreen}');
+                      Navigator.pushNamed(context, RouteNames.chatScreen);
                     },
                   ),
                   _buildCard(
@@ -103,7 +126,7 @@ class RelaxSectionScreen extends StatelessWidget {
                     subtitle: "Fix You Mood",
                     color: Colors.orangeAccent,
                     onTap: () {
-                      context.push('/${RouteNames.moodFriendScreen}');
+                      Navigator.pushNamed(context, RouteNames.moodFriendScreen);
                     },
                   ),
                 ],
