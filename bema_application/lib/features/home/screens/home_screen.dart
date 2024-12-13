@@ -169,20 +169,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     color: Colors.lightBlueAccent,
                     onTap: () {
                       // Navigate to Daily Task tab (index 3)
-                      context.push('/${RouteNames.bottomNavigationBarScreen}', extra: 3);
-                    },
-                  ),
-                  _buildCard(
-                    avatar: const CircleAvatar(
-                      radius: 35,
-                      backgroundImage: AssetImage('assets/mood.png'),
-                    ),
-                    title: "Mood Friend",
-                    subtitle: "Fix You Mood",
-                    color: Colors.orangeAccent,
-                    onTap: () {
-                      // Navigate to Mood tab (index 2)
-                      context.push('/${RouteNames.moodFriendScreen}');
+                      context.push('/${RouteNames.bottomNavigationBarScreen}', extra: 2);
                     },
                   ),
                   _buildCard(
@@ -190,7 +177,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       radius: 35,
                       backgroundImage: AssetImage('assets/relax.png'),
                     ),
-                    title: "Breath Relaxer",
+                    title: "Relax Section",
                     subtitle: "Relax Your Mind",
                     color: Colors.orange,
                     onTap: () {
@@ -199,42 +186,16 @@ class _HomeScreenState extends State<HomeScreen> {
                     },
                   ),
                   _buildCard(
-                  avatar: const CircleAvatar(
-                    radius: 35,
-                    backgroundImage: AssetImage('assets/chat.png'),
-                  ),
-                  title: "Chat with Me",
-                  subtitle: "Ask Your Problem",
-                  color: Colors.lightBlueAccent,
-                  onTap: () {
-                    // Navigate to Daily Task tab (index 3)
-                    context.push('/${RouteNames.bottomNavigationBarScreen}', extra: 2);
-                  },
-                ),
-                  _buildCard(
                     avatar: const CircleAvatar(
                       radius: 35,
                       backgroundImage: AssetImage('assets/score.png'),
                     ),
                     title: "Your Points",
-                    subtitle: "Check me",
+                    subtitle: "Check Your Progress",
                     color: Colors.lightBlue,
                     onTap: () {
                       // Navigate to Points tab (index 4)
-                      context.push('/${RouteNames.bottomNavigationBarScreen}', extra: 4);
-                    },
-                  ),
-                  _buildCard(
-                    avatar: const CircleAvatar(
-                      radius: 35,
-                      backgroundImage: AssetImage('assets/exersize.png'),
-                    ),
-                    title: "Workout Plans",
-                    subtitle: "Practice with",
-                    color: Colors.orange,
-                    onTap: () {
-                      // Navigate to Points tab (index 5)
-                      context.push('/${RouteNames.bottomNavigationBarScreen}', extra: 5);
+                      context.push('/${RouteNames.bottomNavigationBarScreen}', extra: 3);
                     },
                   ),
                 ],

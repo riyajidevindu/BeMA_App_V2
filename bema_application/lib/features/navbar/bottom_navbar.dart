@@ -37,8 +37,8 @@ class _BNavbarScreenState extends State<BNavbarScreen> {
   static final List<Widget> _widgetOptions = <Widget>[
     const HomeScreen(),
     const RelaxSectionScreen(),
-    const LeaderboardScreen(),
     const TasksSectionScreen(),
+    const LeaderboardScreen(),
   ];
 
   // Update index when navigation item is tapped
@@ -79,6 +79,13 @@ class _BNavbarScreenState extends State<BNavbarScreen> {
               ),
             ),
             CustomNavigationBarItem(
+              icon: const Icon(Icons.work, size: 24),
+              title: const Text(
+                'Tasks',
+                style: TextStyle(fontSize: 12, color: secondaryTextColor),
+              ),
+            ),
+            CustomNavigationBarItem(
               icon: const Icon(Icons.air, size: 24),
               title: const Text(
                 'Relax',
@@ -89,13 +96,6 @@ class _BNavbarScreenState extends State<BNavbarScreen> {
               icon: const Icon(Icons.list, size: 24),
               title: const Text(
                 'Points',
-                style: TextStyle(fontSize: 12, color: secondaryTextColor),
-              ),
-            ),
-            CustomNavigationBarItem(
-              icon: const Icon(Icons.work, size: 24),
-              title: const Text(
-                'Tasks',
                 style: TextStyle(fontSize: 12, color: secondaryTextColor),
               ),
             ),
