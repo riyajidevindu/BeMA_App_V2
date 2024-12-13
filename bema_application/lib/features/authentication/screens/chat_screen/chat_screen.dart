@@ -239,7 +239,7 @@ Future<void> _loadAudioDuration(Uint8List audioBytes, int messageId) async {
       backgroundColor: backgroundColor,
       appBar: AppBar(
         backgroundColor: backgroundColor,
-        title: const CustomAppBar(),
+        title: const CustomAppBar(showBackButton: true),
         automaticallyImplyLeading: false,
       ),
       body: Column(

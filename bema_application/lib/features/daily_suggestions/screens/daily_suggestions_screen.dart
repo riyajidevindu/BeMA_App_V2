@@ -134,7 +134,7 @@ class _DailytaskScreenState extends State<DailytaskScreen> {
       backgroundColor: backgroundColor,
       appBar: AppBar(
         backgroundColor: backgroundColor,
-        title: const CustomAppBar(),
+        title: const CustomAppBar(showBackButton: true),
         automaticallyImplyLeading: false,
         elevation: 0,
       ),

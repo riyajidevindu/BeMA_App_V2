@@ -187,7 +187,7 @@ class _StressReleaseScreenState extends State<StressReleaseScreen>
         //     context.pop(); // Go back
         //   },
         // ),
-        title: const CustomAppBar(),
+        title: const CustomAppBar(showBackButton: true),
         automaticallyImplyLeading: false
       ),
       body: Column(

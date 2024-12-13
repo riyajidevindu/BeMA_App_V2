@@ -19,7 +19,8 @@ class _WorkoutPlanScreenState extends State<WorkoutPlanScreen> {
       backgroundColor: backgroundColor,
       appBar: AppBar(
         backgroundColor: backgroundColor,
-        title: const CustomAppBar(),
+        title: const CustomAppBar(showBackButton: true),
+        automaticallyImplyLeading: false,
         elevation: 0,
       ),
       body: const Column(
