@@ -57,6 +57,7 @@ class _TextGuideScreenState extends State<TextGuideScreen> {
   @override
   Widget build(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
+    final screenHeight = MediaQuery.of(context).size.height;
 
     final steps = [
       {
@@ -100,7 +101,7 @@ class _TextGuideScreenState extends State<TextGuideScreen> {
               children: [
                 // Title Section
                 Padding(
-                  padding: const EdgeInsets.all(16.0),
+                  padding: EdgeInsets.all(screenWidth * 0.04),
                   child: Text(
                     "Text Guide",
                     style: TextStyle(
@@ -111,16 +112,40 @@ class _TextGuideScreenState extends State<TextGuideScreen> {
                     textAlign: TextAlign.center,
                   ),
                 ),
-                const SizedBox(height: 20),
+                SizedBox(height: screenHeight * 0.02),
+
+                // GIF
+                Container(
+                  height: screenHeight * 0.2,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(screenWidth * 0.05),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.1),
+                        spreadRadius: 5,
+                        blurRadius: 7,
+                        offset: const Offset(0, 1),
+                      ),
+                    ],
+                  ),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(screenWidth * 0.05),
+                    child: Image.asset(
+                      'assets/manual.gif',
+                      fit: BoxFit.cover,
+                    ),
+                  ),
+                ),
+                SizedBox(height: screenHeight * 0.02),
 
                 // Steps Section
                 Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                  padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.05),
                   child: Column(
                     children: steps.map((step) {
                       int index = steps.indexOf(step);
                       return Card(
-                        margin: const EdgeInsets.symmetric(vertical: 8.0),
+                        margin: EdgeInsets.symmetric(vertical: screenHeight * 0.01),
                         elevation: 4,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(15),
@@ -138,17 +163,17 @@ class _TextGuideScreenState extends State<TextGuideScreen> {
                               children: [
                                 TextSpan(
                                   text: "${step['heading']}\n", // Added extra newline for more space
-                                  style: const TextStyle(
-                                    fontSize: 16,
+                                  style: TextStyle(
+                                    fontSize: screenWidth * 0.045,
                                     fontWeight: FontWeight.bold,
                                     color: Colors.black,
-                                    height: 2.0, 
+                                    height: 2.0,
                                   ),
                                 ),
                                 TextSpan(
                                   text: step['content'],
-                                  style: const TextStyle(
-                                    fontSize: 14,
+                                  style: TextStyle(
+                                    fontSize: screenWidth * 0.04,
                                     fontWeight: FontWeight.normal,
                                     color: Colors.black,
                                     height: 1.4,

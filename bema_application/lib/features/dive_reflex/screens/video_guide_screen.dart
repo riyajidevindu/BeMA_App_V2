@@ -182,6 +182,9 @@ class _VideoGuideScreenState extends State<VideoGuideScreen> {
           ],
         ),
       ),
+      floatingActionButton: _controller.value.isInitialized
+          ? null
+          : const CustomProgressIndicator(),
     );
   }
 
