@@ -111,6 +111,18 @@ class RelaxSectionHome extends StatelessWidget {
                   _buildCard(
                     avatar: const CircleAvatar(
                       radius: 35,
+                      backgroundImage: AssetImage('assets/meditation.png'),
+                    ),
+                    title: "Dive Reflex",
+                    subtitle: "Relax Your Heart",
+                    color: Colors.lightBlue,
+                    onTap: () {
+                      Navigator.pushNamed(context, RouteNames.diveReflexScreen);
+                    },
+                  ),
+                  _buildCard(
+                    avatar: const CircleAvatar(
+                      radius: 35,
                       backgroundImage: AssetImage('assets/chat.png'),
                     ),
                     title: "Chat with Me",
@@ -130,18 +142,6 @@ class RelaxSectionHome extends StatelessWidget {
                     color: Colors.orangeAccent,
                     onTap: () {
                       Navigator.pushNamed(context, RouteNames.moodFriendScreen);
-                    },
-                  ),
-                   _buildCard(
-                    avatar: const CircleAvatar(
-                      radius: 35,
-                      backgroundImage: AssetImage('assets/relax.png'),
-                    ),
-                    title: "Dive Reflex",
-                    subtitle: "Relax Your Heart",
-                    color: const Color.fromARGB(255, 200, 255, 0),
-                    onTap: () {
-                      Navigator.pushNamed(context, RouteNames.diveReflexScreen);
                     },
                   ),
                 ],
