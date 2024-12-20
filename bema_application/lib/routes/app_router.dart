@@ -4,6 +4,7 @@ import 'package:bema_application/features/authentication/screens/profile_screen.
 import 'package:bema_application/features/authentication/screens/question_screens/welcome_question_screen.dart';
 import 'package:bema_application/features/authentication/screens/signup_screen.dart';
 import 'package:bema_application/features/daily_suggestions/screens/daily_suggestions_screen.dart';
+import 'package:bema_application/features/dive_reflex/screens/dive_reflex_screen.dart';
 import 'package:bema_application/features/general_questions/screens/question_screen_10.dart';
 import 'package:bema_application/features/general_questions/screens/question_screen_11.dart';
 import 'package:bema_application/features/general_questions/screens/question_screen_12.dart';
@@ -260,6 +261,13 @@ final goRouter = GoRouter(initialLocation: '/${RouteNames.wrapper}', routes: [
     name: RouteNames.WorkoutPlanScreen,
     pageBuilder: (context, state) => const MaterialPage(
       child: WorkoutPlanScreen(),
+    ),
+  ),
+   GoRoute(
+    path: '/${RouteNames.diveReflexScreen}',
+    name: RouteNames.diveReflexScreen,
+    pageBuilder: (context, state) => const MaterialPage(
+      child: DiveReflexScreen(),
     ),
   ),
   

@@ -1,5 +1,6 @@
 import 'package:bema_application/features/authentication/screens/chat_screen/chat_screen.dart';
 import 'package:bema_application/features/authentication/screens/mood_screen/mood_friend.dart';
+import 'package:bema_application/features/dive_reflex/screens/dive_reflex_screen.dart';
 import 'package:bema_application/features/instant_stress_release/screens/instant_stress_release_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:bema_application/routes/route_names.dart';
@@ -20,6 +21,8 @@ class RelaxSectionScreen extends StatelessWidget {
           page = const ChatScreen();
         } else if (settings.name == RouteNames.moodFriendScreen) {
           page = const MoodFriend();
+        } else if (settings.name == RouteNames.diveReflexScreen) {
+          page = const DiveReflexScreen();
         }
         return MaterialPageRoute(builder: (_) => page);
       },
@@ -127,6 +130,18 @@ class RelaxSectionHome extends StatelessWidget {
                     color: Colors.orangeAccent,
                     onTap: () {
                       Navigator.pushNamed(context, RouteNames.moodFriendScreen);
+                    },
+                  ),
+                   _buildCard(
+                    avatar: const CircleAvatar(
+                      radius: 35,
+                      backgroundImage: AssetImage('assets/relax.png'),
+                    ),
+                    title: "Dive Reflex",
+                    subtitle: "Relax Your Heart",
+                    color: const Color.fromARGB(255, 200, 255, 0),
+                    onTap: () {
+                      Navigator.pushNamed(context, RouteNames.diveReflexScreen);
                     },
                   ),
                 ],
