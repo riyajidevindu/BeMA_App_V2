@@ -169,7 +169,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     color: Colors.lightBlueAccent,
                     onTap: () {
                       // Navigate to Daily Task tab (index 3)
-                      context.push('/${RouteNames.bottomNavigationBarScreen}', extra: 2);
+                      context.push('/${RouteNames.bottomNavigationBarScreen}', extra: 1);
                     },
                   ),
                   _buildCard(
@@ -182,7 +182,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     color: Colors.orange,
                     onTap: () {
                       // Navigate to Relax tab (index 1)
-                      context.push('/${RouteNames.bottomNavigationBarScreen}', extra: 1);
+                      context.push('/${RouteNames.bottomNavigationBarScreen}', extra: 2);
                     },
                   ),
                   _buildCard(

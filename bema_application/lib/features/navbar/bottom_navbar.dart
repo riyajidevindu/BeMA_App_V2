@@ -36,8 +36,8 @@ class _BNavbarScreenState extends State<BNavbarScreen> {
   // List of screens for navigation
   static final List<Widget> _widgetOptions = <Widget>[
     const HomeScreen(),
-    const RelaxSectionScreen(),
     const TasksSectionScreen(),
+    const RelaxSectionScreen(),
     const LeaderboardScreen(),
   ];
 
