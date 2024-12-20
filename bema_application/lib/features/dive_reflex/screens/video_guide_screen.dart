@@ -44,6 +44,7 @@ class _VideoGuideScreenState extends State<VideoGuideScreen> {
   @override
   Widget build(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
+    final screenHeight = MediaQuery.of(context).size.height;
 
     return Scaffold(
       appBar: AppBar(
@@ -51,130 +52,153 @@ class _VideoGuideScreenState extends State<VideoGuideScreen> {
         title: const CustomAppBar(showBackButton: true),
         automaticallyImplyLeading: false,
       ),
-      body: Center(
-        child: _controller.value.isInitialized
-            ? Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    // Heading
-                    Padding(
-                      padding: const EdgeInsets.all(16.0),
-                      child: Text(
-                        "Video Guide",
-                        style: TextStyle(
-                          fontSize: screenWidth * 0.07,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.blueAccent,
-                        ),
-                        textAlign: TextAlign.center,
-                      ),
-                    ),
-                    const SizedBox(height: 20),
-
-                    // Video Frame
-                    Container(
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(20),
-                        border: Border.all(color: Colors.white, width: 2),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withOpacity(0.2),
-                            spreadRadius: 5,
-                            blurRadius: 7,
-                            offset: const Offset(0, 3),
-                          ),
-                        ],
-                      ),
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.circular(20),
-                        child: AspectRatio(
-                          aspectRatio: _controller.value.aspectRatio,
-                          child: VideoPlayer(_controller),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 20),
-
-                    // Video Progress Indicator
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 20.0),
-                      child: VideoProgressIndicator(
-                        _controller,
-                        allowScrubbing: true,
-                        colors: VideoProgressColors(
-                          playedColor: Colors.white,
-                          backgroundColor: Colors.grey,
-                          bufferedColor: Colors.lightBlueAccent,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 20),
-
-                    // Action Buttons Panel
-                    Container(
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(20),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withOpacity(0.2),
-                            spreadRadius: 5,
-                            blurRadius: 7,
-                            offset: const Offset(0, 3),
-                          ),
-                        ],
-                      ),
-                      padding: const EdgeInsets.all(16),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          _buildActionButton(
-                            icon: Icons.replay_10,
-                            onPressed: _rewind,
-                          ),
-                          _buildActionButton(
-                            icon: _controller.value.isPlaying
-                                ? Icons.pause
-                                : Icons.play_arrow,
-                            onPressed: () {
-                              setState(() {
-                                _controller.value.isPlaying
-                                    ? _controller.pause()
-                                    : _controller.play();
-                              });
-                            },
-                          ),
-                          _buildActionButton(
-                            icon: Icons.forward_10,
-                            onPressed: _forward,
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
+      body: SingleChildScrollView(
+        padding: EdgeInsets.all(screenWidth * 0.04),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            // Heading
+            Padding(
+              padding: EdgeInsets.all(screenWidth * 0.04),
+              child: Text(
+                "Video Guide",
+                style: TextStyle(
+                  fontSize: screenWidth * 0.07,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.blueAccent,
                 ),
-              )
-            : const CustomProgressIndicator(),
+                textAlign: TextAlign.center,
+              ),
+            ),
+            SizedBox(height: screenHeight * 0.02),
+
+            // GIF
+            Container(
+              height: screenHeight * 0.1,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(screenWidth * 0.05),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.1),
+                    spreadRadius: 5,
+                    blurRadius: 7,
+                    offset: const Offset(0, 1),
+                  ),
+                ],
+              ),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(screenWidth * 0.05),
+                child: Image.asset(
+                  'assets/video_guide.gif',
+                  fit: BoxFit.cover,
+                ),
+              ),
+            ),
+            SizedBox(height: screenHeight * 0.02),
+
+            // Video Frame
+            Container(
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(screenWidth * 0.05),
+                border: Border.all(color: Colors.white, width: 2),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.2),
+                    spreadRadius: 5,
+                    blurRadius: 7,
+                    offset: const Offset(0, 3),
+                  ),
+                ],
+              ),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(screenWidth * 0.05),
+                child: AspectRatio(
+                  aspectRatio: _controller.value.aspectRatio,
+                  child: VideoPlayer(_controller),
+                ),
+              ),
+            ),
+            SizedBox(height: screenHeight * 0.02),
+
+            // Video Progress Indicator
+            Padding(
+              padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.05),
+              child: VideoProgressIndicator(
+                _controller,
+                allowScrubbing: true,
+                colors: VideoProgressColors(
+                  playedColor: Colors.white,
+                  backgroundColor: Colors.grey,
+                  bufferedColor: Colors.lightBlueAccent,
+                ),
+              ),
+            ),
+            SizedBox(height: screenHeight * 0.03),
+
+            // Action Buttons Panel
+            Container(
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(screenWidth * 0.05),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.2),
+                    spreadRadius: 5,
+                    blurRadius: 7,
+                    offset: const Offset(0, 3),
+                  ),
+                ],
+              ),
+              padding: EdgeInsets.all(screenWidth * 0.04),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  _buildActionButton(
+                    icon: Icons.replay_10,
+                    onPressed: _rewind,
+                    size: screenWidth * 0.08,
+                  ),
+                  _buildActionButton(
+                    icon: _controller.value.isPlaying
+                        ? Icons.pause
+                        : Icons.play_arrow,
+                    onPressed: () {
+                      setState(() {
+                        _controller.value.isPlaying
+                            ? _controller.pause()
+                            : _controller.play();
+                      });
+                    },
+                    size: screenWidth * 0.08,
+                  ),
+                  _buildActionButton(
+                    icon: Icons.forward_10,
+                    onPressed: _forward,
+                    size: screenWidth * 0.08,
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
 
-  Widget _buildActionButton({required IconData icon, required VoidCallback onPressed}) {
+  Widget _buildActionButton({required IconData icon, required VoidCallback onPressed, required double size}) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 10.0),
+      padding: EdgeInsets.symmetric(horizontal: size * 0.2),
       child: ElevatedButton(
         onPressed: onPressed,
         style: ElevatedButton.styleFrom(
           shape: const CircleBorder(),
-          padding: const EdgeInsets.all(16),
+          padding: EdgeInsets.all(size * 0.4),
           elevation: 10,
           shadowColor: Colors.black.withOpacity(0.5),
         ),
         child: Icon(
           icon,
-          size: 25
+          size: size,
         ),
       ),
     );
