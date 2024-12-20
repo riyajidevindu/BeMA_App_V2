@@ -14,7 +14,6 @@ class DiveReflexScreen extends StatelessWidget {
     final screenWidth = MediaQuery.of(context).size.width;
     final screenHeight = MediaQuery.of(context).size.height;
 
-
     WidgetsBinding.instance.addPostFrameCallback((_) {
       Future.delayed(const Duration(seconds: 1), () {
         showSuccessSnackBarMessage(
@@ -90,22 +89,28 @@ class DiveReflexScreen extends StatelessWidget {
                       backgroundColor: Colors.blueAccent,
                       padding: EdgeInsets.symmetric(
                         horizontal: screenWidth * 0.25,
-                        vertical: screenHeight * 0.02,
+                        vertical: screenHeight * 0.025,
                       ),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(25),
+                        side: const BorderSide(
+                          color: Colors.white,
+                          width: 3,
+                        ),
                       ),
+                      elevation: 10,
+                      shadowColor: Colors.blueAccent.withOpacity(0.5),
                     ),
                     child: Text(
                       "Start Relax",
                       style: TextStyle(
-                        fontSize: screenWidth * 0.05,
+                        fontSize: screenWidth * 0.06,
                         color: Colors.white,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
                   ),
-                  SizedBox(height: screenHeight * 0.02),
+                  SizedBox(height: screenHeight * 0.03),
 
                   // Video Guide Button
                   ElevatedButton.icon(
@@ -121,12 +126,18 @@ class DiveReflexScreen extends StatelessWidget {
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.orangeAccent,
                       padding: EdgeInsets.symmetric(
-                        horizontal: screenWidth * 0.18,
-                        vertical: screenHeight * 0.015,
+                        horizontal: screenWidth * 0.2,
+                        vertical: screenHeight * 0.025,
                       ),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(25),
+                        side: const BorderSide(
+                          color: Colors.white,
+                          width: 3,
+                        ),
                       ),
+                      elevation: 10,
+                      shadowColor: Colors.orangeAccent.withOpacity(0.5),
                     ),
                     label: Text(
                       "Video Guide",
@@ -153,12 +164,18 @@ class DiveReflexScreen extends StatelessWidget {
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.greenAccent,
                       padding: EdgeInsets.symmetric(
-                        horizontal: screenWidth * 0.18,
-                        vertical: screenHeight * 0.015,
+                        horizontal: screenWidth * 0.2,
+                        vertical: screenHeight * 0.025,
                       ),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(25),
+                        side: const BorderSide(
+                          color: Colors.white,
+                          width: 3,
+                        ),
                       ),
+                      elevation: 10,
+                      shadowColor: Colors.greenAccent.withOpacity(0.5),
                     ),
                     label: Text(
                       "Text Guide",
