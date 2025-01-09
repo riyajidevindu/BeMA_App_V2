@@ -16,7 +16,7 @@ class _ConnectivityCheckState extends State<ConnectivityCheck> {
   @override
   void initState() {
     super.initState();
-    _connectivityStream = Connectivity().onConnectivityChanged;
+    _connectivityStream = Connectivity().onConnectivityChanged.expand((results) => results);
   }
 
   @override
