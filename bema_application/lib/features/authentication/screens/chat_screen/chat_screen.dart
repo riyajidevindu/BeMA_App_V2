@@ -216,6 +216,8 @@ Future<void> _loadAudioDuration(Uint8List audioBytes, int messageId) async {
                   border: InputBorder.none,
                 ),
                 onSubmitted: (_) => _sendTextMessage(context),
+                minLines: 1,
+                maxLines: null,
               ),
             ),
           ),
