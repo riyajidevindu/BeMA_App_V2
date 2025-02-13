@@ -76,78 +76,78 @@ class _ChatScreenState extends State<ChatScreen> {
   }
 
   Widget _buildVoiceMessageBubble(Uint8List audioBytes, int messageId) {
-  final isPlaying = _isPlayingMap[messageId] ?? false;
-  final audioDuration = _audioDurations[messageId] ?? Duration.zero;
-  final audioPosition = _audioPositions[messageId] ?? Duration.zero;
+    final isPlaying = _isPlayingMap[messageId] ?? false;
+    final audioDuration = _audioDurations[messageId] ?? Duration.zero;
+    final audioPosition = _audioPositions[messageId] ?? Duration.zero;
 
-  // If the duration is not yet loaded, load it when the widget is built
-  if (audioDuration == Duration.zero) {
-    _loadAudioDuration(audioBytes, messageId);
-  }
+    // If the duration is not yet loaded, load it when the widget is built
+    if (audioDuration == Duration.zero) {
+      _loadAudioDuration(audioBytes, messageId);
+    }
 
-  return Row(
-    children: [
-      IconButton(
-        icon: Icon(
-          isPlaying ? Icons.pause_circle_filled : Icons.play_circle_filled,
-          color: const Color.fromARGB(255, 181, 18, 140),
-          size: 28.0,
+    return Row(
+      children: [
+        IconButton(
+          icon: Icon(
+            isPlaying ? Icons.pause_circle_filled : Icons.play_circle_filled,
+            color: const Color.fromARGB(255, 181, 18, 140),
+            size: 28.0,
+          ),
+          onPressed: () async {
+            if (isPlaying) {
+              await _audioPlayers[messageId]?.pause();
+              setState(() {
+                _isPlayingMap[messageId] = false;
+              });
+            } else {
+              await _playAudio(audioBytes, messageId);
+            }
+          },
         ),
-        onPressed: () async {
-          if (isPlaying) {
-            await _audioPlayers[messageId]?.pause();
-            setState(() {
-              _isPlayingMap[messageId] = false;
-            });
-          } else {
-            await _playAudio(audioBytes, messageId);
-          }
-        },
-      ),
-      Expanded(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            LinearProgressIndicator(
-              value: audioDuration.inSeconds > 0
-                  ? audioPosition.inSeconds / audioDuration.inSeconds
-                  : 0.0,
-              backgroundColor: Colors.grey.shade300,
-              color: const Color.fromARGB(255, 221, 255, 68),
-            ),
-            const SizedBox(height: 4.0),
-            Text(
-              '${audioPosition.inMinutes}:${audioPosition.inSeconds.remainder(60).toString().padLeft(2, '0')} / '
-              '${audioDuration.inMinutes}:${audioDuration.inSeconds.remainder(60).toString().padLeft(2, '0')}',
-              style: const TextStyle(color: Colors.black, fontSize: 12.0),
-            ),
-          ],
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              LinearProgressIndicator(
+                value: audioDuration.inSeconds > 0
+                    ? audioPosition.inSeconds / audioDuration.inSeconds
+                    : 0.0,
+                backgroundColor: Colors.grey.shade300,
+                color: const Color.fromARGB(255, 221, 255, 68),
+              ),
+              const SizedBox(height: 4.0),
+              Text(
+                '${audioPosition.inMinutes}:${audioPosition.inSeconds.remainder(60).toString().padLeft(2, '0')} / '
+                '${audioDuration.inMinutes}:${audioDuration.inSeconds.remainder(60).toString().padLeft(2, '0')}',
+                style: const TextStyle(color: Colors.black, fontSize: 12.0),
+              ),
+            ],
+          ),
         ),
-      ),
-    ],
-  );
-}
-
-Future<void> _loadAudioDuration(Uint8List audioBytes, int messageId) async {
-  if (_audioPlayers[messageId] == null) {
-    _audioPlayers[messageId] = AudioPlayer();
+      ],
+    );
   }
 
-  final player = _audioPlayers[messageId]!;
-  final tempDir = await getTemporaryDirectory();
-  final tempFile = File('${tempDir.path}/temp_audio_$messageId.mp3');
-  await tempFile.writeAsBytes(audioBytes);
+  Future<void> _loadAudioDuration(Uint8List audioBytes, int messageId) async {
+    if (_audioPlayers[messageId] == null) {
+      _audioPlayers[messageId] = AudioPlayer();
+    }
 
-  try {
-    await player.setFilePath(tempFile.path);
-    final duration = player.duration ?? Duration.zero;
-    setState(() {
-      _audioDurations[messageId] = duration;
-    });
-  } catch (e) {
-    print("Error loading audio duration: $e");
+    final player = _audioPlayers[messageId]!;
+    final tempDir = await getTemporaryDirectory();
+    final tempFile = File('${tempDir.path}/temp_audio_$messageId.mp3');
+    await tempFile.writeAsBytes(audioBytes);
+
+    try {
+      await player.setFilePath(tempFile.path);
+      final duration = player.duration ?? Duration.zero;
+      setState(() {
+        _audioDurations[messageId] = duration;
+      });
+    } catch (e) {
+      print("Error loading audio duration: $e");
+    }
   }
-}
 
   Widget _buildChatBubble(ChatMessage message, bool isUser, int index) {
     final isVoiceMessage = message.audioBytes != null;
@@ -172,7 +172,7 @@ Future<void> _loadAudioDuration(Uint8List audioBytes, int messageId) async {
             ),
             decoration: BoxDecoration(
               color: isUser
-                 ? const Color.fromARGB(255, 70, 168, 195)
+                  ? const Color.fromARGB(255, 70, 168, 195)
                   : const Color.fromARGB(255, 78, 166, 87),
               borderRadius: BorderRadius.only(
                 topLeft: const Radius.circular(16.0),
@@ -190,7 +190,7 @@ Future<void> _loadAudioDuration(Uint8List audioBytes, int messageId) async {
           ),
           if (isUser) ...[
             const SizedBox(width: 8.0),
-           const Text('😊', style: TextStyle(fontSize: 20.0)),
+            const Text('😊', style: TextStyle(fontSize: 20.0)),
           ],
         ],
       ),
@@ -218,6 +218,7 @@ Future<void> _loadAudioDuration(Uint8List audioBytes, int messageId) async {
                 onSubmitted: (_) => _sendTextMessage(context),
                 minLines: 1,
                 maxLines: null,
+                keyboardType: TextInputType.multiline,
               ),
             ),
           ),

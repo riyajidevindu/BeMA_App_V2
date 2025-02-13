@@ -1,5 +1,4 @@
 import 'dart:io';
-import 'dart:math';
 import 'dart:typed_data';
 import 'package:bema_application/common/config/colors.dart';
 import 'package:bema_application/common/widgets/app_bar.dart';
@@ -13,6 +12,8 @@ import 'package:record/record.dart';
 import 'package:path/path.dart' as path;
 import 'package:bema_application/features/authentication/screens/chat_screen/chat_provider.dart';
 import 'package:bema_application/routes/route_names.dart';
+import 'custom_painters.dart'; // Import the custom painters
+import 'model_selection_dialog.dart'; // Import the model selection dialog
 
 class MoodFriend extends StatefulWidget {
   const MoodFriend({Key? key}) : super(key: key);
@@ -37,6 +38,7 @@ class _MoodFriendState extends State<MoodFriend> with TickerProviderStateMixin {
   late Animation<double> _waveAnimation;
   
   String? _statusText; // Nullable to hide the cloud when null
+  String? _selectedModelPath; // Path to the selected model
 
   @override
   void initState() {
@@ -90,6 +92,32 @@ class _MoodFriendState extends State<MoodFriend> with TickerProviderStateMixin {
         });
       }
     });
+
+    // Show the model selection dialog when the screen is first loaded
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _showModelSelectionDialog();
+    });
+  }
+
+  void _showModelSelectionDialog() {
+    showDialog(
+      context: context,
+      barrierDismissible: false, // Prevent dismissing the dialog by tapping outside
+      builder: (BuildContext context) {
+        return ModelSelectionDialog(
+          modelPaths: [
+            'assets/girl.glb',
+            'assets/white_cartoon_dog.glb',
+            'assets/professor_einstein.glb',
+          ],
+          onModelSelected: (modelPath) {
+            setState(() {
+              _selectedModelPath = modelPath;
+            });
+          },
+        );
+      },
+    );
   }
 
   Future<void> _sendAudioMessage(BuildContext context) async {
@@ -162,22 +190,23 @@ class _MoodFriendState extends State<MoodFriend> with TickerProviderStateMixin {
                 child: Stack(
                   alignment: Alignment.center,
                   children: [
-                    AnimatedBuilder(
-                      animation: _bounceAnimation,
-                      builder: (context, child) {
-                        return Transform.translate(
-                          offset: Offset(0, _bounceAnimation.value),
-                          child: ModelViewer(
-                            backgroundColor: backgroundColor,
-                            src: 'assets/white_cartoon_dog.glb',
-                            alt: 'A 3D model of a dog',
-                            ar: false,
-                            autoRotate: _isModelRotating,
-                            disableZoom: true,
-                          ),
-                        );
-                      },
-                    ),
+                    if (_selectedModelPath != null)
+                      AnimatedBuilder(
+                        animation: _bounceAnimation,
+                        builder: (context, child) {
+                          return Transform.translate(
+                            offset: Offset(0, _bounceAnimation.value),
+                            child: ModelViewer(
+                              backgroundColor: backgroundColor,
+                              src: _selectedModelPath!,
+                              alt: 'A 3D model',
+                              ar: false,
+                              autoRotate: _isModelRotating,
+                              disableZoom: true,
+                            ),
+                          );
+                        },
+                      ),
                     if (_statusText != null) // Show the cloud only if text is present
                       Positioned(
                         top: 40,
@@ -327,56 +356,4 @@ class _MoodFriendState extends State<MoodFriend> with TickerProviderStateMixin {
     _audioPlayer.dispose();
     super.dispose();
   }
-}
-
-class ThinkingCloudPainter extends CustomPainter {
-  @override
-  void paint(Canvas canvas, Size size) {
-    final paint = Paint()
-      ..shader = const LinearGradient(
-        colors: [Colors.white, Colors.lightBlueAccent],
-        stops: [0.5, 1.0],
-      ).createShader(Rect.fromLTWH(0, 0, size.width, size.height))
-      ..style = PaintingStyle.fill;
-
-    final path = Path();
-    path.addOval(Rect.fromLTWH(0, 0, size.width, size.height));
-    canvas.drawPath(path, paint);
-  }
-
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
-}
-
-class ModernSoundWavePainter extends CustomPainter {
-  final double animationValue;
-
-  ModernSoundWavePainter(this.animationValue);
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final paint = Paint()
-      ..shader = const LinearGradient(
-        colors: [Colors.blue, Colors.lightBlueAccent],
-        stops: [0.0, 1.0],
-      ).createShader(Rect.fromLTWH(0, 0, size.width, size.height))
-      ..strokeWidth = 3
-      ..style = PaintingStyle.stroke;
-
-    final path = Path();
-    final midHeight = size.height / 2;
-
-    for (double i = 0; i <= size.width; i++) {
-      final y = midHeight +
-          sin((i / size.width * 2 * pi) + animationValue * 2 * pi) *
-              midHeight *
-              0.4;
-      path.lineTo(i, y);
-    }
-
-    canvas.drawPath(path, paint);
-  }
-
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => true;
 }
