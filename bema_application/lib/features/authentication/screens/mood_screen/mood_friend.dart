@@ -1,5 +1,4 @@
 import 'dart:io';
-import 'dart:math';
 import 'dart:typed_data';
 import 'package:bema_application/common/config/colors.dart';
 import 'package:bema_application/common/widgets/app_bar.dart';
@@ -13,6 +12,8 @@ import 'package:record/record.dart';
 import 'package:path/path.dart' as path;
 import 'package:bema_application/features/authentication/screens/chat_screen/chat_provider.dart';
 import 'package:bema_application/routes/route_names.dart';
+import 'custom_painters.dart'; // Import the custom painters
+import 'model_selection_dialog.dart'; // Import the model selection dialog
 
 class MoodFriend extends StatefulWidget {
   const MoodFriend({Key? key}) : super(key: key);
@@ -37,6 +38,7 @@ class _MoodFriendState extends State<MoodFriend> with TickerProviderStateMixin {
   late Animation<double> _waveAnimation;
   
   String? _statusText; // Nullable to hide the cloud when null
+  String? _selectedModelPath; // Path to the selected model
 
   @override
   void initState() {
@@ -90,6 +92,32 @@ class _MoodFriendState extends State<MoodFriend> with TickerProviderStateMixin {
         });
       }
     });
+
+    // Show the model selection dialog when the screen is first loaded
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _showModelSelectionDialog();
+    });
+  }
+
+  void _showModelSelectionDialog() {
+    showDialog(
+      context: context,
+      barrierDismissible: false, // Prevent dismissing the dialog by tapping outside
+      builder: (BuildContext context) {
+        return ModelSelectionDialog(
+          modelPaths: [
+            'assets/girl.glb',
+            'assets/white_cartoon_dog.glb',
+            'assets/professor_einstein.glb',
+          ],
+          onModelSelected: (modelPath) {
+            setState(() {
+              _selectedModelPath = modelPath;
+            });
+          },
+        );
+      },
+    );
   }
 
   Future<void> _sendAudioMessage(BuildContext context) async {
@@ -142,7 +170,7 @@ class _MoodFriendState extends State<MoodFriend> with TickerProviderStateMixin {
       animation: _waveAnimation,
       builder: (context, child) {
         return CustomPaint(
-          size: Size(100, 50),
+          size: const Size(100, 50),
           painter: ModernSoundWavePainter(_waveAnimation.value),
         );
       },
@@ -153,144 +181,168 @@ class _MoodFriendState extends State<MoodFriend> with TickerProviderStateMixin {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: backgroundColor,
-      appBar: AppBar(
-        backgroundColor: backgroundColor,
-        title: const CustomAppBar(),
-        leading: IconButton(
-          icon: Icon(Icons.arrow_back),
-          onPressed: () {
-            context.go('/${RouteNames.homeScreen}');
-          },
-        ),
-      ),
-      body: Column(
+      body: Stack(
         children: [
-          Expanded(
-            child: Stack(
-              alignment: Alignment.center,
-              children: [
-                AnimatedBuilder(
-                  animation: _bounceAnimation,
-                  builder: (context, child) {
-                    return Transform.translate(
-                      offset: Offset(0, _bounceAnimation.value),
-                      child: ModelViewer(
-                        backgroundColor: backgroundColor,
-                        src: 'assets/white_cartoon_dog.glb',
-                        alt: 'A 3D model of a dog',
-                        ar: false,
-                        autoRotate: _isModelRotating,
-                        disableZoom: true,
-                      ),
-                    );
-                  },
-                ),
-                if (_statusText != null) // Show the cloud only if text is present
-                  Positioned(
-                    top: 40,
-                    left: MediaQuery.of(context).size.width * 0.4,
-                    child: CustomPaint(
-                      size: Size(200, 100), // Increased size
-                      painter: ThinkingCloudPainter(),
-                      child: Padding(
-                        padding: const EdgeInsets.all(16.0),
-                        child: Center(
-                          child: Text(
-                            _statusText!,
-                            style: TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.blueGrey,
+          Column(
+            children: [
+              const SizedBox(height: 56), // Height of the AppBar
+              Expanded(
+                child: Stack(
+                  alignment: Alignment.center,
+                  children: [
+                    if (_selectedModelPath != null)
+                      AnimatedBuilder(
+                        animation: _bounceAnimation,
+                        builder: (context, child) {
+                          return Transform.translate(
+                            offset: Offset(0, _bounceAnimation.value),
+                            child: ModelViewer(
+                              backgroundColor: backgroundColor,
+                              src: _selectedModelPath!,
+                              alt: 'A 3D model',
+                              ar: false,
+                              autoRotate: _isModelRotating,
+                              disableZoom: true,
                             ),
-                            textAlign: TextAlign.center,
+                          );
+                        },
+                      ),
+                    if (_statusText != null) // Show the cloud only if text is present
+                      Positioned(
+                        top: 40,
+                        left: MediaQuery.of(context).size.width * 0.4,
+                        child: CustomPaint(
+                          size: const Size(200, 100), // Increased size
+                          painter: ThinkingCloudPainter(),
+                          child: Padding(
+                            padding: const EdgeInsets.all(16.0),
+                            child: Center(
+                              child: Text(
+                                _statusText!,
+                                style: const TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.blueGrey,
+                                ),
+                                textAlign: TextAlign.center,
+                              ),
+                            ),
                           ),
                         ),
                       ),
+                    if (_isPlaying)
+                      Positioned(
+                        bottom: 50,
+                        child: _buildSoundWave(),
+                      ),
+                  ],
+                ),
+              ),
+              if (_isPlaying || _position > Duration.zero)
+                Column(
+                  children: [
+                    Slider(
+                      value: _position.inSeconds.toDouble(),
+                      min: 0,
+                      max: _duration.inSeconds.toDouble(),
+                      onChanged: (value) {
+                        final position = Duration(seconds: value.toInt());
+                        _audioPlayer.seek(position);
+                      },
                     ),
-                  ),
-                if (_isPlaying)
-                  Positioned(
-                    bottom: 50,
-                    child: _buildSoundWave(),
-                  ),
-              ],
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(_formatDuration(_position)),
+                          IconButton(
+                            icon: Icon(_isPlaying ? Icons.pause : Icons.play_arrow),
+                            onPressed: () {
+                              if (_isPlaying) {
+                                _audioPlayer.pause();
+                              } else {
+                                _audioPlayer.play();
+                              }
+                            },
+                          ),
+                          Text(_formatDuration(_duration)),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: _isLoading
+                    ? const CircularProgressIndicator()
+                    : Column(
+                        children: [
+                          IconButton(
+                            icon: Icon(_isRecording ? Icons.stop : Icons.mic),
+                            onPressed: () async {
+                              if (_isRecording) {
+                                String? filePath = await _audioRecorder.stop();
+                                if (filePath != null) {
+                                  setState(() {
+                                    _isRecording = false;
+                                    recordingFilePath = filePath;
+                                    _statusText = "Thinking...";
+                                  });
+                                  await _sendAudioMessage(context);
+                                }
+                              } else {
+                                if (await _audioRecorder.hasPermission()) {
+                                  final Directory appDocDir = await getApplicationDocumentsDirectory();
+                                  final String filePath = path.join(appDocDir.path, 'audio.wav');
+                                  await _audioRecorder.start(const RecordConfig(), path: filePath);
+                                  setState(() {
+                                    _isRecording = true;
+                                    recordingFilePath = filePath;
+                                    _statusText = "Listening...";
+                                  });
+                                }
+                              }
+                            },
+                            color: Colors.orangeAccent,
+                            iconSize: 48,
+                          ),
+                          Text(
+                            _isRecording ? "Tap to stop recording" : "Tap to ask question",
+                            style: const TextStyle(fontSize: 16, color: Colors.blueGrey),
+                          ),
+                        ],
+                      ),
+              ),
+            ],
+          ),
+          Positioned(
+            top: 0,
+            left: 0,
+            right: 0,
+            child: AppBar(
+              backgroundColor: backgroundColor,
+              title: const CustomAppBar(),
+              automaticallyImplyLeading: false, // Remove the default back arrow
             ),
           ),
-          if (_isPlaying || _position > Duration.zero)
-            Column(
-              children: [
-                Slider(
-                  value: _position.inSeconds.toDouble(),
-                  min: 0,
-                  max: _duration.inSeconds.toDouble(),
-                  onChanged: (value) {
-                    final position = Duration(seconds: value.toInt());
-                    _audioPlayer.seek(position);
-                  },
-                ),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(_formatDuration(_position)),
-                      IconButton(
-                        icon: Icon(_isPlaying ? Icons.pause : Icons.play_arrow),
-                        onPressed: () {
-                          if (_isPlaying) {
-                            _audioPlayer.pause();
-                          } else {
-                            _audioPlayer.play();
-                          }
-                        },
-                      ),
-                      Text(_formatDuration(_duration)),
-                    ],
-                  ),
-                ),
-              ],
+          Positioned(
+            top: 36,
+            left: 25,
+            child: Container(
+              width: 40, // Adjust the width of the circle
+              height: 40, // Adjust the height of the circle
+              decoration: BoxDecoration(
+                color: Colors.grey.shade300.withOpacity(0.5), // Transparent ash color background
+                shape: BoxShape.circle,
+              ),
+              child: IconButton(
+                icon: const Icon(Icons.arrow_back, color: Colors.black),
+                onPressed: () {
+                  context.go('/${RouteNames.bottomNavigationBarScreen}', extra: 0);
+                },
+              ),
             ),
-          Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: _isLoading
-                ? CircularProgressIndicator()
-                : Column(
-                    children: [
-                      IconButton(
-                        icon: Icon(_isRecording ? Icons.stop : Icons.mic),
-                        onPressed: () async {
-                          if (_isRecording) {
-                            String? filePath = await _audioRecorder.stop();
-                            if (filePath != null) {
-                              setState(() {
-                                _isRecording = false;
-                                recordingFilePath = filePath;
-                                _statusText = "Thinking...";
-                              });
-                              await _sendAudioMessage(context);
-                            }
-                          } else {
-                            if (await _audioRecorder.hasPermission()) {
-                              final Directory appDocDir = await getApplicationDocumentsDirectory();
-                              final String filePath = path.join(appDocDir.path, 'audio.wav');
-                              await _audioRecorder.start(const RecordConfig(), path: filePath);
-                              setState(() {
-                                _isRecording = true;
-                                recordingFilePath = filePath;
-                                _statusText = "Listening...";
-                              });
-                            }
-                          }
-                        },
-                        color: Colors.orangeAccent,
-                        iconSize: 48,
-                      ),
-                      Text(
-                        _isRecording ? "Tap to stop recording" : "Tap to ask question",
-                        style: TextStyle(fontSize: 16, color: Colors.blueGrey),
-                      ),
-                    ],
-                  ),
           ),
         ],
       ),
@@ -304,56 +356,4 @@ class _MoodFriendState extends State<MoodFriend> with TickerProviderStateMixin {
     _audioPlayer.dispose();
     super.dispose();
   }
-}
-
-class ThinkingCloudPainter extends CustomPainter {
-  @override
-  void paint(Canvas canvas, Size size) {
-    final paint = Paint()
-      ..shader = LinearGradient(
-        colors: [Colors.white, Colors.lightBlueAccent],
-        stops: [0.5, 1.0],
-      ).createShader(Rect.fromLTWH(0, 0, size.width, size.height))
-      ..style = PaintingStyle.fill;
-
-    final path = Path();
-    path.addOval(Rect.fromLTWH(0, 0, size.width, size.height));
-    canvas.drawPath(path, paint);
-  }
-
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
-}
-
-class ModernSoundWavePainter extends CustomPainter {
-  final double animationValue;
-
-  ModernSoundWavePainter(this.animationValue);
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final paint = Paint()
-      ..shader = LinearGradient(
-        colors: [Colors.blue, Colors.lightBlueAccent],
-        stops: [0.0, 1.0],
-      ).createShader(Rect.fromLTWH(0, 0, size.width, size.height))
-      ..strokeWidth = 3
-      ..style = PaintingStyle.stroke;
-
-    final path = Path();
-    final midHeight = size.height / 2;
-
-    for (double i = 0; i <= size.width; i++) {
-      final y = midHeight +
-          sin((i / size.width * 2 * pi) + animationValue * 2 * pi) *
-              midHeight *
-              0.4;
-      path.lineTo(i, y);
-    }
-
-    canvas.drawPath(path, paint);
-  }
-
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => true;
 }

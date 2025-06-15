@@ -5,6 +5,7 @@ from fastapi import FastAPI
 from app.routes.chat_routes import router as chat_router
 from app.routes.agent_routes import router as agent_router
 from app.routes.voice_routes import router as voice_router
+from app.routes.emotion_route import router as emotion_router
 from app.services.agent_service import vector_embedding
 
 
@@ -15,6 +16,7 @@ app = FastAPI()
 app.include_router(chat_router)
 app.include_router(agent_router)
 app.include_router(voice_router)
+app.include_router(emotion_router)
 
 @app.on_event("startup")
 def startup_event():

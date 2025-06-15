@@ -1,4 +1,3 @@
-
 class RouteNames {
   static const wrapper = 'wrapper';
 
@@ -36,4 +35,6 @@ class RouteNames {
   static const dailyTaskScreen = 'dailyTaskScreen';
   static const stressReleaseScreen = 'stressReleaseScreen';
   static const LearderboardScreen = 'LearderboardScreen';
+  static const WorkoutPlanScreen = 'WorkoutPlanScreen';
+  static const diveReflexScreen = 'diveReflexScreen';
 }

@@ -14,26 +14,26 @@ class LeaderboardScreen extends StatefulWidget {
 
 class _LeaderboardScreenState extends State<LeaderboardScreen> {
   final MarkService markService = MarkService();
-  bool isLoading = true;
   double dailyPoints = 0;
   double monthlyPoints = 0;
   double totalDailyMarks = 100; // Total marks for the day
   double totalMonthlyMarks = 100; // Total marks for the month
   List<TaskModel> dailyTasks = [];
   final PageController _pageController = PageController();
+  bool isLoading = true;
 
   @override
   void initState() {
     super.initState();
-    loadUserData(); // Initiate data loading
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      loadUserData(); // Initiate data loading after the screen is rendered
+    });
   }
 
   /// Fetch daily and monthly points along with daily tasks
   Future<void> loadUserData() async {
-    setState(() => isLoading = true); // Start loading
     try {
       final taskSummary = await markService.fetchTaskSummary();
-
       setState(() {
         dailyTasks = taskSummary['dailyTasks'];
         dailyPoints = taskSummary['dailyPoints'];
@@ -60,72 +60,71 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
       appBar: AppBar(
         backgroundColor: backgroundColor,
         title: const CustomAppBar(),
+        automaticallyImplyLeading: false,
         elevation: 0,
       ),
-      body: isLoading
-          ? const Center(
-              child: CustomProgressIndicator( ),
-            )
-          : Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Column(
-                children: [
-                  // Points Display (Daily and Monthly) with Arrow Indicators
-                  Stack(
-                    alignment: Alignment.center,
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          children: [
+            // Points Display (Daily and Monthly) with Arrow Indicators
+            Stack(
+              alignment: Alignment.center,
+              children: [
+                SizedBox(
+                  height: 100,
+                  child: PageView(
+                    controller: _pageController,
+                    scrollDirection: Axis.horizontal,
                     children: [
-                      SizedBox(
-                        height: 100,
-                        child: PageView(
-                          controller: _pageController,
-                          scrollDirection: Axis.horizontal,
-                          children: [
-                            buildPointsBox(
-                                "Daily Points",
-                                "$dailyPoints / $totalDailyMarks",
-                                fontSizeTitle,
-                                fontSizePoints),
-                            buildPointsBox(
-                                "Monthly Points",
-                                "$monthlyPoints / $totalMonthlyMarks",
-                                fontSizeTitle,
-                                fontSizePoints),
-                          ],
-                        ),
-                      ),
-                      Positioned(
-                        left: 0,
-                        child: IconButton(
-                          icon: Icon(Icons.arrow_back_ios,
-                              color: Colors.blueAccent, size: 24),
-                          onPressed: () {
-                            _pageController.previousPage(
-                              duration: Duration(milliseconds: 300),
-                              curve: Curves.easeInOut,
-                            );
-                          },
-                        ),
-                      ),
-                      Positioned(
-                        right: 0,
-                        child: IconButton(
-                          icon: Icon(Icons.arrow_forward_ios,
-                              color: Colors.blueAccent, size: 24),
-                          onPressed: () {
-                            _pageController.nextPage(
-                              duration: Duration(milliseconds: 300),
-                              curve: Curves.easeInOut,
-                            );
-                          },
-                        ),
-                      ),
+                      buildPointsBox(
+                          "Daily Points",
+                          "$dailyPoints / $totalDailyMarks",
+                          fontSizeTitle,
+                          fontSizePoints),
+                      buildPointsBox(
+                          "Monthly Points",
+                          "$monthlyPoints / $totalMonthlyMarks",
+                          fontSizeTitle,
+                          fontSizePoints),
                     ],
                   ),
-                  const SizedBox(height: 20),
+                ),
+                Positioned(
+                  left: 0,
+                  child: IconButton(
+                    icon: const Icon(Icons.arrow_back_ios,
+                        color: Colors.blueAccent, size: 24),
+                    onPressed: () {
+                      _pageController.previousPage(
+                        duration: const Duration(milliseconds: 300),
+                        curve: Curves.easeInOut,
+                      );
+                    },
+                  ),
+                ),
+                Positioned(
+                  right: 0,
+                  child: IconButton(
+                    icon: const Icon(Icons.arrow_forward_ios,
+                        color: Colors.blueAccent, size: 24),
+                    onPressed: () {
+                      _pageController.nextPage(
+                        duration: const Duration(milliseconds: 300),
+                        curve: Curves.easeInOut,
+                      );
+                    },
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 20),
 
-                  // Task List
-                  Expanded(
-                    child: ListView.builder(
+            // Task List
+            Expanded(
+              child: isLoading
+                  ? const Center(child: CustomProgressIndicator())
+                  : ListView.builder(
                       itemCount: dailyTasks.length,
                       itemBuilder: (context, index) {
                         TaskModel task = dailyTasks[index];
@@ -159,10 +158,10 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
                         );
                       },
                     ),
-                  ),
-                ],
-              ),
             ),
+          ],
+        ),
+      ),
     );
   }
 
@@ -178,12 +177,12 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
           end: Alignment.bottomRight,
         ),
         borderRadius: BorderRadius.circular(20),
-        boxShadow: [
+        boxShadow: const [
           BoxShadow(
             color: Colors.black12,
             spreadRadius: 1,
             blurRadius: 8,
-            offset: const Offset(0, 4),
+            offset: Offset(0, 4),
           ),
         ],
       ),
@@ -224,7 +223,7 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
         color: Colors.white,
         borderRadius: BorderRadius.circular(15),
         border: Border.all(color: completed ? Colors.green : Colors.blueGrey, width: 1.5),
-        boxShadow: [
+        boxShadow: const [
           BoxShadow(
             color: Colors.black12,
             blurRadius: 10,
@@ -301,8 +300,9 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
 
   /// Color based on progress for the progress bar
   Color getProgressColor(double progress) {
-    if (progress >= 0.7) return Colors.green;
-    else if (progress >= 0.3) return Colors.blue;
+    if (progress >= 0.7) {
+      return Colors.green;
+    } else if (progress >= 0.3) return Colors.blue;
     else return Colors.redAccent;
   }
 }

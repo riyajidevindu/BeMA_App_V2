@@ -8,18 +8,26 @@ class MarkService {
 
   /// Fetches the daily, weekly, and monthly points and today's tasks
   Future<Map<String, dynamic>> fetchTaskSummary() async {
-    final dailyTasks = await fetchUserTasks([]);
-    final dailyPoints = _calculatePoints(dailyTasks);
-    final weeklyPoints = await calculateWeeklyPoints();
-    final monthlyPoints = await calculateMonthlyPoints();
-    final monthlyTotalPoints = await calculateTotalMonthlyMarks();
+    final dailyTasksFuture = fetchUserTasks([]);
+    final dailyPointsFuture = dailyTasksFuture.then((tasks) => _calculatePoints(tasks));
+    final weeklyPointsFuture = calculateWeeklyPoints();
+    final monthlyPointsFuture = calculateMonthlyPoints();
+    final monthlyTotalPointsFuture = calculateTotalMonthlyMarks();
+
+    final results = await Future.wait([
+      dailyTasksFuture,
+      dailyPointsFuture,
+      weeklyPointsFuture,
+      monthlyPointsFuture,
+      monthlyTotalPointsFuture,
+    ]);
 
     return {
-      'dailyTasks': dailyTasks,
-      'dailyPoints': double.parse(dailyPoints.toStringAsFixed(1)),
-      'weeklyPoints': double.parse(weeklyPoints.toStringAsFixed(1)),
-      'monthlyPoints': double.parse(monthlyPoints.toStringAsFixed(1)),
-      'monthlyTotalPoints': double.parse(monthlyTotalPoints.toStringAsFixed(2)),
+      'dailyTasks': results[0],
+      'dailyPoints': double.parse((results[1] as double).toStringAsFixed(1)),
+      'weeklyPoints': double.parse((results[1] as double).toStringAsFixed(1)),
+      'monthlyPoints': double.parse((results[1] as double).toStringAsFixed(1)),
+      'monthlyTotalPoints': double.parse((results[1] as double).toStringAsFixed(1)),
     };
   }
 
@@ -76,7 +84,7 @@ class MarkService {
 
     for (DateTime date = startOfMonth;
         date.isBefore(endOfMonth) || date.isAtSameMomentAs(endOfMonth);
-        date = date.add(Duration(days: 1))) {
+        date = date.add(const Duration(days: 1))) {
 
       String dateString = date.toIso8601String().split('T')[0];
       QuerySnapshot taskSnapshot = await _firestore
@@ -95,7 +103,6 @@ class MarkService {
     return daysWithTasks * 100.0; // Each day contributes 100 points
   }
 
-
   /// Calculate marks for the current month based on completed tasks
   Future<double> calculateMonthlyPoints() async {
     if (currentUser == null) return 0;
@@ -111,7 +118,7 @@ class MarkService {
     // Loop through each day of the month
     for (DateTime date = startOfMonth;
         date.isBefore(endOfMonth) || date.isAtSameMomentAs(endOfMonth);
-        date = date.add(Duration(days: 1))) {
+        date = date.add(const Duration(days: 1))) {
       
       String dateString = date.toIso8601String().split('T')[0];
       
@@ -162,7 +169,7 @@ class MarkService {
       // Count completed tasks and accumulate points
       final completedTasks = taskListSnapshot.docs
           .map((doc) =>
-              TaskModel.fromFirestore(doc.data() as Map<String, dynamic>))
+              TaskModel.fromFirestore(doc.data()))
           .where((task) => task.completed)
           .length;
 
@@ -170,7 +177,7 @@ class MarkService {
       if (completedTasks > 0) {
         double dailyPoints = _calculatePoints(taskListSnapshot.docs
             .map((doc) =>
-                TaskModel.fromFirestore(doc.data() as Map<String, dynamic>))
+                TaskModel.fromFirestore(doc.data()))
             .toList());
         points += dailyPoints;
       }

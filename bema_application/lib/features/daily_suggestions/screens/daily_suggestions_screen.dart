@@ -2,6 +2,7 @@ import 'package:bema_application/common/config/colors.dart';
 import 'package:bema_application/common/widgets/app_bar.dart';
 import 'package:bema_application/common/widgets/cards/water_intake_card.dart';
 import 'package:bema_application/common/widgets/progress_indicator/custom_progress_indicator.dart';
+import 'package:bema_application/common/widgets/snackbar%20messages/snackbar_message.dart';
 import 'package:bema_application/features/daily_suggestions/data/models/daily_task.dart';
 import 'package:bema_application/features/daily_suggestions/data/services/task_service.dart';
 import 'package:flutter/material.dart';
@@ -94,13 +95,21 @@ class _DailytaskScreenState extends State<DailytaskScreen> {
 
         _saveTaskProgress(index);
       });
+
+     showSuccessSnackBarMessage(context, '${tasks[index].title} marked as completed!');
+    // ScaffoldMessenger.of(context).showSnackBar(
+    //   SnackBar(
+    //     content: Text('${tasks[index].title} marked as completed!'),
+    //     backgroundColor: Colors.green,
+    //   ),
+    // );
     }
   }
 
   void updateStepwiseTask(int index, double selectedAmount) {
     setState(() {
       if (!completedTasks.contains(index)) {
-        int updatedProgress = tasks[index].progress! + selectedAmount.toInt();
+        int updatedProgress = tasks[index].progress + selectedAmount.toInt();
 
         tasks[index] = tasks[index].copyWith(progress: updatedProgress);
 
@@ -125,7 +134,8 @@ class _DailytaskScreenState extends State<DailytaskScreen> {
       backgroundColor: backgroundColor,
       appBar: AppBar(
         backgroundColor: backgroundColor,
-        title: const CustomAppBar(),
+        title: const CustomAppBar(showBackButton: true),
+        automaticallyImplyLeading: false,
         elevation: 0,
       ),
       body: isLoading
@@ -203,7 +213,7 @@ class _DailytaskScreenState extends State<DailytaskScreen> {
                               padding: const EdgeInsets.symmetric(vertical: 10),
                               child: WaterIntakeCard(
                                 totalWaterGoal: task.total!.toDouble(),
-                                currentProgress: task.progress!.toDouble(),
+                                currentProgress: task.progress.toDouble(),
                                 onProgressUpdate: (selectedAmount) =>
                                     updateStepwiseTask(index, selectedAmount),
                               ),
@@ -253,14 +263,14 @@ class _DailytaskScreenState extends State<DailytaskScreen> {
                                               borderRadius:
                                                   BorderRadius.circular(30),
                                             ),
-                                            child: Row(
+                                            child: const Row(
                                               mainAxisSize: MainAxisSize.min,
                                               children: [
-                                                const Icon(Icons.check_circle,
+                                                Icon(Icons.check_circle,
                                                     color: Colors.white,
                                                     size: 24),
-                                                const SizedBox(width: 8),
-                                                const Text(
+                                                SizedBox(width: 8),
+                                                Text(
                                                   'Completed',
                                                   style: TextStyle(
                                                     fontSize: 16,

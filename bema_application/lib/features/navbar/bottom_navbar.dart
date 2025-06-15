@@ -1,16 +1,14 @@
 import 'package:bema_application/common/config/colors.dart';
-import 'package:bema_application/features/authentication/screens/chat_screen/chat_screen.dart';
-import 'package:bema_application/features/daily_suggestions/screens/daily_suggestions_screen.dart';
 import 'package:bema_application/features/home/screens/home_screen.dart';
-import 'package:bema_application/features/instant_stress_release/screens/instant_stress_release_screen.dart';
+import 'package:bema_application/features/intermediate_screens/screens/relax_section_screen.dart';
+import 'package:bema_application/features/intermediate_screens/screens/task_section_screen.dart';
 import 'package:bema_application/features/marks/screens/learderboard_screen.dart';
 import 'package:custom_navigation_bar/custom_navigation_bar.dart';
 import 'package:flutter/material.dart';
 
 class BNavbarScreen extends StatefulWidget {
   final int initialIndex; // Pass initial index for default tab
-  const BNavbarScreen(
-      {super.key, this.initialIndex = 0}); // Default to 0 (Home)
+  const BNavbarScreen({super.key, this.initialIndex = 0}); // Default to 0 (Home)
 
   @override
   State<BNavbarScreen> createState() => _BNavbarScreenState();
@@ -38,9 +36,8 @@ class _BNavbarScreenState extends State<BNavbarScreen> {
   // List of screens for navigation
   static final List<Widget> _widgetOptions = <Widget>[
     const HomeScreen(),
-    const StressReleaseScreen(),
-    const ChatScreen(),
-    const DailytaskScreen(),
+    const TasksSectionScreen(),
+    const RelaxSectionScreen(),
     const LeaderboardScreen(),
   ];
 
@@ -55,8 +52,7 @@ class _BNavbarScreenState extends State<BNavbarScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: backgroundColor,
-      body: _widgetOptions
-          .elementAt(_selectedIndex), // Load the selected screen dynamically
+      body: _widgetOptions.elementAt(_selectedIndex), // Load the selected screen dynamically
       bottomNavigationBar: Container(
         margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
         decoration: BoxDecoration(
@@ -83,23 +79,16 @@ class _BNavbarScreenState extends State<BNavbarScreen> {
               ),
             ),
             CustomNavigationBarItem(
-              icon: const Icon(Icons.air, size: 24),
-              title: const Text(
-                'Relax',
-                style: TextStyle(fontSize: 12, color: secondaryTextColor),
-              ),
-            ),
-            CustomNavigationBarItem(
-              icon: const Icon(Icons.chat, size: 24),
-              title: const Text(
-                'Chat',
-                style: TextStyle(fontSize: 12, color: secondaryTextColor),
-              ),
-            ),
-            CustomNavigationBarItem(
               icon: const Icon(Icons.work, size: 24),
               title: const Text(
                 'Tasks',
+                style: TextStyle(fontSize: 12, color: secondaryTextColor),
+              ),
+            ),
+            CustomNavigationBarItem(
+              icon: const Icon(Icons.air, size: 24),
+              title: const Text(
+                'Relax',
                 style: TextStyle(fontSize: 12, color: secondaryTextColor),
               ),
             ),

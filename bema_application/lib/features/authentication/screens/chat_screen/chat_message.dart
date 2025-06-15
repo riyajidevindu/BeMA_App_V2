@@ -31,14 +31,14 @@ class ChatMessage extends StatelessWidget {
     } else if (isAudioMessage || audioBytes != null) {
       if (audioBytes != null) {
         return IconButton(
-          icon: Icon(Icons.play_arrow),
+          icon: const Icon(Icons.play_arrow),
           onPressed: onPlay,
         );
       } else {
-        return Text('Audio message (processing...)');
+        return const Text('Audio message (processing...)');
       }
     } else {
-      return Text('Unknown message type');
+      return const Text('Unknown message type');
     }
   }
 }

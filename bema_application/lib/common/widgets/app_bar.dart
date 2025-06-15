@@ -6,7 +6,9 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
 class CustomAppBar extends StatefulWidget {
-  const CustomAppBar({super.key});
+  final bool? showBackButton;
+
+  const CustomAppBar({super.key, this.showBackButton});
 
   @override
   State<CustomAppBar> createState() => _CustomAppBarState();
@@ -25,14 +27,6 @@ class _CustomAppBarState extends State<CustomAppBar> {
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
-        // boxShadow: [
-        //   BoxShadow(
-        //     color: Colors.black.withOpacity(0.2),
-        //     spreadRadius: 2,
-        //     blurRadius: 5,
-        //     offset: const Offset(0, 3), // Shadow position
-        //   ),
-        // ],
         borderRadius: BorderRadius.circular(12), // Rounded corners for entire AppBar
       ),
       height: 60, // Consistent height
@@ -44,21 +38,44 @@ class _CustomAppBarState extends State<CustomAppBar> {
               // Navigate to the home tab in the bottom navigation bar
               context.goNamed(RouteNames.bottomNavigationBarScreen, extra: 0);
             },
-            child: Row(
+            child: Stack(
+              alignment: Alignment.center,
               children: [
-                const CircleAvatar(
-                  radius: 20,
-                  backgroundImage: AssetImage('assets/logo.png'),
+                Row(
+                  children: [
+                    const CircleAvatar(
+                      radius: 20,
+                      backgroundImage: AssetImage('assets/logo.png'),
+                    ),
+                    const SizedBox(width: 10),
+                    Text(
+                      "BeMA",
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                        fontSize: width * 0.06, // Responsive font size
+                      ),
+                    ),
+                  ],
                 ),
-                const SizedBox(width: 10),
-                Text(
-                  "BeMA",
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
-                    fontSize: width * 0.06, // Responsive font size
+                if (widget.showBackButton == true)
+                  Positioned(
+                    left: 0,
+                    child: GestureDetector(
+                      onTap: () {
+                        Navigator.pop(context);
+                      },
+                      child: CircleAvatar(
+                        radius: 20,
+                        backgroundColor: Colors.transparent,
+                        child: Icon(
+                          Icons.arrow_back,
+                          color: Colors.white,
+                          size: width * 0.06,
+                        ),
+                      ),
+                    ),
                   ),
-                ),
               ],
             ),
           ),
