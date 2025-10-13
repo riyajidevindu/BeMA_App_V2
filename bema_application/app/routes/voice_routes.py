@@ -2,8 +2,8 @@ import io
 import json
 from fastapi import APIRouter, HTTPException, UploadFile, File
 from fastapi.responses import StreamingResponse
-from app.services.voice_service import transcribe_audio_data,text_to_speech
-from app.services.chat_service import answer_question
+from services.voice_service import transcribe_audio_data,text_to_speech
+from services.chat_service import answer_question_with_memory
 
 router = APIRouter()
 
@@ -20,11 +20,8 @@ async def query_voice(audio_file: UploadFile = File(...)):
             raise HTTPException(status_code=400, detail="Failed to transcribe audio")
         
         # Generate a response
-        response = await answer_question(question=text)
-        if not response.get('parsed'):
-            raise HTTPException(status_code=500, detail="Failed to parse response")
-        
-        response_text = response["parsed"]["answer"]
+        response = answer_question_with_memory(question=text)
+        response_text = response if isinstance(response, str) else str(response)
         
         # Convert the response text to speech
         audio_response = await text_to_speech(response_text)

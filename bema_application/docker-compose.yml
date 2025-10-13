@@ -1,0 +1,79 @@
+# Use a modern and stable version of Docker Compose
+version: "3.9"
+
+# Define all the services (containers) that make up the application
+services:
+  # =========================
+  # AI Backend Service
+  # =========================
+  ai_app:
+    build: ./app
+    container_name: ai_app_service
+    env_file:
+      - ./app/.env
+    restart: unless-stopped
+    ports:
+      # Maps port 8000 on the host to port 9005 in the container
+      - "8000:9005"
+    volumes:
+      # Mounts the local ./app directory into the container for live code updates
+      - ./app:/app
+    networks:
+      - app_network
+    # Ensures both databases are running before this service starts
+    depends_on:
+      - db
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8001/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # =========================
+  # Relational Database (MySQL)
+  # =========================
+  db:
+    image: mysql:8.0
+    container_name: mysql_service
+    # 'unless-stopped' is generally preferred for consistency
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: bema_db
+    ports:
+      - "33083:3306"
+    volumes:
+      # Persists MySQL data using a named volume
+      - db_data:/var/lib/mysql
+    networks:
+      - app_network
+
+  # =========================
+  # Vector Database (ChromaDB)
+  # =========================
+  # chroma_db:
+  #   image: chromadb/chroma
+  #   container_name: chroma_db_service
+  #   restart: unless-stopped
+  #   ports:
+  #     # Maps the default ChromaDB port 8000
+  #     - "8000:8000"
+  #   volumes:
+  #     # Persists ChromaDB data using its own named volume
+  #     - chroma_data:/chroma/chroma
+  #   networks:
+  #     - app_network
+
+# =========================
+# Named Volumes for Data Persistence
+# =========================
+volumes:
+  # Explicitly declares the volume for MySQL data
+  db_data: {}
+
+# =========================
+# Shared Network for Services
+# =========================
+networks:
+  app_network:
+    driver: bridge
