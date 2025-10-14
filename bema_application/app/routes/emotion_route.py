@@ -1,11 +1,20 @@
 import io
 from fastapi import APIRouter, HTTPException, UploadFile, File
 from PIL import Image
-from app.services.emotion_service import EmotionService
+from services.emotion_service import EmotionService
+from dotenv import load_dotenv
+import os
+import uuid
+
+load_dotenv()
 
 router = APIRouter()
 
-emotion_service = EmotionService("app/resources/yolo11n.pt", "app/resources/best.pt", "app/resources/images")
+YOLO_PATH = os.getenv("YOLO_PATH", "resources/yolo11n.pt")
+EMOTION_PATH = os.getenv("EMOTION_PATH", "resources/best.pt")
+IMAGES_OUTPUT_FOLDER = os.getenv("IMAGES_OUTPUT_FOLDER", "resources/images")
+
+emotion_service = EmotionService(YOLO_PATH, EMOTION_PATH, IMAGES_OUTPUT_FOLDER)
 
 ALLOWED_EXTENSIONS = {"jpg", "jpeg", "png"}
 MAX_FILE_SIZE = 2 * 1024 * 1024 

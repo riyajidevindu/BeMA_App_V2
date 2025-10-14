@@ -1,5 +1,5 @@
 from pydantic import BaseModel
-from app.models.suggestion_item import SuggestionItem
+from models.suggestion_item import SuggestionItem
 
 class Suggestion(BaseModel):
     water_intake: SuggestionItem
