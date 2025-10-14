@@ -1,3 +1,5 @@
+import 'dart:ui';
+import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:bema_application/routes/route_names.dart';
@@ -11,255 +13,305 @@ class QuestionScreen3 extends StatefulWidget {
   _QuestionScreen3State createState() => _QuestionScreen3State();
 }
 
-class _QuestionScreen3State extends State<QuestionScreen3> {
-  late TextEditingController _heightController ;
-  late TextEditingController _weightController ;
+class _QuestionScreen3State extends State<QuestionScreen3>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _animationController;
+  late Animation<Color?> _colorAnimation1;
+  late Animation<Color?> _colorAnimation2;
 
   @override
   void initState() {
     super.initState();
-    final questionnaireProvider = context.read<QuestionnaireProvider>();
-    _heightController = TextEditingController(
-      text: questionnaireProvider.heightValue ?? '',
-    );
-    _weightController = TextEditingController(
-      text: questionnaireProvider.weightValue ?? '',
-    );
-  }
+    _animationController = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 5),
+    )..repeat(reverse: true);
 
+    _colorAnimation1 = ColorTween(
+      begin: Colors.blue,
+      end: Colors.purple,
+    ).animate(_animationController);
+
+    _colorAnimation2 = ColorTween(
+      begin: Colors.purple,
+      end: Colors.blue,
+    ).animate(_animationController);
+  }
 
   @override
   void dispose() {
-    _heightController.dispose();
-    _weightController.dispose();
+    _animationController.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    // Access the QuestionnaireProvider
-    final questionnaireProvider = Provider.of<QuestionnaireProvider>(context, listen: true);
-
-    final double screenWidth = MediaQuery.of(context).size.width;
-    final double screenHeight = MediaQuery.of(context).size.height;
+    final questionnaireProvider = Provider.of<QuestionnaireProvider>(context);
+    final screenWidth = MediaQuery.of(context).size.width;
+    final screenHight = MediaQuery.of(context).size.height;
 
     return Scaffold(
-      backgroundColor: const Color(0xFFE6F0FF),
-      body: Column(
-        children: [
-          const SizedBox(height: 50),
-          
-          // Progress bar at the top
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20.0),
-            child: Row(
-              children: [
-
-                GestureDetector(
-                  onTap: () {
-                    context.goNamed(RouteNames.questionScreen2);
-                  },
-                  child: Container(
-                    padding: const EdgeInsets.all(10),
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: Colors.black.withOpacity(0.2), // Transparent background
-                    ),
-                    child: const Icon(
-                      Icons.arrow_back,
-                      color: Colors.white, // White arrow color
-                    ),
-                  ),
-                ),
-                SizedBox(width: screenWidth * 0.025), 
-
-                const Expanded(
-                  child: LinearProgressIndicator(
-                    value: 0.10, // Progress value
-                    backgroundColor: Colors.grey,
-                    color: Colors.blue,
-                  ),
-                ),
-              ],
+      body: AnimatedBuilder(
+        animation: _animationController,
+        builder: (context, child) {
+          return Container(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [_colorAnimation1.value!, _colorAnimation2.value!],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
             ),
-          ),
-
-          // Scrollable content
-          Expanded(
-            child: SingleChildScrollView(
-              child: Padding(
-                padding: const EdgeInsets.all(20.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    const Text(
-                      "What is your height?",
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    const Text(
-                      "📏", // Height emoji
-                      style: TextStyle(fontSize: 50),
-                      textAlign: TextAlign.center,
-                    ),
-                    SizedBox(height: screenHeight * 0.03),
-
-                    // Height input field
-                    TextFormField(
-                      controller: _heightController,
-                      keyboardType: TextInputType.number,
-                      decoration: InputDecoration(
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        hintText: 'Enter your height in ${questionnaireProvider.heightUnit}',
-                        suffixText: questionnaireProvider.heightUnit,
-                      ),
-                      onChanged: (value) {
-                        questionnaireProvider.setHeightValue(value);
-                      },
-                    ),
-                    SizedBox(height: screenHeight * 0.02),
-
-                    // Measurement unit buttons for height
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        _buildUnitButton(context, 'ft', questionnaireProvider.heightUnit == 'ft', () {
-                          questionnaireProvider.setHeightUnit('ft');
-                        }),
-                        SizedBox(width: screenWidth * 0.05),
-                        _buildUnitButton(context, 'cm', questionnaireProvider.heightUnit == 'cm', () {
-                          questionnaireProvider.setHeightUnit('cm');
-                        }),
-                        SizedBox(width: screenWidth * 0.05),
-                        _buildUnitButton(context, 'm', questionnaireProvider.heightUnit == 'm', () {
-                          questionnaireProvider.setHeightUnit('m');
-                        }),
-                      ],
-                    ),
-                    SizedBox(height: screenHeight * 0.02),
-
-                    // Height hint text
-                    const Text(
-                      "Just to get an idea of how tall you stand!",
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        fontSize: 16,
-                        color: Colors.grey,
-                      ),
-                    ),
-                    SizedBox(height: screenHeight * 0.05),
-
-                    const Text(
-                      "And how much do you weigh?",
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    const Text(
-                      "⚖️", // Weight emoji
-                      style: TextStyle(fontSize: 50),
-                      textAlign: TextAlign.center,
-                    ),
-                    SizedBox(height: screenHeight * 0.03),
-
-                    // Weight input field
-                    TextFormField(
-                      controller: _weightController,
-                      keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                      decoration: InputDecoration(
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        hintText: 'Enter your weight in ${questionnaireProvider.weightUnit}',
-                        suffixText: questionnaireProvider.weightUnit,
-                      ),
-                      onChanged: (value) {
-                        questionnaireProvider.setWeightValue(value);
-                      },
-                    ),
-                    SizedBox(height: screenHeight * 0.02),
-
-                    // Measurement unit buttons for weight
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        _buildUnitButton(context, 'lb', questionnaireProvider.weightUnit == 'lb', () {
-                          questionnaireProvider.setWeightUnit('lb');
-                        }),
-                        SizedBox(width: screenWidth * 0.05),
-                        _buildUnitButton(context, 'kg', questionnaireProvider.weightUnit == 'kg', () {
-                          questionnaireProvider.setWeightUnit('kg');
-                        }),
-                      ],
-                    ),
-                    SizedBox(height: screenHeight * 0.02),
-
-                    // Weight hint text
-                    const Text(
-                      "This helps us to give you more personalized tips!",
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        fontSize: 16,
-                        color: Colors.grey,
-                      ),
-                    ),
-                    SizedBox(height: screenHeight * 0.05),
-
-                    // Continue button
-                    ElevatedButton(
-                      onPressed: questionnaireProvider.isHeightWeightContinueButtonActive
-                          ? () {
-                              context.goNamed(RouteNames.questionScreen4);
-                            }
-                          : null, // Disable button if both inputs are not valid
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.blue,
-                        minimumSize: const Size(double.infinity, 50),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                      ),
-                      child: const Text(
-                        "Continue",
-                        style: TextStyle(fontSize: 18),
-                      ),
-                    ),
-                    const SizedBox(height: 20),
-                  ],
+            child: child,
+          );
+        },
+        child: Stack(
+          children: [
+            Positioned.fill(
+              child: Transform.scale(
+                scale: screenWidth * 0.0040,
+                child: Transform.rotate(
+                  angle: 0,
+                  child: Image.asset(
+                    'assets/height_weight.png',
+                    //fit: BoxFit.cover,
+                    //color: Colors.black.withOpacity(0.1),
+                    //colorBlendMode: BlendMode.darken,
+                  ),
                 ),
               ),
             ),
-          ),
-        ],
+            SafeArea(
+              child: Padding(
+                padding: const EdgeInsets.all(20.0),
+                child: SingleChildScrollView(
+                  child: Column(
+                    children: [
+                      Row(
+                        children: [
+                          IconButton(
+                            icon: const Icon(Icons.arrow_back,
+                                color: Colors.white),
+                            onPressed: () =>
+                                context.goNamed(RouteNames.questionScreen2),
+                          ),
+                          Expanded(
+                            child: Container(
+                              height: 10,
+                              decoration: BoxDecoration(
+                                color: Colors.white.withOpacity(0.3),
+                                borderRadius: BorderRadius.circular(5),
+                              ),
+                              child: ClipRRect(
+                                borderRadius: BorderRadius.circular(5),
+                                child: const LinearProgressIndicator(
+                                  value: 0.10,
+                                  backgroundColor: Colors.transparent,
+                                  color: Colors.white,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 30),
+                      _buildStrokedText("Height & Weight", screenWidth * 0.08),
+                      const SizedBox(height: 10),
+                      Text(
+                        "This helps us personalize your tips!",
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          fontSize: screenWidth * 0.045,
+                          color: Colors.white70,
+                        ),
+                      ),
+                      const SizedBox(height: 40),
+                      _buildMeasurementSection(
+                        context,
+                        "Height",
+                        questionnaireProvider.heightValue ?? '170',
+                        questionnaireProvider.heightUnit,
+                        ['cm', 'ft', 'm'],
+                        (unit) => questionnaireProvider.setHeightUnit(unit),
+                        (value) => questionnaireProvider.setHeightValue(value),
+                      ),
+                      const SizedBox(height: 20),
+                      _buildMeasurementSection(
+                        context,
+                        "Weight",
+                        questionnaireProvider.weightValue ?? '60',
+                        questionnaireProvider.weightUnit,
+                        ['kg', 'lb'],
+                        (unit) => questionnaireProvider.setWeightUnit(unit),
+                        (value) => questionnaireProvider.setWeightValue(value),
+                      ),
+                      const SizedBox(height: 40),
+                      GestureDetector(
+                        onTap: questionnaireProvider
+                                .isHeightWeightContinueButtonActive
+                            ? () => context.goNamed(RouteNames.questionScreen4)
+                            : null,
+                        child: Container(
+                          width: double.infinity,
+                          padding: const EdgeInsets.symmetric(vertical: 15),
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              colors: [
+                                Colors.blue.withOpacity(0.8),
+                                Colors.purple.withOpacity(0.8)
+                              ],
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                            ),
+                            borderRadius: BorderRadius.circular(15),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withOpacity(0.2),
+                                spreadRadius: 1,
+                                blurRadius: 5,
+                                offset: const Offset(0, 3),
+                              ),
+                            ],
+                          ),
+                          child: const Text(
+                            'Continue',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
 
-  // Widget for unit selection buttons
-  Widget _buildUnitButton(BuildContext context, String unit, bool isSelected, VoidCallback onTap) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.all(12),
-        decoration: BoxDecoration(
-          color: isSelected ? Colors.blue : Colors.blue.withOpacity(0.3),
-          borderRadius: BorderRadius.circular(8),
-        ),
-        child: Text(
-          unit,
-          style: const TextStyle(
-            fontSize: 16,
-            color: Colors.white,
+  Widget _buildMeasurementSection(
+    BuildContext context,
+    String title,
+    String value,
+    String selectedUnit,
+    List<String> units,
+    Function(String) onUnitChanged,
+    Function(String) onValueChanged,
+  ) {
+    double sliderValue = double.tryParse(value) ?? 0.0;
+    double min = 0;
+    double max = 250;
+    int divisions = 250;
+
+    if (title == "Height") {
+      if (selectedUnit == 'ft') {
+        max = 8.2;
+        divisions = 82;
+      }
+      if (selectedUnit == 'm') {
+        max = 2.5;
+        divisions = 250;
+      }
+    } else {
+      if (selectedUnit == 'lb') {
+        max = 550;
+        divisions = 550;
+      }
+    }
+
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(20),
+      child: BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+        child: Container(
+          padding: const EdgeInsets.all(20),
+          decoration: BoxDecoration(
+            color: Colors.white.withOpacity(0.2),
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(
+              color: Colors.white.withOpacity(0.3),
+            ),
+          ),
+          child: Column(
+            children: [
+              _buildStrokedText(title, 20),
+              const SizedBox(height: 10),
+              _buildStrokedText(
+                '$value $selectedUnit',
+                32,
+              ),
+              Slider(
+                value: sliderValue.clamp(min, max),
+                min: min,
+                max: max,
+                divisions: divisions,
+                label: value,
+                onChanged: (newValue) {
+                  onValueChanged(newValue.toStringAsFixed(1));
+                },
+                activeColor: Colors.white,
+                inactiveColor: Colors.white.withOpacity(0.5),
+              ),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: units.map((unit) {
+                  return Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                    child: ChoiceChip(
+                      label: Text(unit),
+                      selected: selectedUnit == unit,
+                      onSelected: (isSelected) {
+                        if (isSelected) {
+                          onUnitChanged(unit);
+                        }
+                      },
+                      backgroundColor: Colors.white.withOpacity(0.3),
+                      selectedColor: Colors.blue,
+                      labelStyle: TextStyle(
+                        color:
+                            selectedUnit == unit ? Colors.white : Colors.black,
+                      ),
+                    ),
+                  );
+                }).toList(),
+              ),
+            ],
           ),
         ),
       ),
+    );
+  }
+
+  Widget _buildStrokedText(String text, double fontSize,
+      {bool isSelected = true}) {
+    return Stack(
+      children: <Widget>[
+        Text(
+          text,
+          style: TextStyle(
+            fontSize: fontSize,
+            fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+            foreground: Paint()
+              ..style = PaintingStyle.stroke
+              ..strokeWidth = 2
+              ..color = Colors.black,
+          ),
+        ),
+        Text(
+          text,
+          style: TextStyle(
+            fontSize: fontSize,
+            fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+            color: isSelected ? Colors.white : Colors.white.withOpacity(0.6),
+          ),
+        ),
+      ],
     );
   }
 }
