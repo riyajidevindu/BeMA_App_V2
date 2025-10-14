@@ -295,7 +295,14 @@ class _MoodFriendState extends State<MoodFriend> with TickerProviderStateMixin {
                                 if (await _audioRecorder.hasPermission()) {
                                   final Directory appDocDir = await getApplicationDocumentsDirectory();
                                   final String filePath = path.join(appDocDir.path, 'audio.wav');
-                                  await _audioRecorder.start(const RecordConfig(), path: filePath);
+                                  await _audioRecorder.start(
+                                    const RecordConfig(
+                                      encoder: AudioEncoder.wav,
+                                      bitRate: 128000,
+                                      sampleRate: 44100,
+                                    ), 
+                                    path: filePath
+                                  );
                                   setState(() {
                                     _isRecording = true;
                                     recordingFilePath = filePath;
