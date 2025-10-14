@@ -1,3 +1,4 @@
+import 'dart:ui';
 import 'package:bema_application/common/widgets/snackbar%20messages/snackbar_message.dart';
 import 'package:bema_application/features/general_questions/data/model/user_health_model.dart';
 import 'package:bema_application/routes/route_names.dart';
@@ -15,10 +16,38 @@ class ThankYouScreen extends StatefulWidget {
   State<ThankYouScreen> createState() => _ThankYouScreenState();
 }
 
-class _ThankYouScreenState extends State<ThankYouScreen> {
-  bool _isSaving = false; // To show progress indicator
+class _ThankYouScreenState extends State<ThankYouScreen>
+    with SingleTickerProviderStateMixin {
+  bool _isSaving = false;
+  late AnimationController _animationController;
+  late Animation<Color?> _colorAnimation1;
+  late Animation<Color?> _colorAnimation2;
 
-  // Function to save data to Firestore using UserHealthModel
+  @override
+  void initState() {
+    super.initState();
+    _animationController = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 5),
+    )..repeat(reverse: true);
+
+    _colorAnimation1 = ColorTween(
+      begin: Colors.lightBlue.shade200,
+      end: Colors.purple.shade200,
+    ).animate(_animationController);
+
+    _colorAnimation2 = ColorTween(
+      begin: Colors.purple.shade200,
+      end: Colors.lightBlue.shade200,
+    ).animate(_animationController);
+  }
+
+  @override
+  void dispose() {
+    _animationController.dispose();
+    super.dispose();
+  }
+
   Future<void> _saveDataToFirestore(BuildContext context) async {
     setState(() {
       _isSaving = true;
@@ -28,18 +57,13 @@ class _ThankYouScreenState extends State<ThankYouScreen> {
     final User? currentUser = auth.currentUser;
 
     if (currentUser == null) {
-      // Handle the case where the user is not logged in
-      print("User is not logged in.");
       return;
     }
 
     final String userId = currentUser.uid;
-
-    // Access the QuestionnaireProvider data
     final questionnaireProvider =
         Provider.of<QuestionnaireProvider>(context, listen: false);
 
-    // Create an instance of UserHealthModel from the provider data
     final userHealthData = UserHealthModel(
       userId: userId,
       age: questionnaireProvider.age ?? 0,
@@ -89,147 +113,136 @@ class _ThankYouScreenState extends State<ThankYouScreen> {
     );
 
     try {
-      // Convert the UserHealthModel instance to a map and save it to Firestore
       await FirebaseFirestore.instance
           .collection('userBasicData')
           .doc(userId)
           .set(userHealthData.toMap());
 
-      // Update the 'questionnaireCompleted' field to true in the 'AppUsers' collection
       await FirebaseFirestore.instance
           .collection('AppUsers')
           .doc(userId)
           .update({'questionnaireCompleted': true});
 
       showSuccessSnackBarMessage(context, 'Data saved successfully!');
-      print('Data and questionnaire status saved successfully!');
-
-      // Navigate to the home screen
-      //context.goNamed(RouteNames.homeScreen);
-      context.go('/${RouteNames.bottomNavigationBarScreen}', extra: 0); 
+      context.go('/${RouteNames.bottomNavigationBarScreen}', extra: 0);
     } catch (e) {
       showErrorSnackBarMessage(context, 'Error saving data: $e');
-      print('Error saving data: $e');
     } finally {
       setState(() {
-        _isSaving = false; // Stop showing the progress indicator
+        _isSaving = false;
       });
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    final double screenWidth = MediaQuery.of(context).size.width;
-    final double screenHeight = MediaQuery.of(context).size.height;
-    final double emojiSize = screenWidth * 0.2;
-
+    final screenWidth = MediaQuery.of(context).size.width;
     return Scaffold(
-      backgroundColor: const Color(0xFFE6F0FF), // Light blue background
-      body: Column(
-        children: [
-          const SizedBox(height: 50),
-
-          // Row for Back button and Progress bar
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20.0),
-            child: Row(
+      body: AnimatedBuilder(
+        animation: _animationController,
+        builder: (context, child) {
+          return Container(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [_colorAnimation1.value!, _colorAnimation2.value!],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+            ),
+            child: child,
+          );
+        },
+        child: SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.all(20.0),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                // Back button inside a transparent circle
-                GestureDetector(
-                  onTap: () {
-                    context.goNamed(RouteNames
-                        .questionScreen19); // Adjust this route to the correct one
-                  },
-                  child: Container(
-                    padding: const EdgeInsets.all(10),
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: Colors.black.withOpacity(0.2), // Transparent background
-                    ),
-                    child: const Icon(
-                      Icons.arrow_back,
-                      color: Colors.white, // White arrow color
-                    ),
+                const Spacer(),
+                _buildStrokedText("🎉 Thank You! 🎉", screenWidth * 0.08),
+                const SizedBox(height: 20),
+                Text(
+                  "We're excited to help you on your health journey!",
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: screenWidth * 0.045,
+                    color: Colors.white70,
                   ),
                 ),
-                SizedBox(width: screenWidth * 0.025), // Space between back button and progress bar
-
-                // Progress bar with increased width
-                const Expanded(
-                  child: LinearProgressIndicator(
-                    value: 1.0,
-                    backgroundColor: Colors.grey,
-                    color: Colors.blue, // Progress bar color
+                const Spacer(),
+                GestureDetector(
+                  onTap: _isSaving ? null : () => _saveDataToFirestore(context),
+                  child: Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.symmetric(vertical: 15),
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [
+                          Colors.blue.withOpacity(0.8),
+                          Colors.purple.withOpacity(0.8)
+                        ],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      ),
+                      borderRadius: BorderRadius.circular(15),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.2),
+                          spreadRadius: 1,
+                          blurRadius: 5,
+                          offset: const Offset(0, 3),
+                        ),
+                      ],
+                    ),
+                    child: _isSaving
+                        ? const CircularProgressIndicator(
+                            color: Colors.white,
+                          )
+                        : const Text(
+                            "Let's Get Started!",
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
                   ),
                 ),
               ],
             ),
           ),
-
-          Expanded(
-            child: SingleChildScrollView(
-              child: Padding(
-                padding: const EdgeInsets.all(20.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    SizedBox(height: screenHeight * 0.08),
-                    Text(
-                      "🎉", // Celebration emoji
-                      style: TextStyle(fontSize: emojiSize), // Emoji size
-                      textAlign: TextAlign.center,
-                    ),
-                    SizedBox(height: screenHeight * 0.05),
-
-                    const Text(
-                      "Thank you for sharing!",
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    SizedBox(height: screenHeight * 0.03),
-
-                    const Text(
-                      "We're excited to help you on your health journey!",
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        fontSize: 18,
-                        color: Colors.grey,
-                      ),
-                    ),
-                    SizedBox(height: screenHeight * 0.07),
-
-                    // Continue button
-                    ElevatedButton(
-                      onPressed: _isSaving
-                          ? null // Disable button while saving
-                          : () => _saveDataToFirestore(context), // Call Firestore save method
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.blue, // Blue button color
-                        minimumSize: const Size(double.infinity, 50), // Full-width button
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                      ),
-                      child: _isSaving
-                          ? const CircularProgressIndicator(
-                              color: Colors.white,
-                            )
-                          : const Text(
-                              "Continue",
-                              style: TextStyle(fontSize: 18),
-                            ),
-                    ),
-                    SizedBox(height: screenHeight * 0.02),
-                  ],
-                ),
-              ),
-            ),
-          ),
-        ],
+        ),
       ),
+    );
+  }
+
+  Widget _buildStrokedText(String text, double fontSize,
+      {bool isSelected = true}) {
+    return Stack(
+      children: <Widget>[
+        Text(
+          text,
+          textAlign: TextAlign.center,
+          style: TextStyle(
+            fontSize: fontSize,
+            fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+            foreground: Paint()
+              ..style = PaintingStyle.stroke
+              ..strokeWidth = 2
+              ..color = Colors.black,
+          ),
+        ),
+        Text(
+          text,
+          textAlign: TextAlign.center,
+          style: TextStyle(
+            fontSize: fontSize,
+            fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+            color: isSelected ? Colors.white : Colors.white.withOpacity(0.6),
+          ),
+        ),
+      ],
     );
   }
 }

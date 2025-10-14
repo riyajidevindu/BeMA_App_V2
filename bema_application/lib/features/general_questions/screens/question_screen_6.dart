@@ -1,3 +1,4 @@
+import 'dart:ui';
 import 'package:bema_application/features/authentication/data/models/profile_service.dart';
 import 'package:bema_application/features/authentication/data/models/user_model.dart';
 import 'package:bema_application/routes/route_names.dart';
@@ -12,183 +13,204 @@ class QuestionScreen6 extends StatefulWidget {
   State<QuestionScreen6> createState() => _QuestionScreen6State();
 }
 
-class _QuestionScreen6State extends State<QuestionScreen6> {
+class _QuestionScreen6State extends State<QuestionScreen6>
+    with SingleTickerProviderStateMixin {
   final profileService = ProfileService();
   String? userName;
   bool isLoading = true;
+  late AnimationController _animationController;
+  late Animation<Color?> _colorAnimation1;
+  late Animation<Color?> _colorAnimation2;
 
   @override
   void initState() {
     super.initState();
-    getUser(); // Fetch user details when the screen loads
+    getUser();
+
+    _animationController = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 5),
+    )..repeat(reverse: true);
+
+    _colorAnimation1 = ColorTween(
+      begin: Colors.lightBlue.shade200,
+      end: Colors.purple.shade200,
+    ).animate(_animationController);
+
+    _colorAnimation2 = ColorTween(
+      begin: Colors.purple.shade200,
+      end: Colors.lightBlue.shade200,
+    ).animate(_animationController);
+  }
+
+  @override
+  void dispose() {
+    _animationController.dispose();
+    super.dispose();
   }
 
   Future<void> getUser() async {
     try {
       UserModel? user =
           await profileService.getUser(FirebaseAuth.instance.currentUser!.uid);
-
-      // Debug the fetched user details
-      debugPrint('Fetched user: ${user?.name}');
-
       if (user != null && user.name.isNotEmpty) {
         setState(() {
           userName = user.name;
         });
       } else {
         setState(() {
-          userName = 'User'; // Default name if none is available
+          userName = 'User';
         });
       }
     } catch (e) {
-      debugPrint("Error fetching user: $e");
       setState(() {
-        userName = 'User'; // Use default name on error
+        userName = 'User';
       });
     } finally {
       setState(() {
-        isLoading = false; // Stop loading
+        isLoading = false;
       });
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    final double screenWidth = MediaQuery.of(context).size.width;
-    final double screenHeight = MediaQuery.of(context).size.height;
-    final double emojiSize = screenWidth * 0.1;
-
+    final screenWidth = MediaQuery.of(context).size.width;
     return Scaffold(
-      backgroundColor: const Color(0xFFE6F0FF), // Light blue background
-      body: Column(
-        children: [
-          const SizedBox(height: 50),
-          
-          // Row for Back button and Progress bar
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20.0),
-            child: Row(
-              children: [
-                // Back button inside a transparent circle
-                GestureDetector(
-                  onTap: () {
-                    context.goNamed(RouteNames.questionScreen5);
-                  },
-                  child: Container(
-                    padding: const EdgeInsets.all(10),
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: Colors.black.withOpacity(0.2), // Transparent background
-                    ),
-                    child: const Icon(
-                      Icons.arrow_back,
-                      color: Colors.white, // White arrow color
-                    ),
-                  ),
-                ),
-                SizedBox(width: screenWidth * 0.025),
-
-                // Progress bar with increased width
-                const Expanded(
-                  child: LinearProgressIndicator(
-                    value: 0.25, // Progress (next step)
-                    backgroundColor: Colors.grey,
-                    color: Colors.blue, // Progress bar color
-                  ),
-                ),
-              ],
+      body: AnimatedBuilder(
+        animation: _animationController,
+        builder: (context, child) {
+          return Container(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [_colorAnimation1.value!, _colorAnimation2.value!],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
             ),
-          ),
-
-          Expanded(
-            child: SingleChildScrollView(
-              child: Padding(
-                padding: const EdgeInsets.all(20.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.center,
+            child: child,
+          );
+        },
+        child: SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.all(20.0),
+            child: Column(
+              children: [
+                Row(
                   children: [
-                    const Text(
-                      "👋", // Waving hand emoji
-                      style: TextStyle(fontSize: 50), // Emoji size
-                      textAlign: TextAlign.center,
+                    IconButton(
+                      icon: const Icon(Icons.arrow_back, color: Colors.white),
+                      onPressed: () =>
+                          context.goNamed(RouteNames.questionScreen5),
                     ),
-                    SizedBox(height: screenHeight * 0.03),
-
-                    // Display placeholder text while loading
-                    isLoading
-                      ? const CircularProgressIndicator() // Loading indicator
-                      : Text(
-                          "Hey Mr. ${userName ?? 'User'}", // Show the username or default
-                          textAlign: TextAlign.center,
-                          style: const TextStyle(
-                            fontSize: 24,
-                            fontWeight: FontWeight.bold,
+                    Expanded(
+                      child: Container(
+                        height: 10,
+                        decoration: BoxDecoration(
+                          color: Colors.white.withOpacity(0.3),
+                          borderRadius: BorderRadius.circular(5),
+                        ),
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(5),
+                          child: const LinearProgressIndicator(
+                            value: 0.25,
+                            backgroundColor: Colors.transparent,
+                            color: Colors.white,
                           ),
                         ),
-                    SizedBox(height: screenHeight * 0.02),
-
-                    const Text(
-                      "We're friends now!",
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    SizedBox(height: screenHeight * 0.03),
-                    const Text(
-                      "😊", // Smiling face emoji
-                      style: TextStyle(fontSize: 50), // Emoji size
-                      textAlign: TextAlign.center,
-                    ),
-                    SizedBox(height: screenHeight * 0.02),
-                    const Text(
-                      "Let's take the next step and gather some medical info to help you better.",
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        fontSize: 18,
-                        color: Colors.grey,
-                      ),
-                    ),
-                    SizedBox(height: screenHeight * 0.02),
-                    const Text(
-                      "🩺", // Stethoscope emoji
-                      style: TextStyle(fontSize: 50), // Emoji size
-                      textAlign: TextAlign.center,
-                    ),
-                    SizedBox(height: screenHeight * 0.04),
-                    const Text(
-                      "Ready? Let's do it!",
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    SizedBox(height: screenHeight * 0.05),
-                    ElevatedButton(
-                      onPressed: () {
-                        context.goNamed(RouteNames.questionScreen7);
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.blue, // Blue button color
-                        minimumSize: const Size(double.infinity, 50), // Full-width button
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                      ),
-                      child: const Text(
-                        "Continue",
-                        style: TextStyle(fontSize: 18),
                       ),
                     ),
                   ],
                 ),
-              ),
+                const Spacer(),
+                isLoading
+                    ? const CircularProgressIndicator(
+                        valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                      )
+                    : _buildStrokedText(
+                        "Hey, ${userName ?? 'User'}!", screenWidth * 0.08),
+                const SizedBox(height: 10),
+                Text(
+                  "We're friends now! Let's get some medical info to help you better.",
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: screenWidth * 0.045,
+                    color: Colors.white70,
+                  ),
+                ),
+                const SizedBox(height: 40),
+                GestureDetector(
+                  onTap: () {
+                    context.goNamed(RouteNames.questionScreen7);
+                  },
+                  child: Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.symmetric(vertical: 15),
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [
+                          Colors.blue.withOpacity(0.8),
+                          Colors.purple.withOpacity(0.8)
+                        ],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      ),
+                      borderRadius: BorderRadius.circular(15),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.2),
+                          spreadRadius: 1,
+                          blurRadius: 5,
+                          offset: const Offset(0, 3),
+                        ),
+                      ],
+                    ),
+                    child: const Text(
+                      "Let's Do It!",
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ),
+                const Spacer(),
+              ],
             ),
           ),
-        ],
+        ),
       ),
+    );
+  }
+
+  Widget _buildStrokedText(String text, double fontSize,
+      {bool isSelected = true}) {
+    return Stack(
+      children: <Widget>[
+        Text(
+          text,
+          textAlign: TextAlign.center,
+          style: TextStyle(
+            fontSize: fontSize,
+            fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+            foreground: Paint()
+              ..style = PaintingStyle.stroke
+              ..strokeWidth = 2
+              ..color = Colors.black,
+          ),
+        ),
+        Text(
+          text,
+          textAlign: TextAlign.center,
+          style: TextStyle(
+            fontSize: fontSize,
+            fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+            color: isSelected ? Colors.white : Colors.white.withOpacity(0.6),
+          ),
+        ),
+      ],
     );
   }
 }

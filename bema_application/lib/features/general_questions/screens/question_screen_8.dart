@@ -1,3 +1,4 @@
+import 'dart:ui';
 import 'package:bema_application/features/general_questions/providers/questioneer_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
@@ -11,215 +12,248 @@ class QuestionScreen8 extends StatefulWidget {
   _QuestionScreen8State createState() => _QuestionScreen8State();
 }
 
-class _QuestionScreen8State extends State<QuestionScreen8> {
-  late TextEditingController _yearsController;
+class _QuestionScreen8State extends State<QuestionScreen8>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _animationController;
+  late Animation<Color?> _colorAnimation1;
+  late Animation<Color?> _colorAnimation2;
 
   @override
   void initState() {
     super.initState();
-    final questionnaireProvider = context.read<QuestionnaireProvider>();
-    // Initialize the controller with the value from the provider
-    _yearsController = TextEditingController(
-      text: questionnaireProvider.hypertensionDuration ?? '',
-    );
+    _animationController = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 5),
+    )..repeat(reverse: true);
+
+    _colorAnimation1 = ColorTween(
+      begin: Colors.lightBlue.shade200,
+      end: Colors.purple.shade200,
+    ).animate(_animationController);
+
+    _colorAnimation2 = ColorTween(
+      begin: Colors.purple.shade200,
+      end: Colors.lightBlue.shade200,
+    ).animate(_animationController);
   }
 
   @override
   void dispose() {
-    _yearsController.dispose();
+    _animationController.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    final double screenWidth = MediaQuery.of(context).size.width;
-    final double screenHeight = MediaQuery.of(context).size.height;
-    final double emojiSize = screenWidth * 0.1; // Responsive emoji size
-
-    // Access the QuestionnaireProvider
-    final questionnaireProvider = Provider.of<QuestionnaireProvider>(context, listen: true);
+    final questionnaireProvider = Provider.of<QuestionnaireProvider>(context);
+    final screenWidth = MediaQuery.of(context).size.width;
 
     return Scaffold(
-      backgroundColor: const Color(0xFFE6F0FF), // Same light blue background
-      body: Column(
-        children: [
-          const SizedBox(height: 50),
-
-          // Row for Back button and Progress bar
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20.0),
-            child: Row(
+      body: AnimatedBuilder(
+        animation: _animationController,
+        builder: (context, child) {
+          return Container(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [_colorAnimation1.value!, _colorAnimation2.value!],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+            ),
+            child: child,
+          );
+        },
+        child: SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.all(20.0),
+            child: Column(
               children: [
-                GestureDetector(
-                  onTap: () {
-                    context.goNamed(RouteNames.questionScreen7);
-                  },
-                  child: Container(
-                    padding: const EdgeInsets.all(10),
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: Colors.black.withOpacity(0.2), // Transparent background
+                Row(
+                  children: [
+                    IconButton(
+                      icon: const Icon(Icons.arrow_back, color: Colors.white),
+                      onPressed: () =>
+                          context.goNamed(RouteNames.questionScreen7),
                     ),
-                    child: const Icon(
-                      Icons.arrow_back,
-                      color: Colors.white, // White arrow color
+                    Expanded(
+                      child: Container(
+                        height: 10,
+                        decoration: BoxDecoration(
+                          color: Colors.white.withOpacity(0.3),
+                          borderRadius: BorderRadius.circular(5),
+                        ),
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(5),
+                          child: const LinearProgressIndicator(
+                            value: 0.35,
+                            backgroundColor: Colors.transparent,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ),
                     ),
-                  ),
+                  ],
                 ),
-                SizedBox(width: screenWidth * 0.025), // Space between back button and progress bar
-
-                // Progress bar with increased width
-                const Expanded(
-                  child: LinearProgressIndicator(
-                    value: 0.35, // Progress (next step)
-                    backgroundColor: Colors.grey,
-                    color: Colors.blue, // Progress bar color
+                const SizedBox(height: 30),
+                _buildStrokedText(
+                    "Do you have hypertension?", screenWidth * 0.08),
+                const SizedBox(height: 20),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    _buildOptionChip(context, "Yes", true,
+                        questionnaireProvider.hasHypertension),
+                    const SizedBox(width: 20),
+                    _buildOptionChip(context, "No", false,
+                        questionnaireProvider.hasHypertension),
+                  ],
+                ),
+                const Spacer(),
+                if (questionnaireProvider.hasHypertension == true)
+                  _buildDurationPicker(context),
+                const SizedBox(height: 40),
+                GestureDetector(
+                  onTap: questionnaireProvider.isContinueButtonActive08
+                      ? () => context.goNamed(RouteNames.questionScreen9)
+                      : null,
+                  child: Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.symmetric(vertical: 15),
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [
+                          Colors.blue.withOpacity(0.8),
+                          Colors.purple.withOpacity(0.8)
+                        ],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      ),
+                      borderRadius: BorderRadius.circular(15),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.2),
+                          spreadRadius: 1,
+                          blurRadius: 5,
+                          offset: const Offset(0, 3),
+                        ),
+                      ],
+                    ),
+                    child: const Text(
+                      'Continue',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
                   ),
                 ),
               ],
             ),
           ),
-          
-          // Scrollable content below the progress bar
-          Expanded(
-            child: SingleChildScrollView(
-              child: Padding(
-                padding: const EdgeInsets.all(20.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    const Text(
-                      "Do you have hypertension?",
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    const Text(
-                      "(High Blood Pressure)",
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    SizedBox(height: screenHeight * 0.05),
-              
-                    // Emoji buttons for Yes and No options
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        GestureDetector(
-                          onTap: () {
-                            questionnaireProvider.setHasHypertension(true);
-                          },
-                          child: Container(
-                            padding: const EdgeInsets.all(20),
-                            decoration: BoxDecoration(
-                              color: Colors.green.withOpacity(questionnaireProvider.hasHypertension == true ? 1.0 : 0.3),
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: Text(
-                              "✅",
-                              style: TextStyle(
-                                fontSize: emojiSize,
-                              ),
-                            ),
-                          ),
-                        ),
-                        SizedBox(width: screenWidth * 0.15),
-                        GestureDetector(
-                          onTap: () {
-                            questionnaireProvider.setHasHypertension(false);
-                            _yearsController.clear(); // Clear the text field when selecting No
-                          },
-                          child: Container(
-                            padding: const EdgeInsets.all(20),
-                            decoration: BoxDecoration(
-                              color: Colors.green.withOpacity(questionnaireProvider.hasHypertension == false ? 1.0 : 0.3),
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: Text(
-                              "❌",
-                              style: TextStyle(
-                                fontSize: emojiSize,
-                              ),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                    SizedBox(height: screenHeight * 0.05), // Padding after options
+        ),
+      ),
+    );
+  }
 
-                    const Text(
-                      "If yes, how long have you been on medication?",
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        fontSize: 16,
-                        color: Colors.grey,
-                      ),
-                    ),
-                    const Text(
-                      "(In years)",
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        fontSize: 16,
-                        color: Colors.grey,
-                      ),
-                    ),
-                    SizedBox(height: screenHeight * 0.04),
-                    Text(
-                      "💊",
-                      style: TextStyle(fontSize: emojiSize * 1.5),
-                      textAlign: TextAlign.center,
-                    ),
-                    SizedBox(height: screenHeight * 0.04),
+  Widget _buildOptionChip(
+      BuildContext context, String label, bool value, bool? currentValue) {
+    final questionnaireProvider =
+        Provider.of<QuestionnaireProvider>(context, listen: false);
+    final bool isSelected = currentValue == value;
 
-                    TextFormField(
-                      controller: _yearsController,
-                      keyboardType: TextInputType.number,
-                      enabled: questionnaireProvider.hasHypertension == true, // Active only if Yes is selected
-                      decoration: InputDecoration(
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        hintText: 'In Years',
-                      ),
-                      onChanged: (value) {
-                        questionnaireProvider.setHypertensionDuration(value);
-                      },
-                    ),
+    return GestureDetector(
+      onTap: () {
+        questionnaireProvider.setHasHypertension(value);
+      },
+      child: Chip(
+        label: Text(label),
+        backgroundColor: isSelected
+            ? Colors.blue.withOpacity(0.5)
+            : Colors.white.withOpacity(0.2),
+        labelStyle: TextStyle(
+          fontSize: 18,
+          fontWeight: FontWeight.bold,
+          color: isSelected ? Colors.white : Colors.white70,
+        ),
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
+      ),
+    );
+  }
 
-                    SizedBox(height: screenHeight * 0.05),
+  Widget _buildDurationPicker(BuildContext context) {
+    final questionnaireProvider = Provider.of<QuestionnaireProvider>(context);
+    int duration =
+        int.tryParse(questionnaireProvider.hypertensionDuration ?? '0') ?? 0;
 
-                    // Continue button
-                    ElevatedButton(
-                      onPressed: questionnaireProvider.isContinueButtonActive08
-                          ? () {
-                              context.goNamed(RouteNames.questionScreen9);
-                            }
-                          : null, // Disable button if conditions are not met
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.blue, // Blue button color
-                        minimumSize: const Size(double.infinity, 50), // Full-width button
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                      ),
-                      child: const Text(
-                        "Continue",
-                        style: TextStyle(fontSize: 18),
-                      ),
-                    ),
-                    const SizedBox(height: 20), // Padding after button
-                  ],
-                ),
-              ),
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(20),
+      child: BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+        child: Container(
+          padding: const EdgeInsets.all(20),
+          decoration: BoxDecoration(
+            color: Colors.white.withOpacity(0.2),
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(
+              color: Colors.white.withOpacity(0.3),
             ),
           ),
-        ],
+          child: Column(
+            children: [
+              _buildStrokedText("Medication Duration (Years)", 20),
+              const SizedBox(height: 10),
+              _buildStrokedText(
+                duration.toString(),
+                48,
+              ),
+              Slider(
+                value: duration.toDouble(),
+                min: 0,
+                max: 50,
+                divisions: 50,
+                label: duration.toString(),
+                onChanged: (newValue) {
+                  questionnaireProvider
+                      .setHypertensionDuration(newValue.round().toString());
+                },
+                activeColor: Colors.white,
+                inactiveColor: Colors.white.withOpacity(0.5),
+              ),
+            ],
+          ),
+        ),
       ),
+    );
+  }
+
+  Widget _buildStrokedText(String text, double fontSize,
+      {bool isSelected = true}) {
+    return Stack(
+      children: <Widget>[
+        Text(
+          text,
+          textAlign: TextAlign.center,
+          style: TextStyle(
+            fontSize: fontSize,
+            fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+            foreground: Paint()
+              ..style = PaintingStyle.stroke
+              ..strokeWidth = 2
+              ..color = Colors.black,
+          ),
+        ),
+        Text(
+          text,
+          textAlign: TextAlign.center,
+          style: TextStyle(
+            fontSize: fontSize,
+            fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+            color: isSelected ? Colors.white : Colors.white.withOpacity(0.6),
+          ),
+        ),
+      ],
     );
   }
 }

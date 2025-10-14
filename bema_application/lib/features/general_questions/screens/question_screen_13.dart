@@ -1,3 +1,4 @@
+import 'dart:ui';
 import 'package:bema_application/features/general_questions/providers/questioneer_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
@@ -11,216 +12,250 @@ class QuestionScreen13 extends StatefulWidget {
   _QuestionScreen13State createState() => _QuestionScreen13State();
 }
 
-class _QuestionScreen13State extends State<QuestionScreen13> {
+class _QuestionScreen13State extends State<QuestionScreen13>
+    with SingleTickerProviderStateMixin {
   late TextEditingController _disabilityController;
+  late AnimationController _animationController;
+  late Animation<Color?> _colorAnimation1;
+  late Animation<Color?> _colorAnimation2;
 
   @override
   void initState() {
     super.initState();
-    final questionnaireProvider = context.read<QuestionnaireProvider>();
     _disabilityController = TextEditingController(
-      text: questionnaireProvider.disabilityDescription ?? '',
+      text: context.read<QuestionnaireProvider>().disabilityDescription ?? '',
     );
+
+    _animationController = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 5),
+    )..repeat(reverse: true);
+
+    _colorAnimation1 = ColorTween(
+      begin: Colors.lightBlue.shade200,
+      end: Colors.purple.shade200,
+    ).animate(_animationController);
+
+    _colorAnimation2 = ColorTween(
+      begin: Colors.purple.shade200,
+      end: Colors.lightBlue.shade200,
+    ).animate(_animationController);
   }
 
   @override
   void dispose() {
     _disabilityController.dispose();
+    _animationController.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    final double screenWidth = MediaQuery.of(context).size.width;
-    final double screenHeight = MediaQuery.of(context).size.height;
-    final double emojiSize = screenWidth * 0.1;
-
-    // Access the QuestionnaireProvider
-    final questionnaireProvider = Provider.of<QuestionnaireProvider>(context, listen: true);
+    final questionnaireProvider = Provider.of<QuestionnaireProvider>(context);
+    final screenWidth = MediaQuery.of(context).size.width;
 
     return Scaffold(
-      backgroundColor: const Color(0xFFE6F0FF), // Same light blue background
-      body: Column(
-        children: [
-          const SizedBox(height: 50),
-          
-          // Row for Back button and Progress bar
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20.0),
-            child: Row(
+      body: AnimatedBuilder(
+        animation: _animationController,
+        builder: (context, child) {
+          return Container(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [_colorAnimation1.value!, _colorAnimation2.value!],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+            ),
+            child: child,
+          );
+        },
+        child: SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.all(20.0),
+            child: Column(
               children: [
-                GestureDetector(
-                  onTap: () {
-                    context.goNamed(RouteNames.questionScreen12);
-                  },
-                  child: Container(
-                    padding: const EdgeInsets.all(10),
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: Colors.black.withOpacity(0.2), // Transparent background
+                Row(
+                  children: [
+                    IconButton(
+                      icon: const Icon(Icons.arrow_back, color: Colors.white),
+                      onPressed: () =>
+                          context.goNamed(RouteNames.questionScreen12),
                     ),
-                    child: const Icon(
-                      Icons.arrow_back,
-                      color: Colors.white, // White arrow color
+                    Expanded(
+                      child: Container(
+                        height: 10,
+                        decoration: BoxDecoration(
+                          color: Colors.white.withOpacity(0.3),
+                          borderRadius: BorderRadius.circular(5),
+                        ),
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(5),
+                          child: const LinearProgressIndicator(
+                            value: 0.60,
+                            backgroundColor: Colors.transparent,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ),
                     ),
-                  ),
+                  ],
                 ),
-                SizedBox(width: screenWidth * 0.025), // Space between back button and progress bar
-
-                // Progress bar with increased width
-                const Expanded(
-                  child: LinearProgressIndicator(
-                    value: 0.60, // Progress (next step)
-                    backgroundColor: Colors.grey,
-                    color: Colors.blue, // Progress bar color
+                const SizedBox(height: 30),
+                _buildStrokedText(
+                    "Any disabilities or special needs?", screenWidth * 0.08),
+                const SizedBox(height: 20),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    _buildOptionChip(context, "Yes", true,
+                        questionnaireProvider.hasDisability),
+                    const SizedBox(width: 20),
+                    _buildOptionChip(context, "No", false,
+                        questionnaireProvider.hasDisability),
+                  ],
+                ),
+                const Spacer(),
+                if (questionnaireProvider.hasDisability == true)
+                  _buildDisabilityInput(context),
+                const SizedBox(height: 40),
+                GestureDetector(
+                  onTap: questionnaireProvider.isDisabilityButtonActive
+                      ? () => context.goNamed(RouteNames.questionScreen14)
+                      : null,
+                  child: Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.symmetric(vertical: 15),
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [
+                          Colors.blue.withOpacity(0.8),
+                          Colors.purple.withOpacity(0.8)
+                        ],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      ),
+                      borderRadius: BorderRadius.circular(15),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.2),
+                          spreadRadius: 1,
+                          blurRadius: 5,
+                          offset: const Offset(0, 3),
+                        ),
+                      ],
+                    ),
+                    child: const Text(
+                      'Continue',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
                   ),
                 ),
               ],
             ),
           ),
+        ),
+      ),
+    );
+  }
 
-          // Scrollable content below the progress bar
-          Expanded(
-            child: SingleChildScrollView(
-              child: Padding(
-                padding: const EdgeInsets.all(20.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    const Text(
-                      "Do you have any",
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    const Text(
-                      "disabilities or special needs?",
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    SizedBox(height: screenHeight * 0.05),
+  Widget _buildOptionChip(
+      BuildContext context, String label, bool value, bool? currentValue) {
+    final questionnaireProvider =
+        Provider.of<QuestionnaireProvider>(context, listen: false);
+    final bool isSelected = currentValue == value;
 
-                    // Emoji buttons for Yes and No options
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        GestureDetector(
-                          onTap: () {
-                            questionnaireProvider.setHasDisability(true);
-                          },
-                          child: Container(
-                            padding: const EdgeInsets.all(20),
-                            decoration: BoxDecoration(
-                              color: Colors.green.withOpacity(questionnaireProvider.hasDisability == true ? 1.0 : 0.3),
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: Text(
-                              "✅",
-                              style: TextStyle(
-                                fontSize: emojiSize,
-                              ),
-                            ),
-                          ),
-                        ),
-                        SizedBox(width: screenWidth * 0.15),
-                        GestureDetector(
-                          onTap: () {
-                            questionnaireProvider.setHasDisability(false);
-                            _disabilityController.clear(); // Clear the text field when selecting No
-                          },
-                          child: Container(
-                            padding: const EdgeInsets.all(20),
-                            decoration: BoxDecoration(
-                              color: Colors.green.withOpacity(questionnaireProvider.hasDisability == false ? 1.0 : 0.3),
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: Text(
-                              "❌",
-                              style: TextStyle(
-                                fontSize: emojiSize,
-                              ),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                    SizedBox(height: screenHeight * 0.05), // Padding after options
+    return GestureDetector(
+      onTap: () {
+        questionnaireProvider.setHasDisability(value);
+      },
+      child: Chip(
+        label: Text(label),
+        backgroundColor: isSelected
+            ? Colors.blue.withOpacity(0.5)
+            : Colors.white.withOpacity(0.2),
+        labelStyle: TextStyle(
+          fontSize: 18,
+          fontWeight: FontWeight.bold,
+          color: isSelected ? Colors.white : Colors.white70,
+        ),
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
+      ),
+    );
+  }
 
-                    const Text(
-                      "If yes, please let us know",
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        fontSize: 16,
-                        color: Colors.grey,
-                      ),
-                    ),
-                    const Text(
-                      "how we can assist you",
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        fontSize: 16,
-                        color: Colors.grey,
-                      ),
-                    ),
-                    SizedBox(height: screenHeight * 0.04),
+  Widget _buildDisabilityInput(BuildContext context) {
+    final questionnaireProvider =
+        Provider.of<QuestionnaireProvider>(context, listen: false);
 
-                    // Use allergy emoji
-                    Text(
-                      "🫂", 
-                      style: TextStyle(fontSize: emojiSize * 1.5),
-                      textAlign: TextAlign.center,
-                    ),
-                    SizedBox(height: screenHeight * 0.04),
-
-                    TextFormField(
-                      controller: _disabilityController,
-                      keyboardType: TextInputType.text,
-                      enabled: questionnaireProvider.hasDisability == true, // Active only if Yes is selected
-                      decoration: InputDecoration(
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                    
-                      ),
-                      onChanged: (value) {
-                        questionnaireProvider.setDisabilityDescription(value);
-                      },
-                    ),
-
-                    SizedBox(height: screenHeight * 0.05),
-
-                    // Continue button
-                    ElevatedButton(
-                      onPressed: questionnaireProvider.isDisabilityButtonActive
-                          ? () {
-                              context.goNamed(RouteNames.questionScreen14);
-                            }
-                          : null, // Disable button if conditions are not met
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.blue, // Blue button color
-                        minimumSize: const Size(double.infinity, 50), // Full-width button
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                      ),
-                      child: const Text(
-                        "Continue",
-                        style: TextStyle(fontSize: 18),
-                      ),
-                    ),
-                    const SizedBox(height: 20), // Padding after button
-                  ],
-                ),
-              ),
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(20),
+      child: BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+        child: Container(
+          padding: const EdgeInsets.all(20),
+          decoration: BoxDecoration(
+            color: Colors.white.withOpacity(0.2),
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(
+              color: Colors.white.withOpacity(0.3),
             ),
           ),
-        ],
+          child: Column(
+            children: [
+              _buildStrokedText("Please describe your needs", 20),
+              const SizedBox(height: 20),
+              TextFormField(
+                controller: _disabilityController,
+                decoration: InputDecoration(
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  hintText: 'e.g., Wheelchair user, Hearing impaired',
+                  filled: true,
+                  fillColor: Colors.white.withOpacity(0.9),
+                ),
+                onChanged: (value) {
+                  questionnaireProvider.setDisabilityDescription(value);
+                },
+              ),
+            ],
+          ),
+        ),
       ),
+    );
+  }
+
+  Widget _buildStrokedText(String text, double fontSize,
+      {bool isSelected = true}) {
+    return Stack(
+      children: <Widget>[
+        Text(
+          text,
+          textAlign: TextAlign.center,
+          style: TextStyle(
+            fontSize: fontSize,
+            fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+            foreground: Paint()
+              ..style = PaintingStyle.stroke
+              ..strokeWidth = 2
+              ..color = Colors.black,
+          ),
+        ),
+        Text(
+          text,
+          textAlign: TextAlign.center,
+          style: TextStyle(
+            fontSize: fontSize,
+            fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+            color: isSelected ? Colors.white : Colors.white.withOpacity(0.6),
+          ),
+        ),
+      ],
     );
   }
 }
