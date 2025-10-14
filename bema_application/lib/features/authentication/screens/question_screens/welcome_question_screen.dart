@@ -1,6 +1,5 @@
-import 'package:bema_application/common/config/colors.dart';
-import 'package:bema_application/common/widgets/app_bar.dart';
-import 'package:bema_application/common/widgets/buttons/background_back_button.dart';
+import 'dart:ui';
+import 'package:bema_application/common/widgets/buttons/custom_elevation_buttons.dart';
 import 'package:bema_application/features/authentication/data/models/profile_service.dart';
 import 'package:bema_application/features/authentication/data/models/user_model.dart';
 import 'package:bema_application/routes/route_names.dart';
@@ -15,25 +14,41 @@ class UserWelcomeScreen extends StatefulWidget {
   State<UserWelcomeScreen> createState() => _UserWelcomeScreenState();
 }
 
-class _UserWelcomeScreenState extends State<UserWelcomeScreen> {
+class _UserWelcomeScreenState extends State<UserWelcomeScreen>
+    with SingleTickerProviderStateMixin {
   final profileService = ProfileService();
-  String userName = 'User'; // Default name while loading
-  bool isLoading = true; // Track loading state
+  String userName = 'User';
+  bool isLoading = true;
+
+  late AnimationController _animationController;
+  late Animation<Color?> _colorAnimation1;
+  late Animation<Color?> _colorAnimation2;
 
   @override
   void initState() {
     super.initState();
-    getUser(); // Fetch user details when the screen loads
+    _fetchUser();
+
+    _animationController = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 5),
+    )..repeat(reverse: true);
+
+    _colorAnimation1 = ColorTween(
+      begin: Colors.blue,
+      end: Colors.purple,
+    ).animate(_animationController);
+
+    _colorAnimation2 = ColorTween(
+      begin: Colors.purple,
+      end: Colors.blue,
+    ).animate(_animationController);
   }
 
-  Future<void> getUser() async {
+  Future<void> _fetchUser() async {
     try {
       UserModel? user =
           await profileService.getUser(FirebaseAuth.instance.currentUser!.uid);
-
-      // Debug the fetched user details
-      debugPrint('Fetched user: ${user?.name}');
-
       if (user != null && user.name.isNotEmpty) {
         setState(() {
           userName = user.name;
@@ -43,103 +58,164 @@ class _UserWelcomeScreenState extends State<UserWelcomeScreen> {
       debugPrint("Error fetching user data: $e");
     } finally {
       setState(() {
-        isLoading = false; // Set loading to false once data is fetched
+        isLoading = false;
       });
     }
   }
 
   @override
+  void dispose() {
+    _animationController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final screenHeight = MediaQuery.of(context).size.height;
     return Scaffold(
-      backgroundColor: backgroundColor,
-      appBar: AppBar(
-        backgroundColor: backgroundColor,
-        title: const CustomAppBar(),
-      ),
-      body: Stack(
-        children: [
-          const Background(
-              isBackButton: false), // Background widget with 'const'
-          Center(
-            child: Padding(
-              padding: const EdgeInsets.all(20.0),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const Text(
-                    "👋",
-                    style: TextStyle(fontSize: 40),
-                  ),
-                  isLoading
-                      ? const CircularProgressIndicator() // Show loading indicator
-                      : Text(
-                          "Hi, $userName!",
-                          style: const TextStyle(
-                              fontSize: 30, fontWeight: FontWeight.bold),
+      body: AnimatedBuilder(
+        animation: _animationController,
+        builder: (context, child) {
+          return Container(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [_colorAnimation1.value!, _colorAnimation2.value!],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+            ),
+            child: child,
+          );
+        },
+        child: SafeArea(
+          child: Center(
+            child: SingleChildScrollView(
+              child: Padding(
+                padding: const EdgeInsets.all(20.0),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(20),
+                  child: BackdropFilter(
+                    filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 20, vertical: 40),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.2),
+                        borderRadius: BorderRadius.circular(20),
+                        border: Border.all(
+                          color: Colors.white.withOpacity(0.3),
                         ),
-                  const SizedBox(height: 20),
-                  const Text(
-                    'Tell us about you!',
-                    style: TextStyle(
-                      fontSize: 24,
-                      fontWeight: FontWeight.w500,
-                      color: Colors.black,
+                      ),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Image.asset(
+                            'assets/welcome.png',
+                            height: screenHeight * 0.4,
+                          ),
+                          const SizedBox(height: 20),
+                          isLoading
+                              ? const CircularProgressIndicator(
+                                  valueColor:
+                                      AlwaysStoppedAnimation<Color>(Colors.white),
+                                )
+                              : _buildStrokedText('Hi, $userName!', 32),
+                          const SizedBox(height: 15),
+                          const Text(
+                            'Let\'s personalize your wellness journey.',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              fontSize: 18,
+                              color: Colors.white70,
+                            ),
+                          ),
+                          const SizedBox(height: 40),
+                          isLoading
+                              ? const CircularProgressIndicator(
+                                  valueColor: AlwaysStoppedAnimation<Color>(
+                                      Colors.white),
+                                )
+                              : GestureDetector(
+                                  onTap: () {
+                                    context
+                                        .goNamed(RouteNames.questionScreen2);
+                                  },
+                                  child: Container(
+                                    width: double.infinity,
+                                    padding: const EdgeInsets.symmetric(
+                                        vertical: 15),
+                                    decoration: BoxDecoration(
+                                      gradient: LinearGradient(
+                                        colors: [
+                                          Colors.blue.withOpacity(0.8),
+                                          Colors.purple.withOpacity(0.8)
+                                        ],
+                                        begin: Alignment.topLeft,
+                                        end: Alignment.bottomRight,
+                                      ),
+                                      borderRadius: BorderRadius.circular(15),
+                                      boxShadow: [
+                                        BoxShadow(
+                                          color:
+                                              Colors.black.withOpacity(0.2),
+                                          spreadRadius: 1,
+                                          blurRadius: 5,
+                                          offset: const Offset(0, 3),
+                                        ),
+                                      ],
+                                    ),
+                                    child: const Text(
+                                      'Continue',
+                                      textAlign: TextAlign.center,
+                                      style: TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 18,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                        ],
+                      ),
                     ),
                   ),
-                  const SizedBox(height: 25),
-                  const Text(
-                    "👊",
-                    style: TextStyle(fontSize: 30),
-                  ),
-                  const SizedBox(height: 25),
-                  const Text(
-                    'Let\'s become\nfriends',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      fontSize: 24,
-                      fontWeight: FontWeight.w500,
-                      color: Colors.black,
-                    ),
-                  ),
-                  const SizedBox(height: 10),
-                  const Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text(
-                        '🫂', // Friends emoji
-                        style: TextStyle(fontSize: 35),
-                      ),
-                      SizedBox(width: 10),
-                      Text(
-                        '😜', // Smiling emoji
-                        style: TextStyle(fontSize: 35),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 40),
-                  ElevatedButton(
-                    onPressed: isLoading
-                        ? null
-                        : () {
-                            context.goNamed(RouteNames.questionScreen2);
-                          },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: isLoading
-                          ? Colors.grey
-                          : Colors.blue, // Disable button if loading
-                      minimumSize: const Size(double.infinity, 50),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                    ),
-                    child: const Text("Continue"),
-                  ),
-                ],
+                ),
               ),
             ),
           ),
-        ],
+        ),
       ),
+    );
+  }
+
+  Widget _buildStrokedText(String text, double fontSize,
+      {bool isSelected = true}) {
+    return Stack(
+      children: <Widget>[
+        // Stroked text as border.
+        Text(
+          text,
+          textAlign: TextAlign.center,
+          style: TextStyle(
+            fontSize: fontSize,
+            fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+            foreground: Paint()
+              ..style = PaintingStyle.stroke
+              ..strokeWidth = 2
+              ..color = Colors.black.withOpacity(0.5),
+          ),
+        ),
+        // Solid text as fill.
+        Text(
+          text,
+          textAlign: TextAlign.center,
+          style: TextStyle(
+            fontSize: fontSize,
+            fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+            color: isSelected ? Colors.white : Colors.white.withOpacity(0.7),
+          ),
+        ),
+      ],
     );
   }
 }
