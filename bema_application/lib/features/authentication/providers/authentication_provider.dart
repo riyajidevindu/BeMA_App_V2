@@ -3,7 +3,6 @@ import 'package:bema_application/features/authentication/data/service/auth_servi
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
-
 class AuthenticationProvider extends ChangeNotifier {
   //String? userType;
   User? firebaseUser;
@@ -83,8 +82,18 @@ class AuthenticationProvider extends ChangeNotifier {
       );
       firebaseUser = result.user;
       if (result.user != null) {
-        await _authService.storeUser(
-            result.user!, name);
+        // Store user in Firestore and check if it succeeds
+        AuthResult storeResult =
+            await _authService.storeUser(result.user!, name);
+
+        if (!storeResult.isSuccess) {
+          // If Firestore write failed, delete the Firebase Auth user
+          await result.user!.delete();
+          notifyListeners();
+          return AuthResult(
+              isSuccess: false,
+              message: 'Registration failed: ${storeResult.message}');
+        }
       }
       notifyListeners();
       return AuthResult(isSuccess: true, message: 'User Registered');

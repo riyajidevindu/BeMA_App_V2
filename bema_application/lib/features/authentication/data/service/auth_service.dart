@@ -5,8 +5,6 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 //import 'package:firebase_storage/firebase_storage.dart';
 
-
-
 class AuthService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
@@ -20,12 +18,15 @@ class AuthService {
     );
 
     try {
+      print('Attempting to store user in Firestore: ${firebaseUser.uid}');
       await _firestore
           .collection('AppUsers')
           .doc(firebaseUser.uid)
           .set(user.toJson());
+      print('User successfully stored in Firestore');
       return AuthResult(isSuccess: true, message: 'User Registered');
     } catch (e) {
+      print('Error storing user in Firestore: $e');
       return AuthResult(
           isSuccess: false, message: 'Failed to register user: $e');
     }
@@ -46,9 +47,11 @@ class AuthService {
   // Check if user has completed the questionnaire
   Future<bool> checkQuestionnaireCompletion(User user) async {
     try {
-      DocumentSnapshot doc = await _firestore.collection('AppUsers').doc(user.uid).get();
+      DocumentSnapshot doc =
+          await _firestore.collection('AppUsers').doc(user.uid).get();
       if (doc.exists) {
-        return (doc.data() as Map<String, dynamic>)['questionnaireCompleted'] ?? false;
+        return (doc.data() as Map<String, dynamic>)['questionnaireCompleted'] ??
+            false;
       }
     } catch (e) {
       print("Error checking questionnaire completion: $e");
