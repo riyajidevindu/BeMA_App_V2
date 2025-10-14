@@ -27,13 +27,13 @@ class _QuestionScreen4State extends State<QuestionScreen4>
     )..repeat(reverse: true);
 
     _colorAnimation1 = ColorTween(
-      begin: Colors.blue,
-      end: Colors.purple,
+      begin: Colors.lightBlue.shade200,
+      end: Colors.purple.shade200,
     ).animate(_animationController);
 
     _colorAnimation2 = ColorTween(
-      begin: Colors.purple,
-      end: Colors.blue,
+      begin: Colors.purple.shade200,
+      end: Colors.lightBlue.shade200,
     ).animate(_animationController);
   }
 

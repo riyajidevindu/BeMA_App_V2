@@ -36,13 +36,13 @@ class _SignupScreenState extends State<SignupScreen> with SingleTickerProviderSt
     )..repeat(reverse: true);
 
     _colorAnimation1 = ColorTween(
-      begin: Colors.purple,
-      end: Colors.blue,
+      begin: Colors.lightBlue.shade200,
+      end: Colors.purple.shade200,
     ).animate(_animationController);
 
     _colorAnimation2 = ColorTween(
-      begin: Colors.blue,
-      end: Colors.purple,
+      begin: Colors.purple.shade200,
+      end: Colors.lightBlue.shade200,
     ).animate(_animationController);
   }
 
