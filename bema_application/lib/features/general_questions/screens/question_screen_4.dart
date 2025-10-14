@@ -1,4 +1,4 @@
-import 'package:bema_application/common/widgets/tiles/option_tile.dart';
+import 'dart:ui';
 import 'package:bema_application/features/general_questions/providers/questioneer_provider.dart';
 import 'package:bema_application/routes/route_names.dart';
 import 'package:flutter/material.dart';
@@ -12,185 +12,222 @@ class QuestionScreen4 extends StatefulWidget {
   _QuestionScreen4State createState() => _QuestionScreen4State();
 }
 
-class _QuestionScreen4State extends State<QuestionScreen4> {
+class _QuestionScreen4State extends State<QuestionScreen4>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _animationController;
+  late Animation<Color?> _colorAnimation1;
+  late Animation<Color?> _colorAnimation2;
+
+  @override
+  void initState() {
+    super.initState();
+    _animationController = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 5),
+    )..repeat(reverse: true);
+
+    _colorAnimation1 = ColorTween(
+      begin: Colors.blue,
+      end: Colors.purple,
+    ).animate(_animationController);
+
+    _colorAnimation2 = ColorTween(
+      begin: Colors.purple,
+      end: Colors.blue,
+    ).animate(_animationController);
+  }
+
+  @override
+  void dispose() {
+    _animationController.dispose();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
-    // Access the QuestionnaireProvider
     final questionnaireProvider = Provider.of<QuestionnaireProvider>(context);
-
-    // Retrieve the selected gender from the provider
     String? selectedGender = questionnaireProvider.selectedGender;
-
-    // Get the screen width and height for responsive design
     final screenWidth = MediaQuery.of(context).size.width;
-    final screenHeight = MediaQuery.of(context).size.height;
-    final emojiSize = screenWidth * 0.12; // 12% of screen width for emoji size
 
     return Scaffold(
-      backgroundColor: const Color(0xFFE6F0FF), // Light blue background
-      body: Column(
-        children: [
-          const SizedBox(height: 50),
-
-          // Row for Back button and Progress bar
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20.0),
-            child: Row(
-              children: [
-                // Back button inside a transparent circle
-                GestureDetector(
-                  onTap: () {
-                    context.goNamed(RouteNames.questionScreen3);
-                  },
-                  child: Container(
-                    padding: const EdgeInsets.all(10),
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: Colors.black.withOpacity(0.2), // Transparent background
-                    ),
-                    child: const Icon(
-                      Icons.arrow_back,
-                      color: Colors.white, // White arrow color
-                    ),
-                  ),
-                ),
-                SizedBox(width: screenWidth * 0.025), // Space between back button and progress bar
-
-                // Progress bar with increased width
-                const Expanded(
-                  child: LinearProgressIndicator(
-                    value: 0.15, // Progress (next step)
-                    backgroundColor: Colors.grey,
-                    color: Colors.blue, // Progress bar color
-                  ),
-                ),
-              ],
+      body: AnimatedBuilder(
+        animation: _animationController,
+        builder: (context, child) {
+          return Container(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [_colorAnimation1.value!, _colorAnimation2.value!],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
             ),
-          ),
-
-          Expanded(
-            child: SingleChildScrollView(
+            child: child,
+          );
+        },
+        child: Stack(
+          children: [
+            Positioned.fill(
+              child: Transform.scale(
+                scale: screenWidth * 0.0025,
+                child: Transform.rotate(
+                  angle: 0,
+                  child: Image.asset(
+                    'assets/gender.png',
+                    //fit: BoxFit.cover,
+                    //color: Colors.black.withOpacity(0.1),
+                    //colorBlendMode: BlendMode.darken,
+                  ),
+                ),
+              ),
+            ),
+            SafeArea(
               child: Padding(
                 padding: const EdgeInsets.all(20.0),
                 child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                    const Text(
-                      "What's your ",
+                    Row(
+                      children: [
+                        IconButton(
+                          icon: const Icon(Icons.arrow_back,
+                              color: Colors.white),
+                          onPressed: () =>
+                              context.goNamed(RouteNames.questionScreen3),
+                        ),
+                        Expanded(
+                          child: Container(
+                            height: 10,
+                            decoration: BoxDecoration(
+                              color: Colors.white.withOpacity(0.3),
+                              borderRadius: BorderRadius.circular(5),
+                            ),
+                            child: ClipRRect(
+                              borderRadius: BorderRadius.circular(5),
+                              child: const LinearProgressIndicator(
+                                value: 0.15,
+                                backgroundColor: Colors.transparent,
+                                color: Colors.white,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 30),
+                    _buildStrokedText(
+                        "What's your gender identity?", screenWidth * 0.08),
+                    const SizedBox(height: 10),
+                    Text(
+                      "This helps us address you properly!",
                       textAlign: TextAlign.center,
                       style: TextStyle(
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
+                        fontSize: screenWidth * 0.045,
+                        color: Colors.white70,
                       ),
                     ),
-                    const Text(
-                      "gender identity?",
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
+                    const Spacer(),
+                    _buildGenderOption(
+                        context, "👨", "I'm male", "male", selectedGender),
+                    const SizedBox(height: 15),
+                    _buildGenderOption(context, "👩", "I'm female", "female",
+                        selectedGender),
+                    const SizedBox(height: 15),
+                    _buildGenderOption(context, "🧑", "I'm non-binary",
+                        "non-binary", selectedGender),
+                    const SizedBox(height: 15),
+                    _buildGenderOption(context, "❓", "Prefer not to say",
+                        "prefer-not", selectedGender),
+                    const SizedBox(height: 40),
+                    GestureDetector(
+                      onTap: selectedGender != null
+                          ? () =>
+                              context.goNamed(RouteNames.questionScreen5)
+                          : null,
+                      child: Container(
+                        width: double.infinity,
+                        padding:
+                            const EdgeInsets.symmetric(vertical: 15),
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            colors: [
+                              Colors.blue.withOpacity(0.8),
+                              Colors.purple.withOpacity(0.8)
+                            ],
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                          ),
+                          borderRadius: BorderRadius.circular(15),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.2),
+                              spreadRadius: 1,
+                              blurRadius: 5,
+                              offset: const Offset(0, 3),
+                            ),
+                          ],
+                        ),
+                        child: const Text(
+                          'Continue',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
                       ),
                     ),
-                    SizedBox(height: screenHeight * 0.03),
-                    const Text(
-                      "Just so we know how to",
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        fontSize: 16,
-                        color: Colors.grey,
-                      ),
-                    ),
-                    const Text(
-                      "address you properly!",
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        fontSize: 16,
-                        color: Colors.grey,
-                      ),
-                    ),
-                    SizedBox(height: screenHeight * 0.05),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 
-                    // Gender options using OptionTile widget
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceAround,
-                      children: [
-                        OptionTile(
-                          emoji: "👨",
-                          label: "I'm male",
-                          option: 'male',
-                          selectedOption: selectedGender,
-                          emojiSize: emojiSize,
-                          onSelect: () {
-                            setState(() {
-                              // Update the selected gender in the provider
-                              questionnaireProvider.setSelectedGender('male');
-                            });
-                          },
-                        ),
-                        OptionTile(
-                          emoji: "👩",
-                          label: "I'm female",
-                          option: 'female',
-                          selectedOption: selectedGender,
-                          emojiSize: emojiSize,
-                          onSelect: () {
-                            setState(() {
-                              // Update the selected gender in the provider
-                              questionnaireProvider.setSelectedGender('female');
-                            });
-                          },
-                        ),
-                      ],
-                    ),
-                    SizedBox(height: screenHeight * 0.04),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceAround,
-                      children: [
-                        OptionTile(
-                          emoji: "🧑",
-                          label: "I'm non-binary",
-                          option: 'non-binary',
-                          selectedOption: selectedGender,
-                          emojiSize: emojiSize,
-                          onSelect: () {
-                            setState(() {
-                              // Update the selected gender in the provider
-                              questionnaireProvider.setSelectedGender('non-binary');
-                            });
-                          },
-                        ),
-                        OptionTile(
-                          emoji: "❓",
-                          label: "Prefer not to say",
-                          option: 'prefer-not',
-                          selectedOption: selectedGender,
-                          emojiSize: emojiSize,
-                          onSelect: () {
-                            setState(() {
-                              // Update the selected gender in the provider
-                              questionnaireProvider.setSelectedGender('prefer-not');
-                            });
-                          },
-                        ),
-                      ],
-                    ),
-                    SizedBox(height: screenHeight * 0.05),
-                    ElevatedButton(
-                      onPressed: selectedGender != null
-                          ? () {
-                              context.goNamed(RouteNames.questionScreen5);
-                            }
-                          : null, // Disable button if no option selected
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.blue, // Blue button color
-                        minimumSize: Size(double.infinity, screenHeight * 0.07), // Responsive button height
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                      ),
-                      child: const Text(
-                        "Continue",
-                        style: TextStyle(fontSize: 18),
+  Widget _buildGenderOption(BuildContext context, String emoji, String label,
+      String option, String? selectedGender) {
+    final questionnaireProvider =
+        Provider.of<QuestionnaireProvider>(context, listen: false);
+    final bool isSelected = selectedGender == option;
+
+    return GestureDetector(
+      onTap: () {
+        questionnaireProvider.setSelectedGender(option);
+      },
+      child: Stack(
+        children: [
+          ClipRRect(
+            borderRadius: BorderRadius.circular(15),
+            child: BackdropFilter(
+              filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+              child: Container(
+                padding: const EdgeInsets.symmetric(
+                    horizontal: 20, vertical: 15),
+                decoration: BoxDecoration(
+                  color: isSelected
+                      ? Colors.blue.withOpacity(0.5)
+                      : Colors.white.withOpacity(0.2),
+                  borderRadius: BorderRadius.circular(15),
+                  border: Border.all(
+                    color: isSelected
+                        ? Colors.blue.shade700
+                        : Colors.white.withOpacity(0.3),
+                    width: 2,
+                  ),
+                ),
+                child: Row(
+                  children: [
+                    Text(emoji, style: const TextStyle(fontSize: 24)),
+                    const SizedBox(width: 15),
+                    Text(
+                      label,
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color:
+                            isSelected ? Colors.white : Colors.white70,
                       ),
                     ),
                   ],
@@ -198,8 +235,54 @@ class _QuestionScreen4State extends State<QuestionScreen4> {
               ),
             ),
           ),
+          if (isSelected)
+            Positioned(
+              top: 0,
+              right: 0,
+              child: Container(
+                padding: const EdgeInsets.all(2),
+                decoration: const BoxDecoration(
+                  color: Colors.green,
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(
+                  Icons.check,
+                  color: Colors.white,
+                  size: 16,
+                ),
+              ),
+            ),
         ],
       ),
+    );
+  }
+
+  Widget _buildStrokedText(String text, double fontSize,
+      {bool isSelected = true}) {
+    return Stack(
+      children: <Widget>[
+        Text(
+          text,
+          textAlign: TextAlign.center,
+          style: TextStyle(
+            fontSize: fontSize,
+            fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+            foreground: Paint()
+              ..style = PaintingStyle.stroke
+              ..strokeWidth = 2
+              ..color = Colors.black,
+          ),
+        ),
+        Text(
+          text,
+          textAlign: TextAlign.center,
+          style: TextStyle(
+            fontSize: fontSize,
+            fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+            color: isSelected ? Colors.white : Colors.white.withOpacity(0.6),
+          ),
+        ),
+      ],
     );
   }
 }

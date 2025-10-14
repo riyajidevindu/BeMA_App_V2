@@ -69,7 +69,7 @@ class _QuestionScreen3State extends State<QuestionScreen3>
           children: [
             Positioned.fill(
               child: Transform.scale(
-                scale: screenWidth * 0.0040,
+                scale: screenWidth * 0.0032,
                 child: Transform.rotate(
                   angle: 0,
                   child: Image.asset(
