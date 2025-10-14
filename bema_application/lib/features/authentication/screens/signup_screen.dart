@@ -96,19 +96,17 @@ class _SignupScreenState extends State<SignupScreen> with SingleTickerProviderSt
                         child: Column(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            Image.asset(
-                              'assets/logo.png',
-                              height: 80,
-                            ),
-                            const SizedBox(height: 20),
-                            const Text(
-                              'Create Account',
-                              style: TextStyle(
-                                fontSize: 28,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.white,
+                            CircleAvatar(
+                              radius: 55,
+                              backgroundColor: Colors.white.withOpacity(0.8),
+                              child: const CircleAvatar(
+                                radius: 50,
+                                backgroundImage: AssetImage('assets/logo.png'),
+                                backgroundColor: Colors.transparent,
                               ),
                             ),
+                            const SizedBox(height: 20),
+                            _buildStrokedText('Create Account', 28),
                             const SizedBox(height: 10),
                             const Text(
                               'Join us to start your wellness journey',
@@ -277,6 +275,33 @@ class _SignupScreenState extends State<SignupScreen> with SingleTickerProviderSt
           ),
         ),
       ),
+    );
+  }
+  Widget _buildStrokedText(String text, double fontSize, {bool isSelected = true}) {
+    return Stack(
+      children: <Widget>[
+        // Stroked text as border.
+        Text(
+          text,
+          style: TextStyle(
+            fontSize: fontSize,
+            fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+            foreground: Paint()
+              ..style = PaintingStyle.stroke
+              ..strokeWidth = 2
+              ..color = Colors.black,
+          ),
+        ),
+        // Solid text as fill.
+        Text(
+          text,
+          style: TextStyle(
+            fontSize: fontSize,
+            fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+            color: isSelected ? Colors.white : Colors.white.withOpacity(0.7),
+          ),
+        ),
+      ],
     );
   }
 }

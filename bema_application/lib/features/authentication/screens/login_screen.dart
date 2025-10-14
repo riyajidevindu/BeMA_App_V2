@@ -125,19 +125,17 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
                         child: Column(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            Image.asset(
-                              'assets/logo.png',
-                              height: 100,
-                            ),
-                            const SizedBox(height: 20),
-                            const Text(
-                              'Welcome Back!',
-                              style: TextStyle(
-                                fontSize: 28,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.white,
+                            CircleAvatar(
+                              radius: 55,
+                              backgroundColor: Colors.white.withOpacity(0.8),
+                              child: const CircleAvatar(
+                                radius: 50,
+                                backgroundImage: AssetImage('assets/logo.png'),
+                                backgroundColor: Colors.transparent,
                               ),
                             ),
+                            const SizedBox(height: 20),
+                            _buildStrokedText('Welcome Back!', 28),
                             const SizedBox(height: 10),
                             const Text(
                               'Sign in to continue',
@@ -210,7 +208,7 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
                                   onPressed: () {
                                     context.goNamed(RouteNames.registerScreen);
                                   },
-                                  child: const Text('Register', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                                  child:  const Text('Register', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
                                 ),
                               ],
                             ),
@@ -231,6 +229,34 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
           ),
         ),
       ),
+    );
+  }
+
+  Widget _buildStrokedText(String text, double fontSize, {bool isSelected = true}) {
+    return Stack(
+      children: <Widget>[
+        // Stroked text as border.
+        Text(
+          text,
+          style: TextStyle(
+            fontSize: fontSize,
+            fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+            foreground: Paint()
+              ..style = PaintingStyle.stroke
+              ..strokeWidth = 2
+              ..color = Colors.black,
+          ),
+        ),
+        // Solid text as fill.
+        Text(
+          text,
+          style: TextStyle(
+            fontSize: fontSize,
+            fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+            color: isSelected ? Colors.white : Colors.white.withOpacity(0.7),
+          ),
+        ),
+      ],
     );
   }
 }
