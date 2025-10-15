@@ -20,6 +20,8 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
   double totalDailyMarks = 100; // Total marks for the day
   double totalMonthlyMarks = 100; // Total marks for the month
   List<TaskModel> dailyTasks = [];
+  List<TaskModel> filteredTasks = [];
+  String selectedFilter = 'All';
   final PageController _pageController = PageController();
   bool isLoading = true;
 
@@ -41,10 +43,21 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
         monthlyPoints = taskSummary['monthlyPoints'];
         totalMonthlyMarks = taskSummary['monthlyTotalPoints'];
         isLoading = false; // Stop loading when data is ready
+        filterTasks(); // Initial filter
       });
     } catch (error) {
       debugPrint("Error fetching task summary: $error");
       setState(() => isLoading = false); // Stop loading even on error
+    }
+  }
+
+  void filterTasks() {
+    if (selectedFilter == 'All') {
+      filteredTasks = dailyTasks;
+    } else if (selectedFilter == 'Completed') {
+      filteredTasks = dailyTasks.where((task) => task.completed).toList();
+    } else {
+      filteredTasks = dailyTasks.where((task) => !task.completed).toList();
     }
   }
 
@@ -124,14 +137,18 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
                 ),
                 const SizedBox(height: 20),
 
+                // Filter Section
+                buildFilterSection(),
+                const SizedBox(height: 20),
+
                 // Task List
                 Expanded(
                   child: isLoading
                       ? const Center(child: CustomProgressIndicator())
                       : ListView.builder(
-                          itemCount: dailyTasks.length,
+                          itemCount: filteredTasks.length,
                           itemBuilder: (context, index) {
-                            TaskModel task = dailyTasks[index];
+                            TaskModel task = filteredTasks[index];
                             double progress = task.completed
                                 ? 1.0
                                 : (task.total != null && task.total! > 0)
@@ -327,6 +344,47 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
     } else {
       return Colors.redAccent;
     }
+  }
+
+  Widget buildFilterSection() {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+      children: [
+        buildFilterChip('All'),
+        buildFilterChip('Completed'),
+        buildFilterChip('Incomplete'),
+      ],
+    );
+  }
+
+  Widget buildFilterChip(String filter) {
+    bool isSelected = selectedFilter == filter;
+    return GestureDetector(
+      onTap: () {
+        setState(() {
+          selectedFilter = filter;
+          filterTasks();
+        });
+      },
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        decoration: BoxDecoration(
+          color: isSelected ? Colors.blueAccent : Colors.white.withOpacity(0.2),
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(
+            color: isSelected ? Colors.white : Colors.black,
+            width: 2,
+          ),
+        ),
+        child: Text(
+          filter,
+          style: TextStyle(
+            color: Colors.white,
+            fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+          ),
+        ),
+      ),
+    );
   }
 
   Widget _buildStrokedText(String text, double fontSize,
