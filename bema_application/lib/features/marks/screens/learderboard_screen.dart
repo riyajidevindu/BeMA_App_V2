@@ -50,12 +50,6 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // Define responsive text and padding sizes
-    final screenWidth = MediaQuery.of(context).size.width;
-    final fontSizeTitle = screenWidth * 0.045;
-    final fontSizePoints = screenWidth * 0.055;
-    final iconSize = screenWidth * 0.08;
-
     return Scaffold(
       backgroundColor: Colors.transparent,
       appBar: AppBar(
@@ -64,104 +58,117 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
         automaticallyImplyLeading: false,
         elevation: 0,
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          children: [
-            // Points Display (Daily and Monthly) with Arrow Indicators
-            Stack(
-              alignment: Alignment.center,
+      body: LayoutBuilder(
+        builder: (context, constraints) {
+          // Define responsive text and padding sizes
+          final screenWidth = constraints.maxWidth;
+          final fontSizeTitle = screenWidth * 0.045;
+          final fontSizePoints = screenWidth * 0.055;
+          final iconSize = screenWidth * 0.08;
+
+          return Padding(
+            padding:
+                const EdgeInsets.symmetric(horizontal: 24.0, vertical: 16.0),
+            child: Column(
               children: [
-                SizedBox(
-                  height: 100,
-                  child: PageView(
-                    controller: _pageController,
-                    scrollDirection: Axis.horizontal,
-                    children: [
-                      buildPointsBox(
-                          "Daily Points",
-                          "$dailyPoints / $totalDailyMarks",
-                          fontSizeTitle,
-                          fontSizePoints),
-                      buildPointsBox(
-                          "Monthly Points",
-                          "$monthlyPoints / $totalMonthlyMarks",
-                          fontSizeTitle,
-                          fontSizePoints),
-                    ],
-                  ),
+                // Points Display (Daily and Monthly) with Arrow Indicators
+                Stack(
+                  alignment: Alignment.center,
+                  children: [
+                    SizedBox(
+                      height: 100,
+                      child: PageView(
+                        controller: _pageController,
+                        scrollDirection: Axis.horizontal,
+                        children: [
+                          buildPointsBox(
+                              "Daily Points",
+                              "$dailyPoints / $totalDailyMarks",
+                              fontSizeTitle,
+                              fontSizePoints),
+                          buildPointsBox(
+                              "Monthly Points",
+                              "$monthlyPoints / $totalMonthlyMarks",
+                              fontSizeTitle,
+                              fontSizePoints),
+                        ],
+                      ),
+                    ),
+                    Positioned(
+                      left: 0,
+                      child: IconButton(
+                        icon: const Icon(Icons.arrow_back_ios,
+                            color: Colors.blueAccent, size: 24),
+                        onPressed: () {
+                          _pageController.previousPage(
+                            duration: const Duration(milliseconds: 300),
+                            curve: Curves.easeInOut,
+                          );
+                        },
+                      ),
+                    ),
+                    Positioned(
+                      right: 0,
+                      child: IconButton(
+                        icon: const Icon(Icons.arrow_forward_ios,
+                            color: Colors.blueAccent, size: 24),
+                        onPressed: () {
+                          _pageController.nextPage(
+                            duration: const Duration(milliseconds: 300),
+                            curve: Curves.easeInOut,
+                          );
+                        },
+                      ),
+                    ),
+                  ],
                 ),
-                Positioned(
-                  left: 0,
-                  child: IconButton(
-                    icon: const Icon(Icons.arrow_back_ios,
-                        color: Colors.blueAccent, size: 24),
-                    onPressed: () {
-                      _pageController.previousPage(
-                        duration: const Duration(milliseconds: 300),
-                        curve: Curves.easeInOut,
-                      );
-                    },
-                  ),
-                ),
-                Positioned(
-                  right: 0,
-                  child: IconButton(
-                    icon: const Icon(Icons.arrow_forward_ios,
-                        color: Colors.blueAccent, size: 24),
-                    onPressed: () {
-                      _pageController.nextPage(
-                        duration: const Duration(milliseconds: 300),
-                        curve: Curves.easeInOut,
-                      );
-                    },
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 20),
+                const SizedBox(height: 20),
 
-            // Task List
-            Expanded(
-              child: isLoading
-                  ? const Center(child: CustomProgressIndicator())
-                  : ListView.builder(
-                      itemCount: dailyTasks.length,
-                      itemBuilder: (context, index) {
-                        TaskModel task = dailyTasks[index];
-                        double progress = task.completed
-                            ? 1.0
-                            : (task.total != null && task.total! > 0)
-                                ? (task.progress / task.total!).clamp(0, 1)
-                                : 0;
+                // Task List
+                Expanded(
+                  child: isLoading
+                      ? const Center(child: CustomProgressIndicator())
+                      : ListView.builder(
+                          itemCount: dailyTasks.length,
+                          itemBuilder: (context, index) {
+                            TaskModel task = dailyTasks[index];
+                            double progress = task.completed
+                                ? 1.0
+                                : (task.total != null && task.total! > 0)
+                                    ? (task.progress / task.total!)
+                                        .clamp(0, 1)
+                                    : 0;
 
-                        // Calculate marks for the task
-                        double taskMarks = (totalDailyMarks / dailyTasks.length)
-                                .isNaN
-                            ? 0.0
-                            : (totalDailyMarks / dailyTasks.length);
-                        double obtainedMarks = task.completed
-                            ? taskMarks
-                            : (task.progress / (task.total ?? 1) * taskMarks)
+                            // Calculate marks for the task
+                            double taskMarks =
+                                (totalDailyMarks / dailyTasks.length).isNaN
+                                    ? 0.0
+                                    : (totalDailyMarks / dailyTasks.length);
+                            double obtainedMarks = task.completed
+                                ? taskMarks
+                                : (task.progress / (task.total ?? 1) *
+                                        taskMarks)
                                     .isNaN
                                 ? 0.0
                                 : (task.progress / (task.total ?? 1) *
                                     taskMarks);
 
-                        return buildAchievementRow(
-                          task.title,
-                          "${obtainedMarks.toStringAsFixed(1)} / ${taskMarks.toStringAsFixed(1)}",
-                          progress,
-                          task.icon,
-                          task.completed,
-                          fontSizeTitle,
-                          iconSize,
-                        );
-                      },
-                    ),
+                            return buildAchievementRow(
+                              task.title,
+                              "${obtainedMarks.toStringAsFixed(1)} / ${taskMarks.toStringAsFixed(1)}",
+                              progress,
+                              task.icon,
+                              task.completed,
+                              fontSizeTitle,
+                              iconSize,
+                            );
+                          },
+                        ),
+                ),
+              ],
             ),
-          ],
-        ),
+          );
+        },
       ),
     );
   }
@@ -179,19 +186,24 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
             color: Colors.white.withOpacity(0.2),
             borderRadius: BorderRadius.circular(20),
             border: Border.all(
-              color: Colors.white.withOpacity(0.3),
+              color: Colors.black,
+              width: 2,
             ),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.blue.withOpacity(0.3),
+                spreadRadius: 0,
+                blurRadius: 4,
+                offset: const Offset(0, 2),
+              ),
+            ],
           ),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Text(
+              _buildStrokedText(
                 title,
-                style: TextStyle(
-                  fontSize: fontSizeTitle,
-                  fontWeight: FontWeight.w600,
-                  color: Colors.white,
-                ),
+                fontSizeTitle,
               ),
               const SizedBox(height: 5),
               Text(
@@ -219,14 +231,23 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
       child: BackdropFilter(
         filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
         child: Container(
-          margin: const EdgeInsets.symmetric(vertical: 8.0),
+          margin: const EdgeInsets.symmetric(vertical: 12.0),
           padding: const EdgeInsets.all(16.0),
           decoration: BoxDecoration(
             color: Colors.white.withOpacity(0.2),
             borderRadius: BorderRadius.circular(20),
             border: Border.all(
-              color: Colors.white.withOpacity(0.3),
+              color: Colors.black,
+              width: 2,
             ),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.lightBlue.withOpacity(0.3),
+                spreadRadius: 0,
+                blurRadius: 4,
+                offset: const Offset(0, 2),
+              ),
+            ],
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -236,15 +257,9 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
                   Icon(icon, color: Colors.white, size: iconSize),
                   const SizedBox(width: 10),
                   Expanded(
-                    child: Text(
+                    child: _buildStrokedText(
                       title,
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: fontSizeTitle,
-                        fontWeight: FontWeight.w600,
-                      ),
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
+                      fontSizeTitle,
                     ),
                   ),
                   const SizedBox(width: 10),
@@ -312,5 +327,34 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
     } else {
       return Colors.redAccent;
     }
+  }
+
+  Widget _buildStrokedText(String text, double fontSize,
+      {bool isSelected = true}) {
+    return Stack(
+      children: <Widget>[
+        // Stroked text as border.
+        Text(
+          text,
+          style: TextStyle(
+            fontSize: fontSize,
+            fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+            foreground: Paint()
+              ..style = PaintingStyle.stroke
+              ..strokeWidth = 2
+              ..color = Colors.black,
+          ),
+        ),
+        // Solid text as fill.
+        Text(
+          text,
+          style: TextStyle(
+            fontSize: fontSize,
+            fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+            color: isSelected ? Colors.white : Colors.white.withOpacity(0.7),
+          ),
+        ),
+      ],
+    );
   }
 }
