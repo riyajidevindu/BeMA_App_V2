@@ -113,40 +113,46 @@ class _HomeScreenState extends State<HomeScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            ClipRRect(
-              borderRadius: BorderRadius.circular(20),
-              child: BackdropFilter(
-                filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-                child: Container(
-                  width: double.infinity,
-                  padding:
-                      const EdgeInsets.all(16.0), // Padding inside the box
-                  margin: const EdgeInsets.only(
-                      bottom: 20.0,
-                      top: 20), // Space around the box if needed
-                  decoration: BoxDecoration(
-                    color: Colors.blue.withOpacity(0.2),
-                    borderRadius: BorderRadius.circular(20),
-                    border: Border.all(
-                      color: Colors.white.withOpacity(0.3),
+            Transform(
+              transform: Matrix4.identity()
+                ..setEntry(3, 2, 0.001)
+                ..rotateY(0.1),
+              alignment: FractionalOffset.center,
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(20),
+                child: BackdropFilter(
+                  filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+                  child: Container(
+                    width: double.infinity,
+                    padding:
+                        const EdgeInsets.all(16.0), // Padding inside the box
+                    margin: const EdgeInsets.only(
+                        bottom: 20.0,
+                        top: 20), // Space around the box if needed
+                    decoration: BoxDecoration(
+                      color: Colors.blue.withOpacity(0.2),
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(
+                        color: Colors.white.withOpacity(0.3),
+                      ),
                     ),
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      _buildStrokedText(
-                        "$greetingMessage, $userName!",
-                        22,
-                      ),
-                      const SizedBox(height: 5),
-                      Text(
-                        formattedDate, // Dynamically set date here
-                        style: const TextStyle(
-                          fontSize: 18,
-                          color: Colors.white70,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        _buildStrokedText(
+                          "$greetingMessage, $userName!",
+                          22,
                         ),
-                      ),
-                    ],
+                        const SizedBox(height: 5),
+                        Text(
+                          formattedDate, // Dynamically set date here
+                          style: const TextStyle(
+                            fontSize: 18,
+                            color: Colors.white70,
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ),
@@ -213,49 +219,63 @@ class _HomeScreenState extends State<HomeScreen> {
     required Color color,
     VoidCallback? onTap, // onTap can be null if not provided
   }) {
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(20),
-      child: BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-        child: GestureDetector(
-          onTap: onTap, // Trigger the onTap function if tapped
-          child: Container(
-            decoration: BoxDecoration(
-              color: color.withOpacity(0.2),
-              borderRadius: BorderRadius.circular(20),
-              border: Border.all(
-                color: Colors.white.withOpacity(0.3),
-              ),
-              boxShadow: [
-                BoxShadow(
-                  color: color.withOpacity(0.5),
-                  spreadRadius: 5,
-                  blurRadius: 10,
-                  offset: const Offset(0, 3),
-                ),
-              ],
-            ),
-            child: Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  avatar, // Display the passed widget (CircleAvatar in this case)
-                  const SizedBox(height: 5),
-                  _buildStrokedText(
-                    title,
-                    18,
+    return MouseRegion(
+      onEnter: (event) {
+        setState(() {});
+      },
+      onExit: (event) {
+        setState(() {});
+      },
+      child: Transform(
+        transform: Matrix4.identity()
+          ..setEntry(3, 2, 0.001)
+          ..rotateY(0.1),
+        alignment: FractionalOffset.center,
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(20),
+          child: BackdropFilter(
+            filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+            child: GestureDetector(
+              onTap: onTap, // Trigger the onTap function if tapped
+              child: Container(
+                decoration: BoxDecoration(
+                  color: color.withOpacity(0.2),
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(
+                    color: Colors.white.withOpacity(0.3),
                   ),
-                  const SizedBox(height: 8),
-                  Text(
-                    subtitle,
-                    textAlign: TextAlign.center,
-                    style: const TextStyle(
-                      fontSize: 14,
-                      color: Colors.white70,
+                  boxShadow: [
+                    BoxShadow(
+                      color: color.withOpacity(0.5),
+                      spreadRadius: 5,
+                      blurRadius: 10,
+                      offset: const Offset(0, 3),
                     ),
+                  ],
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      avatar, // Display the passed widget (CircleAvatar in this case)
+                      const SizedBox(height: 5),
+                      _buildStrokedText(
+                        title,
+                        18,
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        subtitle,
+                        textAlign: TextAlign.center,
+                        style: const TextStyle(
+                          fontSize: 14,
+                          color: Colors.white70,
+                        ),
+                      ),
+                    ],
                   ),
-                ],
+                ),
               ),
             ),
           ),
