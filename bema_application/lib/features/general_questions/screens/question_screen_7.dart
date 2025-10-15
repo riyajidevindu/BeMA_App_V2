@@ -107,6 +107,11 @@ class _QuestionScreen7State extends State<QuestionScreen7>
                         context, "No", false, questionnaireProvider.hasDiabetes),
                   ],
                 ),
+                const SizedBox(height: 30),
+                const Text(
+                  '😊',
+                  style: TextStyle(fontSize: 80),
+                ),
                 const Spacer(),
                 if (questionnaireProvider.hasDiabetes == true)
                   _buildDurationPicker(context),
@@ -162,19 +167,33 @@ class _QuestionScreen7State extends State<QuestionScreen7>
         Provider.of<QuestionnaireProvider>(context, listen: false);
     final bool isSelected = currentValue == value;
 
+    Color backgroundColor;
+    Color textColor;
+
+    if (value) {
+      // This is the "Yes" option
+      backgroundColor =
+          isSelected ? Colors.red.withOpacity(0.7) : Colors.white.withOpacity(0.7);
+      textColor = isSelected ? Colors.white : Colors.black87;
+    } else {
+      // This is the "No" option
+      backgroundColor = isSelected
+          ? Colors.green.withOpacity(0.7)
+          : Colors.white.withOpacity(0.7);
+      textColor = isSelected ? Colors.white : Colors.black87;
+    }
+
     return GestureDetector(
       onTap: () {
         questionnaireProvider.setHasDiabetes(value);
       },
       child: Chip(
         label: Text(label),
-        backgroundColor: isSelected
-            ? Colors.blue.withOpacity(0.5)
-            : Colors.white.withOpacity(0.2),
+        backgroundColor: backgroundColor,
         labelStyle: TextStyle(
           fontSize: 18,
           fontWeight: FontWeight.bold,
-          color: isSelected ? Colors.white : Colors.white70,
+          color: textColor,
         ),
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
       ),
