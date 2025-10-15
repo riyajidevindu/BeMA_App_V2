@@ -1,4 +1,5 @@
 import 'dart:ui';
+import 'package:animated_background/animated_background.dart';
 import 'package:bema_application/common/config/colors.dart';
 import 'package:bema_application/features/home/screens/home_screen.dart';
 import 'package:bema_application/features/intermediate_screens/screens/relax_section_screen.dart';
@@ -16,31 +17,13 @@ class BNavbarScreen extends StatefulWidget {
 }
 
 class _BNavbarScreenState extends State<BNavbarScreen>
-    with SingleTickerProviderStateMixin {
+    with TickerProviderStateMixin {
   late int _selectedIndex;
-  late AnimationController _animationController;
-  late Animation<Color?> _colorAnimation1;
-  late Animation<Color?> _colorAnimation2;
 
   @override
   void initState() {
     super.initState();
     _selectedIndex = widget.initialIndex; // Set the initial index
-
-    _animationController = AnimationController(
-      vsync: this,
-      duration: const Duration(seconds: 5),
-    )..repeat(reverse: true);
-
-    _colorAnimation1 = ColorTween(
-      begin: Colors.lightBlue.shade100,
-      end: Colors.purple.shade100,
-    ).animate(_animationController);
-
-    _colorAnimation2 = ColorTween(
-      begin: Colors.purple.shade100,
-      end: Colors.lightBlue.shade100,
-    ).animate(_animationController);
   }
 
   @override
@@ -70,7 +53,6 @@ class _BNavbarScreenState extends State<BNavbarScreen>
 
   @override
   void dispose() {
-    _animationController.dispose();
     super.dispose();
   }
 
@@ -79,21 +61,30 @@ class _BNavbarScreenState extends State<BNavbarScreen>
     return Scaffold(
       extendBody: true,
       backgroundColor: Colors.transparent,
-      body: AnimatedBuilder(
-        animation: _animationController,
-        builder: (context, child) {
-          return Container(
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [_colorAnimation1.value!, _colorAnimation2.value!],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
+      body: Stack(
+        children: [
+          Container(
+            color: Colors.lightBlue.shade100,
+          ),
+          AnimatedBackground(
+            behaviour: RandomParticleBehaviour(
+              options: const ParticleOptions(
+                baseColor: Colors.white,
+                spawnOpacity: 0.0,
+                opacityChangeRate: 0.25,
+                minOpacity: 0.1,
+                maxOpacity: 0.4,
+                spawnMinSpeed: 30.0,
+                spawnMaxSpeed: 70.0,
+                spawnMinRadius: 7.0,
+                spawnMaxRadius: 15.0,
+                particleCount: 50,
               ),
             ),
-            child: child,
-          );
-        },
-        child: _widgetOptions.elementAt(_selectedIndex),
+            vsync: this,
+            child: _widgetOptions.elementAt(_selectedIndex),
+          ),
+        ],
       ),
       bottomNavigationBar: Container(
         margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),

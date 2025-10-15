@@ -8,6 +8,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:bema_application/routes/route_names.dart';
 import 'package:intl/intl.dart';
+import 'package:animated_text_kit/animated_text_kit.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -16,16 +17,37 @@ class HomeScreen extends StatefulWidget {
   State<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _HomeScreenState extends State<HomeScreen> {
+class _HomeScreenState extends State<HomeScreen>
+    with SingleTickerProviderStateMixin {
   final profileService = ProfileService();
   String userName = 'User'; // Default name while loading
   String greetingMessage = 'Good Day'; // Default greeting
   bool isLoading = true; // Track loading state
   String formattedDate = ""; // To hold the formatted date
+  late AnimationController _animationController;
+  late Animation<double> _fadeAnimation;
+  late Animation<Offset> _slideAnimation;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    precacheImage(const AssetImage('assets/tasks.png'), context);
+    precacheImage(const AssetImage('assets/relax.png'), context);
+    precacheImage(const AssetImage('assets/score.png'), context);
+  }
 
   @override
   void initState() {
     super.initState();
+    _animationController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 500),
+    );
+    _fadeAnimation =
+        Tween<double>(begin: 0.0, end: 1.0).animate(_animationController);
+    _slideAnimation =
+        Tween<Offset>(begin: const Offset(0, 0.2), end: Offset.zero)
+            .animate(_animationController);
     getUser(); // Fetch user details when the screen loads
     _setGreetingMessage(); // Set the appropriate greeting message
     _setFormattedDate(); // Set the formatted date
@@ -48,6 +70,7 @@ class _HomeScreenState extends State<HomeScreen> {
       setState(() {
         isLoading = false; // Set loading to false once data is fetched
       });
+      _animationController.forward();
     }
   }
 
@@ -139,9 +162,21 @@ class _HomeScreenState extends State<HomeScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
-                        _buildStrokedText(
-                          "$greetingMessage, $userName!",
-                          22,
+                        AnimatedTextKit(
+                          key: ValueKey<String>(userName),
+                          animatedTexts: [
+                            TypewriterAnimatedText(
+                              "$greetingMessage, $userName!",
+                              textStyle: const TextStyle(
+                                fontSize: 22,
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                              ),
+                              speed: const Duration(milliseconds: 100),
+                              textAlign: TextAlign.center,
+                            ),
+                          ],
+                          isRepeatingAnimation: false,
                         ),
                         const SizedBox(height: 5),
                         Text(
@@ -159,51 +194,71 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
             const SizedBox(height: 20),
             Expanded(
-              child: GridView.count(
-                crossAxisCount: 2,
-                crossAxisSpacing: 16.0,
-                mainAxisSpacing: 16.0,
-                children: [
-                  _buildCard(
-                    avatar: const CircleAvatar(
-                      radius: 35,
-                      backgroundImage: AssetImage('assets/tasks.png'),
+              child: AnimatedBuilder(
+                animation: _animationController,
+                builder: (context, child) {
+                  return FadeTransition(
+                    opacity: _fadeAnimation,
+                    child: SlideTransition(
+                      position: _slideAnimation,
+                      child: GridView.count(
+                        crossAxisCount: 2,
+                        crossAxisSpacing: 16.0,
+                        mainAxisSpacing: 16.0,
+                        children: [
+                          _buildCard(
+                            avatar: const CircleAvatar(
+                              radius: 35,
+                              backgroundImage:
+                                  AssetImage('assets/tasks.png'),
+                            ),
+                            title: "Daily Task",
+                            subtitle: "Your Health Guide",
+                            color: Colors.lightBlueAccent,
+                            onTap: () {
+                              // Navigate to Daily Task tab (index 3)
+                              context.push(
+                                  '/${RouteNames.bottomNavigationBarScreen}',
+                                  extra: 1);
+                            },
+                          ),
+                          _buildCard(
+                            avatar: const CircleAvatar(
+                              radius: 35,
+                              backgroundImage:
+                                  AssetImage('assets/relax.png'),
+                            ),
+                            title: "Relax Section",
+                            subtitle: "Relax Your Mind",
+                            color: Colors.orange,
+                            onTap: () {
+                              // Navigate to Relax tab (index 1)
+                              context.push(
+                                  '/${RouteNames.bottomNavigationBarScreen}',
+                                  extra: 2);
+                            },
+                          ),
+                          _buildCard(
+                            avatar: const CircleAvatar(
+                              radius: 35,
+                              backgroundImage:
+                                  AssetImage('assets/score.png'),
+                            ),
+                            title: "Your Points",
+                            subtitle: "Check Your Progress",
+                            color: Colors.lightBlue,
+                            onTap: () {
+                              // Navigate to Points tab (index 4)
+                              context.push(
+                                  '/${RouteNames.bottomNavigationBarScreen}',
+                                  extra: 3);
+                            },
+                          ),
+                        ],
+                      ),
                     ),
-                    title: "Daily Task",
-                    subtitle: "Your Health Guide",
-                    color: Colors.lightBlueAccent,
-                    onTap: () {
-                      // Navigate to Daily Task tab (index 3)
-                      context.push('/${RouteNames.bottomNavigationBarScreen}', extra: 1);
-                    },
-                  ),
-                  _buildCard(
-                    avatar: const CircleAvatar(
-                      radius: 35,
-                      backgroundImage: AssetImage('assets/relax.png'),
-                    ),
-                    title: "Relax Section",
-                    subtitle: "Relax Your Mind",
-                    color: Colors.orange,
-                    onTap: () {
-                      // Navigate to Relax tab (index 1)
-                      context.push('/${RouteNames.bottomNavigationBarScreen}', extra: 2);
-                    },
-                  ),
-                  _buildCard(
-                    avatar: const CircleAvatar(
-                      radius: 35,
-                      backgroundImage: AssetImage('assets/score.png'),
-                    ),
-                    title: "Your Points",
-                    subtitle: "Check Your Progress",
-                    color: Colors.lightBlue,
-                    onTap: () {
-                      // Navigate to Points tab (index 4)
-                      context.push('/${RouteNames.bottomNavigationBarScreen}', extra: 3);
-                    },
-                  ),
-                ],
+                  );
+                },
               ),
             ),
           ],
@@ -242,7 +297,8 @@ class _HomeScreenState extends State<HomeScreen> {
                   color: color.withOpacity(0.2),
                   borderRadius: BorderRadius.circular(20),
                   border: Border.all(
-                    color: Colors.white.withOpacity(0.3),
+                    color: Colors.black,
+                    width: 2,
                   ),
                   boxShadow: [
                     BoxShadow(
