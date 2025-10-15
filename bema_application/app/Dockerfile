@@ -26,6 +26,9 @@ COPY . .
 # Expose FastAPI port
 EXPOSE 9005
 
+# Disable Python buffering to see logs in real-time
+ENV PYTHONUNBUFFERED=1
+
 # Start FastAPI (main.py inside "app" folder, app object inside it)
 CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "9005"]
 

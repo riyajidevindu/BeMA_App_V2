@@ -20,6 +20,11 @@ services:
       - ./app:/app
     networks:
       - app_network
+    # DNS configuration to ensure external connectivity
+    dns:
+      - 8.8.8.8
+      - 8.8.4.4
+      - 1.1.1.1
     # Ensures both databases are running before this service starts
     depends_on:
       - db
@@ -47,6 +52,10 @@ services:
       - db_data:/var/lib/mysql
     networks:
       - app_network
+    # DNS configuration
+    dns:
+      - 8.8.8.8
+      - 8.8.4.4
 
   # =========================
   # Vector Database (ChromaDB)
