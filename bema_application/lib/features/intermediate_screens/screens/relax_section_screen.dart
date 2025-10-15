@@ -1,3 +1,4 @@
+import 'dart:ui';
 import 'package:bema_application/features/authentication/screens/chat_screen/chat_screen.dart';
 import 'package:bema_application/features/authentication/screens/mood_screen/mood_friend.dart';
 import 'package:bema_application/features/dive_reflex/screens/dive_reflex_screen.dart';
@@ -39,11 +40,12 @@ class RelaxSectionHome extends StatelessWidget {
     final double screenHeight = MediaQuery.of(context).size.height;
 
     return Scaffold(
-      backgroundColor: backgroundColor,
+      backgroundColor: Colors.transparent,
       appBar: AppBar(
-        backgroundColor: backgroundColor,
+        backgroundColor: Colors.transparent,
         title: const CustomAppBar(),
         automaticallyImplyLeading: true,
+        elevation: 0,
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -55,26 +57,20 @@ class RelaxSectionHome extends StatelessWidget {
               padding: const EdgeInsets.all(16.0),
               margin: const EdgeInsets.only(bottom: 20.0, top: 20),
               decoration: BoxDecoration(
-                color: const Color.fromARGB(255, 26, 201, 213),
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: Colors.grey.shade300),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.grey.withOpacity(0.5),
-                    spreadRadius: 2,
-                    blurRadius: 5,
-                    offset: const Offset(0, 3),
-                  ),
-                ],
+                color: Colors.blue.withOpacity(0.2),
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(
+                  color: Colors.white.withOpacity(0.3),
+                ),
               ),
               child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.center,
                 children: const [
                   Text(
                     "Relax Section",
                     style: TextStyle(
-                      fontSize: 20,
-                      color: Color.fromARGB(255, 1, 34, 75),
+                      fontSize: 22,
+                      color: Colors.white,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
@@ -83,7 +79,7 @@ class RelaxSectionHome extends StatelessWidget {
                     "Choose an option to relax",
                     style: TextStyle(
                       fontSize: 18,
-                      color: Color.fromARGB(255, 253, 251, 251),
+                      color: Colors.white70,
                     ),
                   ),
                 ],
@@ -160,39 +156,55 @@ class RelaxSectionHome extends StatelessWidget {
     required Color color,
     VoidCallback? onTap,
   }) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        decoration: BoxDecoration(
-          color: color.withOpacity(0.2),
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: color.withOpacity(0.6)),
-        ),
-        child: Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              avatar,
-              const SizedBox(height: 5),
-              Text(
-                title,
-                style: const TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.black,
-                ),
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(20),
+      child: BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+        child: GestureDetector(
+          onTap: onTap,
+          child: Container(
+            decoration: BoxDecoration(
+              color: color.withOpacity(0.2),
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(
+                color: Colors.white.withOpacity(0.3),
               ),
-              const SizedBox(height: 8),
-              Text(
-                subtitle,
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: 14,
-                  color: Colors.grey[700],
+              boxShadow: [
+                BoxShadow(
+                  color: color.withOpacity(0.5),
+                  spreadRadius: 5,
+                  blurRadius: 10,
+                  offset: const Offset(0, 3),
                 ),
+              ],
+            ),
+            child: Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  avatar,
+                  const SizedBox(height: 5),
+                  Text(
+                    title,
+                    style: const TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    subtitle,
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(
+                      fontSize: 14,
+                      color: Colors.white70,
+                    ),
+                  ),
+                ],
               ),
-            ],
+            ),
           ),
         ),
       ),

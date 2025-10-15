@@ -16,9 +16,9 @@ class _WorkoutPlanScreenState extends State<WorkoutPlanScreen> {
     final screenWidth = MediaQuery.of(context).size.width;
 
     return Scaffold(
-      backgroundColor: backgroundColor,
+      backgroundColor: Colors.transparent,
       appBar: AppBar(
-        backgroundColor: backgroundColor,
+        backgroundColor: Colors.transparent,
         title: const CustomAppBar(showBackButton: true),
         automaticallyImplyLeading: false,
         elevation: 0,

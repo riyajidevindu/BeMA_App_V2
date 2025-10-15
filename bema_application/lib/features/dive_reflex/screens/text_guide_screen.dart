@@ -1,3 +1,4 @@
+import 'dart:ui';
 import 'package:bema_application/common/config/colors.dart';
 import 'package:bema_application/common/widgets/app_bar.dart';
 import 'package:flutter/material.dart';
@@ -87,10 +88,12 @@ class _TextGuideScreenState extends State<TextGuideScreen> {
     ];
 
     return Scaffold(
+      backgroundColor: Colors.transparent,
       appBar: AppBar(
-        backgroundColor: backgroundColor,
+        backgroundColor: Colors.transparent,
         title: const CustomAppBar(showBackButton: true),
         automaticallyImplyLeading: false,
+        elevation: 0,
       ),
       body: Stack(
         children: [
@@ -107,7 +110,7 @@ class _TextGuideScreenState extends State<TextGuideScreen> {
                     style: TextStyle(
                       fontSize: screenWidth * 0.07,
                       fontWeight: FontWeight.bold,
-                      color: Colors.blueAccent,
+                      color: Colors.white,
                     ),
                     textAlign: TextAlign.center,
                   ),
@@ -144,42 +147,52 @@ class _TextGuideScreenState extends State<TextGuideScreen> {
                   child: Column(
                     children: steps.map((step) {
                       int index = steps.indexOf(step);
-                      return Card(
-                        margin: EdgeInsets.symmetric(vertical: screenHeight * 0.01),
-                        elevation: 4,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(15),
-                        ),
-                        child: ListTile(
-                          leading: CircleAvatar(
-                            backgroundColor: Colors.blueAccent,
-                            child: Text(
-                              "${index + 1}",
-                              style: const TextStyle(color: Colors.white),
+                      return ClipRRect(
+                        borderRadius: BorderRadius.circular(20),
+                        child: BackdropFilter(
+                          filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+                          child: Container(
+                            margin: EdgeInsets.symmetric(
+                                vertical: screenHeight * 0.01),
+                            decoration: BoxDecoration(
+                              color: Colors.white.withOpacity(0.2),
+                              borderRadius: BorderRadius.circular(20),
+                              border: Border.all(
+                                color: Colors.white.withOpacity(0.3),
+                              ),
                             ),
-                          ),
-                          title: RichText(
-                            text: TextSpan(
-                              children: [
-                                TextSpan(
-                                  text: "${step['heading']}\n", // Added extra newline for more space
-                                  style: TextStyle(
-                                    fontSize: screenWidth * 0.045,
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.black,
-                                    height: 2.0,
-                                  ),
+                            child: ListTile(
+                              leading: CircleAvatar(
+                                backgroundColor: Colors.blueAccent,
+                                child: Text(
+                                  "${index + 1}",
+                                  style: const TextStyle(color: Colors.white),
                                 ),
-                                TextSpan(
-                                  text: step['content'],
-                                  style: TextStyle(
-                                    fontSize: screenWidth * 0.04,
-                                    fontWeight: FontWeight.normal,
-                                    color: Colors.black,
-                                    height: 1.4,
-                                  ),
+                              ),
+                              title: RichText(
+                                text: TextSpan(
+                                  children: [
+                                    TextSpan(
+                                      text: "${step['heading']}\n", // Added extra newline for more space
+                                      style: TextStyle(
+                                        fontSize: screenWidth * 0.045,
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.white,
+                                        height: 2.0,
+                                      ),
+                                    ),
+                                    TextSpan(
+                                      text: step['content'],
+                                      style: TextStyle(
+                                        fontSize: screenWidth * 0.04,
+                                        fontWeight: FontWeight.normal,
+                                        color: Colors.white70,
+                                        height: 1.4,
+                                      ),
+                                    ),
+                                  ],
                                 ),
-                              ],
+                              ),
                             ),
                           ),
                         ),

@@ -179,16 +179,12 @@ class _StressReleaseScreenState extends State<StressReleaseScreen>
     final screenHeight = MediaQuery.of(context).size.height;
 
     return Scaffold(
+      backgroundColor: Colors.transparent,
       appBar: AppBar(
-        backgroundColor: backgroundColor,
-        // leading: IconButton(
-        //   icon: const Icon(Icons.arrow_back, color: Color.fromARGB(255, 3, 0, 0)),
-        //   onPressed: () {
-        //     context.pop(); // Go back
-        //   },
-        // ),
+        backgroundColor: Colors.transparent,
         title: const CustomAppBar(showBackButton: true),
-        automaticallyImplyLeading: false
+        automaticallyImplyLeading: false,
+        elevation: 0,
       ),
       body: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -201,7 +197,7 @@ class _StressReleaseScreenState extends State<StressReleaseScreen>
               style: TextStyle(
                 fontSize: screenWidth * 0.08, // Responsive text size
                 fontWeight: FontWeight.bold,
-                color: Colors.blueAccent,
+                color: Colors.white,
               ),
             ),
           ),

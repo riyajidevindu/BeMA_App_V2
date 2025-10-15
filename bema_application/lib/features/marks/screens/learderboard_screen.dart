@@ -1,3 +1,4 @@
+import 'dart:ui';
 import 'package:bema_application/common/config/colors.dart';
 import 'package:bema_application/common/widgets/app_bar.dart';
 import 'package:bema_application/common/widgets/progress_indicator/custom_progress_indicator.dart';
@@ -56,9 +57,9 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
     final iconSize = screenWidth * 0.08;
 
     return Scaffold(
-      backgroundColor: backgroundColor,
+      backgroundColor: Colors.transparent,
       appBar: AppBar(
-        backgroundColor: backgroundColor,
+        backgroundColor: Colors.transparent,
         title: const CustomAppBar(),
         automaticallyImplyLeading: false,
         elevation: 0,
@@ -168,45 +169,42 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
   /// Responsive points box with dynamic font size
   Widget buildPointsBox(String title, String pointsText, double fontSizeTitle,
       double fontSizePoints) {
-    return Container(
-      padding: const EdgeInsets.all(20.0),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [Colors.blueGrey.withOpacity(0.3), Colors.blueGrey.withOpacity(0.1)],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(20),
+      child: BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+        child: Container(
+          padding: const EdgeInsets.all(20.0),
+          decoration: BoxDecoration(
+            color: Colors.white.withOpacity(0.2),
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(
+              color: Colors.white.withOpacity(0.3),
+            ),
+          ),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text(
+                title,
+                style: TextStyle(
+                  fontSize: fontSizeTitle,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.white,
+                ),
+              ),
+              const SizedBox(height: 5),
+              Text(
+                pointsText,
+                style: TextStyle(
+                  fontSize: fontSizePoints,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
+                ),
+              ),
+            ],
+          ),
         ),
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: const [
-          BoxShadow(
-            color: Colors.black12,
-            spreadRadius: 1,
-            blurRadius: 8,
-            offset: Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Text(
-            title,
-            style: TextStyle(
-              fontSize: fontSizeTitle,
-              fontWeight: FontWeight.w600,
-              color: Colors.blueGrey,
-            ),
-          ),
-          const SizedBox(height: 5),
-          Text(
-            pointsText,
-            style: TextStyle(
-              fontSize: fontSizePoints,
-              fontWeight: FontWeight.bold,
-              color: Colors.black87,
-            ),
-          ),
-        ],
       ),
     );
   }
@@ -216,84 +214,91 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
       IconData icon, bool completed, double fontSizeTitle, double iconSize) {
     int progressPercentage = (progress * 100).round();
 
-    return Container(
-      margin: const EdgeInsets.symmetric(vertical: 8.0),
-      padding: const EdgeInsets.all(16.0),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(15),
-        border: Border.all(color: completed ? Colors.green : Colors.blueGrey, width: 1.5),
-        boxShadow: const [
-          BoxShadow(
-            color: Colors.black12,
-            blurRadius: 10,
-            spreadRadius: 1,
-            offset: Offset(0, 5),
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(20),
+      child: BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+        child: Container(
+          margin: const EdgeInsets.symmetric(vertical: 8.0),
+          padding: const EdgeInsets.all(16.0),
+          decoration: BoxDecoration(
+            color: Colors.white.withOpacity(0.2),
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(
+              color: Colors.white.withOpacity(0.3),
+            ),
           ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Icon(icon, color: Colors.blueAccent, size: iconSize),
-              const SizedBox(width: 10),
-              Expanded(
-                child: Text(
-                  title,
-                  style: TextStyle(
-                    color: Colors.black87,
-                    fontSize: fontSizeTitle,
-                    fontWeight: FontWeight.w600,
+              Row(
+                children: [
+                  Icon(icon, color: Colors.white, size: iconSize),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Text(
+                      title,
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: fontSizeTitle,
+                        fontWeight: FontWeight.w600,
+                      ),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
                   ),
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                ),
+                  const SizedBox(width: 10),
+                  Container(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: completed
+                          ? Colors.green.withOpacity(0.5)
+                          : Colors.orangeAccent.withOpacity(0.5),
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                    child: Text(
+                      completed ? 'Completed' : marksText,
+                      style: const TextStyle(
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ),
+                ],
               ),
-              const SizedBox(width: 10),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                decoration: BoxDecoration(
-                  color: completed ? Colors.green : Colors.orangeAccent,
-                  borderRadius: BorderRadius.circular(6),
-                ),
-                child: Text(
-                  completed ? 'Completed' : marksText,
-                  style: const TextStyle(
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
+              const SizedBox(height: 12),
+              LinearProgressIndicator(
+                value: progress,
+                backgroundColor: Colors.white.withOpacity(0.3),
+                valueColor:
+                    AlwaysStoppedAnimation<Color>(getProgressColor(progress)),
+                minHeight: 8,
+              ),
+              const SizedBox(height: 8),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Text(
+                    '0%',
+                    style: TextStyle(fontSize: 12, color: Colors.white70),
                   ),
-                ),
+                  Text(
+                    '$progressPercentage%',
+                    style: const TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white),
+                  ),
+                  const Text(
+                    '100%',
+                    style: TextStyle(fontSize: 12, color: Colors.white70),
+                  ),
+                ],
               ),
             ],
           ),
-          const SizedBox(height: 12),
-          LinearProgressIndicator(
-            value: progress,
-            backgroundColor: Colors.grey[200],
-            valueColor: AlwaysStoppedAnimation<Color>(getProgressColor(progress)),
-            minHeight: 8,
-          ),
-          const SizedBox(height: 8),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              const Text(
-                '0%',
-                style: TextStyle(fontSize: 12, color: Colors.grey),
-              ),
-              Text(
-                '$progressPercentage%',
-                style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.black87),
-              ),
-              const Text(
-                '100%',
-                style: TextStyle(fontSize: 12, color: Colors.grey),
-              ),
-            ],
-          ),
-        ],
+        ),
       ),
     );
   }
@@ -302,7 +307,10 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
   Color getProgressColor(double progress) {
     if (progress >= 0.7) {
       return Colors.green;
-    } else if (progress >= 0.3) return Colors.blue;
-    else return Colors.redAccent;
+    } else if (progress >= 0.3) {
+      return Colors.blue;
+    } else {
+      return Colors.redAccent;
+    }
   }
 }

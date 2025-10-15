@@ -24,10 +24,12 @@ class DiveReflexScreen extends StatelessWidget {
     });
 
     return Scaffold(
+      backgroundColor: Colors.transparent,
       appBar: AppBar(
-        backgroundColor: backgroundColor,
+        backgroundColor: Colors.transparent,
         title: const CustomAppBar(showBackButton: true),
         automaticallyImplyLeading: false,
+        elevation: 0,
       ),
       body: SingleChildScrollView(
         padding: EdgeInsets.all(screenWidth * 0.05),
@@ -42,7 +44,7 @@ class DiveReflexScreen extends StatelessWidget {
                 style: TextStyle(
                   fontSize: screenWidth * 0.07,
                   fontWeight: FontWeight.bold,
-                  color: Colors.blueAccent,
+                  color: Colors.white,
                 ),
                 textAlign: TextAlign.center,
               ),

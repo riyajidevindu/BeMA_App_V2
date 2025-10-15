@@ -1,3 +1,4 @@
+import 'dart:ui';
 import 'package:bema_application/common/config/colors.dart';
 import 'package:bema_application/common/widgets/app_bar.dart';
 import 'package:bema_application/common/widgets/cards/water_intake_card.dart';
@@ -91,18 +92,14 @@ class _DailytaskScreenState extends State<DailytaskScreen> {
         tasks[index] = tasks[index].copyWith(completed: true);
 
         double pointsPerTask = tasks.isNotEmpty ? 100 / tasks.length : 0;
-        userPoints = double.parse((userPoints + pointsPerTask).toStringAsFixed(1)); // Rounded
+        userPoints =
+            double.parse((userPoints + pointsPerTask).toStringAsFixed(1)); // Rounded
 
         _saveTaskProgress(index);
       });
 
-     showSuccessSnackBarMessage(context, '${tasks[index].title} marked as completed!');
-    // ScaffoldMessenger.of(context).showSnackBar(
-    //   SnackBar(
-    //     content: Text('${tasks[index].title} marked as completed!'),
-    //     backgroundColor: Colors.green,
-    //   ),
-    // );
+      showSuccessSnackBarMessage(
+          context, '${tasks[index].title} marked as completed!');
     }
   }
 
@@ -131,9 +128,9 @@ class _DailytaskScreenState extends State<DailytaskScreen> {
         totalTasks > 0 ? completedCount / totalTasks : 0;
 
     return Scaffold(
-      backgroundColor: backgroundColor,
+      backgroundColor: Colors.transparent,
       appBar: AppBar(
-        backgroundColor: backgroundColor,
+        backgroundColor: Colors.transparent,
         title: const CustomAppBar(showBackButton: true),
         automaticallyImplyLeading: false,
         elevation: 0,
@@ -179,7 +176,7 @@ class _DailytaskScreenState extends State<DailytaskScreen> {
                                 style: const TextStyle(
                                   fontSize: 16,
                                   fontWeight: FontWeight.bold,
-                                  color: Colors.blueGrey,
+                                  color: Colors.white,
                                 ),
                               ),
                             ],
@@ -191,7 +188,7 @@ class _DailytaskScreenState extends State<DailytaskScreen> {
                         'Completed $completedCount / $totalTasks tasks',
                         style: const TextStyle(
                           fontSize: 16,
-                          color: Colors.blueGrey,
+                          color: Colors.white70,
                         ),
                       ),
                     ],
@@ -203,14 +200,16 @@ class _DailytaskScreenState extends State<DailytaskScreen> {
                       // PageView for displaying task cards
                       PageView.builder(
                         controller: _pageController,
-                        onPageChanged: (index) => setState(() => currentPage = index),
+                        onPageChanged: (index) =>
+                            setState(() => currentPage = index),
                         itemCount: tasks.length,
                         itemBuilder: (context, index) {
                           final task = tasks[index];
 
                           if (task.title == "Water Intake") {
                             return Padding(
-                              padding: const EdgeInsets.symmetric(vertical: 10),
+                              padding:
+                                  const EdgeInsets.symmetric(vertical: 10),
                               child: WaterIntakeCard(
                                 totalWaterGoal: task.total!.toDouble(),
                                 currentProgress: task.progress.toDouble(),
@@ -222,87 +221,106 @@ class _DailytaskScreenState extends State<DailytaskScreen> {
 
                           return Padding(
                             padding: const EdgeInsets.symmetric(vertical: 10),
-                            child: Card(
-                              elevation: 5,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(16),
-                              ),
-                              color: Colors.white,
-                              child: Padding(
-                                padding: const EdgeInsets.all(16.0),
-                                child: Column(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    Icon(task.icon,
-                                        size: 50, color: Colors.blueAccent),
-                                    const SizedBox(height: 10),
-                                    Text(
-                                      task.title,
-                                      style: const TextStyle(
-                                        fontSize: 24,
-                                        fontWeight: FontWeight.w700,
-                                        color: Colors.blueGrey,
-                                      ),
+                            child: ClipRRect(
+                              borderRadius: BorderRadius.circular(20),
+                              child: BackdropFilter(
+                                filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+                                child: Container(
+                                  decoration: BoxDecoration(
+                                    color: Colors.white.withOpacity(0.2),
+                                    borderRadius: BorderRadius.circular(20),
+                                    border: Border.all(
+                                      color: Colors.white.withOpacity(0.3),
                                     ),
-                                    const SizedBox(height: 8),
-                                    Text(
-                                      task.detail,
-                                      textAlign: TextAlign.center,
-                                      style: const TextStyle(
-                                        fontSize: 16,
-                                        color: Colors.grey,
-                                      ),
-                                    ),
-                                    const SizedBox(height: 20),
-                                    completedTasks.contains(index)
-                                        ? Container(
-                                            padding: const EdgeInsets.symmetric(
-                                                vertical: 10, horizontal: 20),
-                                            decoration: BoxDecoration(
-                                              color: Colors.greenAccent,
-                                              borderRadius:
-                                                  BorderRadius.circular(30),
-                                            ),
-                                            child: const Row(
-                                              mainAxisSize: MainAxisSize.min,
-                                              children: [
-                                                Icon(Icons.check_circle,
-                                                    color: Colors.white,
-                                                    size: 24),
-                                                SizedBox(width: 8),
-                                                Text(
-                                                  'Completed',
-                                                  style: TextStyle(
-                                                    fontSize: 16,
-                                                    fontWeight: FontWeight.bold,
-                                                    color: Colors.white,
-                                                  ),
-                                                ),
-                                              ],
-                                            ),
-                                          )
-                                        : ElevatedButton.icon(
-                                            onPressed: () => completeTask(index),
-                                            label: const Text(
-                                              'Mark as Done',
-                                              style: TextStyle(
-                                                  fontSize: 16,
-                                                  fontWeight: FontWeight.bold),
-                                            ),
-                                            icon: const Icon(Icons.check),
-                                            style: ElevatedButton.styleFrom(
-                                              shape: RoundedRectangleBorder(
-                                                borderRadius:
-                                                    BorderRadius.circular(30),
-                                              ),
-                                              padding:
-                                                  const EdgeInsets.symmetric(
-                                                      vertical: 12,
-                                                      horizontal: 24),
-                                              elevation: 5,
-                                            ),
+                                  ),
+                                  child: Padding(
+                                    padding: const EdgeInsets.all(16.0),
+                                    child: Column(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      children: [
+                                        Icon(task.icon,
+                                            size: 50, color: Colors.white),
+                                        const SizedBox(height: 10),
+                                        Text(
+                                          task.title,
+                                          style: const TextStyle(
+                                            fontSize: 24,
+                                            fontWeight: FontWeight.w700,
+                                            color: Colors.white,
                                           ),
-                                  ],
+                                        ),
+                                        const SizedBox(height: 8),
+                                        Text(
+                                          task.detail,
+                                          textAlign: TextAlign.center,
+                                          style: const TextStyle(
+                                            fontSize: 16,
+                                            color: Colors.white70,
+                                          ),
+                                        ),
+                                        const SizedBox(height: 20),
+                                        completedTasks.contains(index)
+                                            ? Container(
+                                                padding:
+                                                    const EdgeInsets.symmetric(
+                                                        vertical: 10,
+                                                        horizontal: 20),
+                                                decoration: BoxDecoration(
+                                                  color: Colors.greenAccent,
+                                                  borderRadius:
+                                                      BorderRadius.circular(
+                                                          30),
+                                                ),
+                                                child: const Row(
+                                                  mainAxisSize:
+                                                      MainAxisSize.min,
+                                                  children: [
+                                                    Icon(Icons.check_circle,
+                                                        color: Colors.white,
+                                                        size: 24),
+                                                    SizedBox(width: 8),
+                                                    Text(
+                                                      'Completed',
+                                                      style: TextStyle(
+                                                        fontSize: 16,
+                                                        fontWeight:
+                                                            FontWeight.bold,
+                                                        color: Colors.white,
+                                                      ),
+                                                    ),
+                                                  ],
+                                                ),
+                                              )
+                                            : ElevatedButton.icon(
+                                                onPressed: () =>
+                                                    completeTask(index),
+                                                label: const Text(
+                                                  'Mark as Done',
+                                                  style: TextStyle(
+                                                      fontSize: 16,
+                                                      fontWeight:
+                                                          FontWeight.bold),
+                                                ),
+                                                icon: const Icon(Icons.check),
+                                                style:
+                                                    ElevatedButton.styleFrom(
+                                                  shape:
+                                                      RoundedRectangleBorder(
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                            30),
+                                                  ),
+                                                  padding:
+                                                      const EdgeInsets.symmetric(
+                                                          vertical: 12,
+                                                          horizontal: 24),
+                                                  elevation: 5,
+                                                ),
+                                              ),
+                                      ],
+                                    ),
+                                  ),
                                 ),
                               ),
                             ),
