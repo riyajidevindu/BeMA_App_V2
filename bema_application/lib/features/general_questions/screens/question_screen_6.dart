@@ -32,12 +32,6 @@ class _QuestionScreen6State extends State<QuestionScreen6>
   }
 
   @override
-  void dispose() {
-    _rotationController?.dispose();
-    super.dispose();
-  }
-
-  @override
   void didChangeDependencies() {
     super.didChangeDependencies();
     precacheImage(const AssetImage('assets/logo.png'), context);
@@ -175,8 +169,8 @@ class _QuestionScreen6State extends State<QuestionScreen6>
                       .animate(_rotationController!),
                   child: Image.asset(
                     'assets/logo.png',
-                    height: 200,
-                    width: 200,
+                    height: 190,
+                    width: 190,
                   ),
                 ),
                 const Spacer(),
