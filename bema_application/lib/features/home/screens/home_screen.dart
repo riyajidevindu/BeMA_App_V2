@@ -171,6 +171,13 @@ class _HomeScreenState extends State<HomeScreen>
                                 fontSize: 22,
                                 color: Colors.white,
                                 fontWeight: FontWeight.bold,
+                                shadows: [
+                                  Shadow(
+                                    blurRadius: 10.0,
+                                    color: Colors.black,
+                                    offset: Offset(0, 0),
+                                  ),
+                                ],
                               ),
                               speed: const Duration(milliseconds: 100),
                               textAlign: TextAlign.center,
