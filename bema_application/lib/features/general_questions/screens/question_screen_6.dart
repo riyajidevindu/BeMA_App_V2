@@ -14,83 +14,70 @@ class QuestionScreen6 extends StatefulWidget {
 }
 
 class _QuestionScreen6State extends State<QuestionScreen6>
-    with SingleTickerProviderStateMixin {
+    with TickerProviderStateMixin {
   final profileService = ProfileService();
   String? userName;
   bool isLoading = true;
-  late AnimationController _animationController;
-  late Animation<Color?> _colorAnimation1;
-  late Animation<Color?> _colorAnimation2;
+  AnimationController? _rotationController;
 
   @override
   void initState() {
     super.initState();
-    getUser();
-
-    _animationController = AnimationController(
+    _rotationController = AnimationController(
+      duration: const Duration(milliseconds: 1500),
       vsync: this,
-      duration: const Duration(seconds: 5),
     )..repeat(reverse: true);
 
-    _colorAnimation1 = ColorTween(
-      begin: Colors.lightBlue.shade200,
-      end: Colors.purple.shade200,
-    ).animate(_animationController);
-
-    _colorAnimation2 = ColorTween(
-      begin: Colors.purple.shade200,
-      end: Colors.lightBlue.shade200,
-    ).animate(_animationController);
+    getUser();
   }
 
   @override
-  void dispose() {
-    _animationController.dispose();
-    super.dispose();
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    precacheImage(const AssetImage('assets/logo.png'), context);
   }
 
   Future<void> getUser() async {
+    String finalUserName = 'User';
     try {
       UserModel? user =
           await profileService.getUser(FirebaseAuth.instance.currentUser!.uid);
       if (user != null && user.name.isNotEmpty) {
-        setState(() {
-          userName = user.name;
-        });
-      } else {
-        setState(() {
-          userName = 'User';
-        });
+        finalUserName = user.name;
       }
     } catch (e) {
-      setState(() {
-        userName = 'User';
-      });
+      // You might want to log the error here
     } finally {
-      setState(() {
-        isLoading = false;
-      });
+      if (mounted) {
+        setState(() {
+          userName = finalUserName;
+          isLoading = false;
+        });
+      }
     }
   }
 
   @override
   Widget build(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
+
+    if (_rotationController == null) {
+      return const Scaffold(
+        body: Center(
+          child: CircularProgressIndicator(),
+        ),
+      );
+    }
+
     return Scaffold(
-      body: AnimatedBuilder(
-        animation: _animationController,
-        builder: (context, child) {
-          return Container(
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [_colorAnimation1.value!, _colorAnimation2.value!],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-              ),
-            ),
-            child: child,
-          );
-        },
+      body: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: [Colors.lightBlue.shade200, Colors.purple.shade200],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+        ),
         child: SafeArea(
           child: Padding(
             padding: const EdgeInsets.all(20.0),
@@ -174,6 +161,16 @@ class _QuestionScreen6State extends State<QuestionScreen6>
                         fontWeight: FontWeight.bold,
                       ),
                     ),
+                  ),
+                ),
+                const SizedBox(height: 40),
+                RotationTransition(
+                  turns: Tween(begin: -0.05, end: 0.05)
+                      .animate(_rotationController!),
+                  child: Image.asset(
+                    'assets/logo.png',
+                    height: 190,
+                    width: 190,
                   ),
                 ),
                 const Spacer(),

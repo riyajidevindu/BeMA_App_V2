@@ -12,7 +12,12 @@ import 'package:bema_application/features/splash/splash_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await dotenv.load(fileName: ".env");
+  // Try to load .env but don't crash if the file is missing in release/builds
+  try {
+    await dotenv.load(fileName: ".env");
+  } catch (e) {
+    debugPrint(".env not found or failed to load: $e");
+  }
   await Firebase.initializeApp();
 
   runApp(
