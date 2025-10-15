@@ -100,9 +100,10 @@ class _HomeScreenState extends State<HomeScreen> {
     final double screenHeight = MediaQuery.of(context).size.height;
 
     return Scaffold(
-      backgroundColor: backgroundColor, // Use background color from theme
+      backgroundColor: Colors.transparent,
       appBar: AppBar(
-        backgroundColor: backgroundColor, // Consistent background color
+        backgroundColor: Colors.transparent,
+        elevation: 0,
         title: const CustomAppBar(), // Custom AppBar from previous screen
         automaticallyImplyLeading: false, // Remove the back arrow
       ),

@@ -1,3 +1,4 @@
+import 'dart:ui';
 import 'package:bema_application/common/config/colors.dart';
 import 'package:bema_application/features/home/screens/home_screen.dart';
 import 'package:bema_application/features/intermediate_screens/screens/relax_section_screen.dart';
@@ -14,13 +15,32 @@ class BNavbarScreen extends StatefulWidget {
   State<BNavbarScreen> createState() => _BNavbarScreenState();
 }
 
-class _BNavbarScreenState extends State<BNavbarScreen> {
+class _BNavbarScreenState extends State<BNavbarScreen>
+    with SingleTickerProviderStateMixin {
   late int _selectedIndex;
+  late AnimationController _animationController;
+  late Animation<Color?> _colorAnimation1;
+  late Animation<Color?> _colorAnimation2;
 
   @override
   void initState() {
     super.initState();
     _selectedIndex = widget.initialIndex; // Set the initial index
+
+    _animationController = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 5),
+    )..repeat(reverse: true);
+
+    _colorAnimation1 = ColorTween(
+      begin: Colors.lightBlue.shade100,
+      end: Colors.purple.shade100,
+    ).animate(_animationController);
+
+    _colorAnimation2 = ColorTween(
+      begin: Colors.purple.shade100,
+      end: Colors.lightBlue.shade100,
+    ).animate(_animationController);
   }
 
   @override
@@ -49,10 +69,32 @@ class _BNavbarScreenState extends State<BNavbarScreen> {
   }
 
   @override
+  void dispose() {
+    _animationController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: backgroundColor,
-      body: _widgetOptions.elementAt(_selectedIndex), // Load the selected screen dynamically
+      extendBody: true,
+      backgroundColor: Colors.transparent,
+      body: AnimatedBuilder(
+        animation: _animationController,
+        builder: (context, child) {
+          return Container(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [_colorAnimation1.value!, _colorAnimation2.value!],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+            ),
+            child: child,
+          );
+        },
+        child: _widgetOptions.elementAt(_selectedIndex),
+      ),
       bottomNavigationBar: Container(
         margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
         decoration: BoxDecoration(
