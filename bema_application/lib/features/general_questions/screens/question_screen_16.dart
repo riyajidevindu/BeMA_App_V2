@@ -125,6 +125,11 @@ class _QuestionScreen16State extends State<QuestionScreen16>
                     },
                   ),
                 ),
+                const SizedBox(height: 30),
+                const Text(
+                  '🐸',
+                  style: TextStyle(fontSize: 80),
+                ),
                 const SizedBox(height: 40),
                 GestureDetector(
                   onTap: questionnaireProvider.smokingCount != null
