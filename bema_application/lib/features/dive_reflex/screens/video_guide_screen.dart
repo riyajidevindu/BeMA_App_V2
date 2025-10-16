@@ -68,7 +68,7 @@ class _VideoGuideScreenState extends State<VideoGuideScreen> {
                 style: TextStyle(
                   fontSize: screenWidth * 0.07,
                   fontWeight: FontWeight.bold,
-                  color: Colors.white,
+                  color: const Color.fromARGB(255, 183, 54, 219),
                 ),
                 textAlign: TextAlign.center,
               ),
