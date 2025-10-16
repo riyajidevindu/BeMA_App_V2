@@ -17,7 +17,7 @@ class AuthenticationProvider extends ChangeNotifier {
   final profileService = ProfileService();
 
   AuthenticationProvider() {
-    //getType();
+    refreshUser();
   }
 
   Future<void> refreshUser() async {
@@ -54,7 +54,7 @@ class AuthenticationProvider extends ChangeNotifier {
         password: password,
       );
       firebaseUser = result.user;
-
+      await refreshUser();
       notifyListeners();
       return AuthResult(isSuccess: true, message: 'Login Successful');
     } catch (e) {
