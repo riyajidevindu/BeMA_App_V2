@@ -49,6 +49,12 @@ class _QuestionScreen14State extends State<QuestionScreen14>
     super.dispose();
   }
 
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    precacheImage(const AssetImage('assets/say_hi.png'), context);
+  }
+
   Future<void> getUser() async {
     try {
       UserModel? user =
