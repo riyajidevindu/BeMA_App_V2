@@ -177,26 +177,29 @@ class _StartRelaxScreenState extends State<StartRelaxScreen> {
           );
         },
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          if (_currentStep < steps.length - 1) {
-            setState(() {
-              _currentStep++;
-            });
-            _pageController.nextPage(
-              duration: const Duration(milliseconds: 300),
-              curve: Curves.easeInOut,
-            );
-          } else {
-            setState(() {
-              _currentStep = 0;
-              _pageController.jumpToPage(0);
-            });
-          }
-        },
-        backgroundColor: Colors.blueGrey.withOpacity(0.4),
-        elevation: 0,
-        child: const Icon(Icons.arrow_forward, color: Colors.blueAccent),
+      floatingActionButton: Padding(
+        padding: const EdgeInsets.only(bottom: 60.0),
+        child: FloatingActionButton(
+          onPressed: () {
+            if (_currentStep < steps.length - 1) {
+              setState(() {
+                _currentStep++;
+              });
+              _pageController.nextPage(
+                duration: const Duration(milliseconds: 300),
+                curve: Curves.easeInOut,
+              );
+            } else {
+              setState(() {
+                _currentStep = 0;
+                _pageController.jumpToPage(0);
+              });
+            }
+          },
+          backgroundColor: const Color.fromARGB(255, 31, 145, 3).withOpacity(0.4),
+          elevation: 0,
+          child: const Icon(Icons.arrow_forward, color: Colors.blueAccent),
+        ),
       ),
     );
   }
