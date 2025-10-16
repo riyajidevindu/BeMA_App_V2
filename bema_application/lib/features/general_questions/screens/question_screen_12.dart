@@ -54,109 +54,127 @@ class _QuestionScreen12State extends State<QuestionScreen12>
     final questionnaireProvider = Provider.of<QuestionnaireProvider>(context);
     final screenWidth = MediaQuery.of(context).size.width;
 
-    return Scaffold(
-      body: AnimatedBuilder(
-        animation: _animationController,
-        builder: (context, child) {
-          return Container(
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [_colorAnimation1.value!, _colorAnimation2.value!],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-              ),
+    return AnimatedBuilder(
+      animation: _animationController,
+      builder: (context, child) {
+        return Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: [_colorAnimation1.value!, _colorAnimation2.value!],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
             ),
-            child: child,
-          );
-        },
-        child: SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.all(20.0),
-            child: Column(
-              children: [
-                Row(
-                  children: [
-                    IconButton(
-                      icon: const Icon(Icons.arrow_back, color: Colors.white),
-                      onPressed: () =>
-                          context.goNamed(RouteNames.questionScreen11),
-                    ),
-                    Expanded(
-                      child: Container(
-                        height: 10,
-                        decoration: BoxDecoration(
-                          color: Colors.white.withOpacity(0.3),
-                          borderRadius: BorderRadius.circular(5),
+          ),
+          child: child,
+        );
+      },
+      child: Scaffold(
+        backgroundColor: Colors.transparent,
+        body: SafeArea(
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              return SingleChildScrollView(
+                child: ConstrainedBox(
+                  constraints: BoxConstraints(minHeight: constraints.maxHeight),
+                  child: Padding(
+                    padding: const EdgeInsets.all(20.0),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Column(
+                          children: [
+                            Row(
+                              children: [
+                                IconButton(
+                                  icon: const Icon(Icons.arrow_back, color: Colors.white),
+                                  onPressed: () =>
+                                      context.goNamed(RouteNames.questionScreen11),
+                                ),
+                                Expanded(
+                                  child: Container(
+                                    height: 10,
+                                    decoration: BoxDecoration(
+                                      color: Colors.white.withOpacity(0.3),
+                                      borderRadius: BorderRadius.circular(5),
+                                    ),
+                                    child: ClipRRect(
+                                      borderRadius: BorderRadius.circular(5),
+                                      child: const LinearProgressIndicator(
+                                        value: 0.55,
+                                        backgroundColor: Colors.transparent,
+                                        color: Colors.white,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 30),
+                            _buildStrokedText(
+                                "Any family medical history?", screenWidth * 0.08),
+                            const SizedBox(height: 20),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                _buildOptionChip(context, "Yes", true,
+                                    questionnaireProvider.hasFamilyMedHis),
+                                const SizedBox(width: 20),
+                                _buildOptionChip(context, "No", false,
+                                    questionnaireProvider.hasFamilyMedHis),
+                              ],
+                            ),
+                            const SizedBox(height: 30),
+                            const Text(
+                              '👻',
+                              style: TextStyle(fontSize: 80),
+                            ),
+                            if (questionnaireProvider.hasFamilyMedHis == true)
+                              _buildFamilyHistoryInput(context),
+                          ],
                         ),
-                        child: ClipRRect(
-                          borderRadius: BorderRadius.circular(5),
-                          child: const LinearProgressIndicator(
-                            value: 0.55,
-                            backgroundColor: Colors.transparent,
-                            color: Colors.white,
+                        GestureDetector(
+                          onTap: questionnaireProvider.isFamMedHisContinueButtonActive
+                              ? () => context.goNamed(RouteNames.questionScreen13)
+                              : null,
+                          child: Container(
+                            width: double.infinity,
+                            padding: const EdgeInsets.symmetric(vertical: 15),
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                colors: [
+                                  Colors.blue.withOpacity(0.8),
+                                  Colors.purple.withOpacity(0.8)
+                                ],
+                                begin: Alignment.topLeft,
+                                end: Alignment.bottomRight,
+                              ),
+                              borderRadius: BorderRadius.circular(15),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withOpacity(0.2),
+                                  spreadRadius: 1,
+                                  blurRadius: 5,
+                                  offset: const Offset(0, 3),
+                                ),
+                              ],
+                            ),
+                            child: const Text(
+                              'Continue',
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
                           ),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 30),
-                _buildStrokedText(
-                    "Any family medical history?", screenWidth * 0.08),
-                const SizedBox(height: 20),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    _buildOptionChip(context, "Yes", true,
-                        questionnaireProvider.hasFamilyMedHis),
-                    const SizedBox(width: 20),
-                    _buildOptionChip(context, "No", false,
-                        questionnaireProvider.hasFamilyMedHis),
-                  ],
-                ),
-                const Spacer(),
-                if (questionnaireProvider.hasFamilyMedHis == true)
-                  _buildFamilyHistoryInput(context),
-                const SizedBox(height: 40),
-                GestureDetector(
-                  onTap: questionnaireProvider.isFamMedHisContinueButtonActive
-                      ? () => context.goNamed(RouteNames.questionScreen13)
-                      : null,
-                  child: Container(
-                    width: double.infinity,
-                    padding: const EdgeInsets.symmetric(vertical: 15),
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        colors: [
-                          Colors.blue.withOpacity(0.8),
-                          Colors.purple.withOpacity(0.8)
-                        ],
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                      ),
-                      borderRadius: BorderRadius.circular(15),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withOpacity(0.2),
-                          spreadRadius: 1,
-                          blurRadius: 5,
-                          offset: const Offset(0, 3),
                         ),
                       ],
                     ),
-                    child: const Text(
-                      'Continue',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
                   ),
                 ),
-              ],
-            ),
+              );
+            },
           ),
         ),
       ),
@@ -169,19 +187,33 @@ class _QuestionScreen12State extends State<QuestionScreen12>
         Provider.of<QuestionnaireProvider>(context, listen: false);
     final bool isSelected = currentValue == value;
 
+    Color backgroundColor;
+    Color textColor;
+
+    if (value) {
+      // This is the "Yes" option
+      backgroundColor =
+          isSelected ? Colors.red.withOpacity(0.7) : Colors.white.withOpacity(0.7);
+      textColor = isSelected ? Colors.white : Colors.black87;
+    } else {
+      // This is the "No" option
+      backgroundColor = isSelected
+          ? Colors.green.withOpacity(0.7)
+          : Colors.white.withOpacity(0.7);
+      textColor = isSelected ? Colors.white : Colors.black87;
+    }
+
     return GestureDetector(
       onTap: () {
         questionnaireProvider.setHasFamilyMedHis(value);
       },
       child: Chip(
         label: Text(label),
-        backgroundColor: isSelected
-            ? Colors.blue.withOpacity(0.5)
-            : Colors.white.withOpacity(0.2),
+        backgroundColor: backgroundColor,
         labelStyle: TextStyle(
           fontSize: 18,
           fontWeight: FontWeight.bold,
-          color: isSelected ? Colors.white : Colors.white70,
+          color: textColor,
         ),
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
       ),
