@@ -39,14 +39,9 @@ class DiveReflexScreen extends StatelessWidget {
             // Title Section
             Padding(
               padding: EdgeInsets.all(screenWidth * 0.04),
-              child: Text(
+              child: _buildStrokedText(
                 "Dive Reflex Relaxation",
-                style: TextStyle(
-                  fontSize: screenWidth * 0.07,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white,
-                ),
-                textAlign: TextAlign.center,
+                screenWidth * 0.07,
               ),
             ),
             SizedBox(height: screenHeight * 0.02),
@@ -56,14 +51,6 @@ class DiveReflexScreen extends StatelessWidget {
               height: screenHeight * 0.3,
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(screenWidth * 0.05),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.1),
-                    spreadRadius: 5,
-                    blurRadius: 7,
-                    offset: const Offset(0, 3),
-                  ),
-                ],
                 image: const DecorationImage(
                   image: AssetImage("assets/meditation.png"),
                   fit: BoxFit.contain,
@@ -78,8 +65,10 @@ class DiveReflexScreen extends StatelessWidget {
               child: Column(
                 children: [
                   // Start Relax Button
-                  ElevatedButton(
-                    onPressed: () {
+                  _buildGradientButton(
+                    context,
+                    "Start Relax",
+                    () {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
@@ -87,36 +76,16 @@ class DiveReflexScreen extends StatelessWidget {
                         ),
                       );
                     },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.blueAccent,
-                      padding: EdgeInsets.symmetric(
-                        horizontal: screenWidth * 0.25,
-                        vertical: screenHeight * 0.025,
-                      ),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(25),
-                        side: const BorderSide(
-                          color: Colors.white,
-                          width: 3,
-                        ),
-                      ),
-                      elevation: 10,
-                      shadowColor: Colors.blueAccent.withOpacity(0.5),
-                    ),
-                    child: Text(
-                      "Start Relax",
-                      style: TextStyle(
-                        fontSize: screenWidth * 0.06,
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
+                    [Colors.blue.withOpacity(0.8), Colors.purple.withOpacity(0.8)],
+                    screenWidth * 0.06,
                   ),
                   SizedBox(height: screenHeight * 0.03),
 
                   // Video Guide Button
-                  ElevatedButton.icon(
-                    onPressed: () {
+                  _buildGradientButton(
+                    context,
+                    "Video Guide",
+                    () {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
@@ -124,37 +93,17 @@ class DiveReflexScreen extends StatelessWidget {
                         ),
                       );
                     },
-                    icon: const Icon(Icons.play_circle, color: Colors.white),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.orangeAccent,
-                      padding: EdgeInsets.symmetric(
-                        horizontal: screenWidth * 0.2,
-                        vertical: screenHeight * 0.025,
-                      ),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(25),
-                        side: const BorderSide(
-                          color: Colors.white,
-                          width: 3,
-                        ),
-                      ),
-                      elevation: 10,
-                      shadowColor: Colors.orangeAccent.withOpacity(0.5),
-                    ),
-                    label: Text(
-                      "Video Guide",
-                      style: TextStyle(
-                        fontSize: screenWidth * 0.05,
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
+                    [Colors.orange.withOpacity(0.8), Colors.red.withOpacity(0.8)],
+                    screenWidth * 0.05,
+                    icon: Icons.play_circle,
                   ),
                   SizedBox(height: screenHeight * 0.02),
 
                   // Text Guide Button
-                  ElevatedButton.icon(
-                    onPressed: () {
+                  _buildGradientButton(
+                    context,
+                    "Text Guide",
+                    () {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
@@ -162,33 +111,90 @@ class DiveReflexScreen extends StatelessWidget {
                         ),
                       );
                     },
-                    icon: const Icon(Icons.article, color: Colors.white),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.greenAccent,
-                      padding: EdgeInsets.symmetric(
-                        horizontal: screenWidth * 0.2,
-                        vertical: screenHeight * 0.025,
-                      ),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(25),
-                        side: const BorderSide(
-                          color: Colors.white,
-                          width: 3,
-                        ),
-                      ),
-                      elevation: 10,
-                      shadowColor: Colors.greenAccent.withOpacity(0.5),
-                    ),
-                    label: Text(
-                      "Text Guide",
-                      style: TextStyle(
-                        fontSize: screenWidth * 0.05,
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
+                    [Colors.green.withOpacity(0.8), Colors.teal.withOpacity(0.8)],
+                    screenWidth * 0.05,
+                    icon: Icons.article,
                   ),
                 ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildStrokedText(String text, double fontSize) {
+    return Stack(
+      children: <Widget>[
+        Text(
+          text,
+          textAlign: TextAlign.center,
+          style: TextStyle(
+            fontSize: fontSize,
+            fontWeight: FontWeight.bold,
+            foreground: Paint()
+              ..style = PaintingStyle.stroke
+              ..strokeWidth = 2
+              ..color = Colors.black,
+          ),
+        ),
+        Text(
+          text,
+          textAlign: TextAlign.center,
+          style: TextStyle(
+            fontSize: fontSize,
+            fontWeight: FontWeight.bold,
+            color: const Color.fromARGB(255, 214, 129, 216),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildGradientButton(BuildContext context, String text,
+      VoidCallback onPressed, List<Color> colors, double fontSize,
+      {IconData? icon}) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final screenHeight = MediaQuery.of(context).size.height;
+
+    return GestureDetector(
+      onTap: onPressed,
+      child: Container(
+        width: double.infinity,
+        padding: EdgeInsets.symmetric(
+          vertical: screenHeight * 0.02,
+        ),
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: colors,
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+          borderRadius: BorderRadius.circular(15),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.2),
+              spreadRadius: 1,
+              blurRadius: 5,
+              offset: const Offset(0, 3),
+            ),
+          ],
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            if (icon != null) ...[
+              Icon(icon, color: Colors.white),
+              SizedBox(width: screenWidth * 0.02),
+            ],
+            Text(
+              text,
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: fontSize,
+                fontWeight: FontWeight.bold,
               ),
             ),
           ],
