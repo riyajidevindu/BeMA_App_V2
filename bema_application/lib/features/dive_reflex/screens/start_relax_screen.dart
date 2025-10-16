@@ -90,130 +90,92 @@ class _StartRelaxScreenState extends State<StartRelaxScreen> {
         automaticallyImplyLeading: false,
         elevation: 0,
       ),
-      body: Padding(
-        padding: EdgeInsets.symmetric(vertical: screenHeight * 0.02),
-        child: Center(
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(20),
-            child: BackdropFilter(
-              filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-              child: Container(
-                width: screenWidth * 0.9,
-                height: screenHeight * 0.75,
-                decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.2),
-                  borderRadius: BorderRadius.circular(20),
-                  border: Border.all(
-                    color: Colors.white.withOpacity(0.3),
+      body: PageView.builder(
+        controller: _pageController,
+        itemCount: steps.length,
+        onPageChanged: (index) {
+          setState(() {
+            _currentStep = index;
+            if (_currentStep == 3) {
+              _stopTimer();
+              _seconds = 0;
+            }
+          });
+        },
+        itemBuilder: (context, index) {
+          final step = steps[index];
+          return Padding(
+            padding: EdgeInsets.all(screenWidth * 0.05),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                _buildStrokedText(
+                  step['heading']!,
+                  screenWidth * 0.07,
+                ),
+                SizedBox(height: screenHeight * 0.02),
+                Container(
+                  height: screenHeight * 0.3,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(screenWidth * 0.05),
+                  ),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(screenWidth * 0.05),
+                    child: Image.asset(
+                      step['gif']!,
+                      fit: BoxFit.cover,
+                    ),
                   ),
                 ),
-                child: PageView.builder(
-                  controller: _pageController,
-                  itemCount: steps.length,
-                  onPageChanged: (index) {
-                    setState(() {
-                      _currentStep = index;
-                      if (_currentStep == 3) {
-                        _stopTimer();
-                        _seconds = 0;
-                      }
-                    });
-                  },
-                  itemBuilder: (context, index) {
-                    final step = steps[index];
-                    return Padding(
-                      padding: EdgeInsets.all(screenWidth * 0.05),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Text(
-                            step['heading']!,
-                            style: TextStyle(
-                              fontSize: screenWidth * 0.07,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.white,
-                            ),
-                            textAlign: TextAlign.center,
-                          ),
-                          SizedBox(height: screenHeight * 0.02),
-                          Container(
-                            height: screenHeight * 0.3,
-                            decoration: BoxDecoration(
-                              borderRadius:
-                                  BorderRadius.circular(screenWidth * 0.05),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.black.withOpacity(0.1),
-                                  spreadRadius: 5,
-                                  blurRadius: 7,
-                                  offset: const Offset(0, 3),
-                                ),
-                              ],
-                            ),
-                            child: ClipRRect(
-                              borderRadius:
-                                  BorderRadius.circular(screenWidth * 0.05),
-                              child: Image.asset(
-                                step['gif']!,
-                                fit: BoxFit.cover,
-                              ),
-                            ),
-                          ),
-                          SizedBox(height: screenHeight * 0.02),
-                          Text(
-                            step['content']!,
-                            style: TextStyle(
-                              fontSize: screenWidth * 0.05,
-                              color: Colors.white70,
-                            ),
-                            textAlign: TextAlign.center,
-                          ),
-                          if (index == 3) ...[
-                            SizedBox(height: screenHeight * 0.02),
-                            Text(
-                              "Time in water: $_seconds s",
-                              style: TextStyle(
-                                fontSize: screenWidth * 0.06,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.redAccent,
-                              ),
-                              textAlign: TextAlign.center,
-                            ),
-                            SizedBox(height: screenHeight * 0.02),
-                            ElevatedButton(
-                              onPressed:
-                                  _isTimerRunning ? _stopTimer : _startTimer,
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: _isTimerRunning
-                                    ? Colors.redAccent
-                                    : Colors.blueAccent,
-                                padding: EdgeInsets.symmetric(
-                                  horizontal: screenWidth * 0.1,
-                                  vertical: screenHeight * 0.02,
-                                ),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(25),
-                                ),
-                              ),
-                              child: Text(
-                                _isTimerRunning ? "Stop Timer" : "Start Timer",
-                                style: TextStyle(
-                                  fontSize: screenWidth * 0.05,
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ],
-                      ),
-                    );
-                  },
+                SizedBox(height: screenHeight * 0.02),
+                Text(
+                  step['content']!,
+                  style: TextStyle(
+                    fontSize: screenWidth * 0.05,
+                    color: const Color.fromARGB(255, 41, 10, 176),
+                  ),
+                  textAlign: TextAlign.center,
                 ),
-              ),
+                if (index == 3) ...[
+                  SizedBox(height: screenHeight * 0.02),
+                  Text(
+                    "Time in water: $_seconds s",
+                    style: TextStyle(
+                      fontSize: screenWidth * 0.06,
+                      fontWeight: FontWeight.bold,
+                      color: const Color.fromARGB(255, 87, 152, 12),
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                  SizedBox(height: screenHeight * 0.02),
+                  ElevatedButton(
+                    onPressed: _isTimerRunning ? _stopTimer : _startTimer,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: _isTimerRunning
+                          ? const Color.fromARGB(255, 108, 236, 83)
+                          : Colors.blueAccent,
+                      padding: EdgeInsets.symmetric(
+                        horizontal: screenWidth * 0.1,
+                        vertical: screenHeight * 0.02,
+                      ),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(25),
+                      ),
+                    ),
+                    child: Text(
+                      _isTimerRunning ? "Stop Timer" : "Start Timer",
+                      style: TextStyle(
+                        fontSize: screenWidth * 0.05,
+                        color: const Color.fromARGB(255, 123, 224, 187),
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ],
+              ],
             ),
-          ),
-        ),
+          );
+        },
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
@@ -236,6 +198,34 @@ class _StartRelaxScreenState extends State<StartRelaxScreen> {
         elevation: 0,
         child: const Icon(Icons.arrow_forward, color: Colors.blueAccent),
       ),
+    );
+  }
+
+  Widget _buildStrokedText(String text, double fontSize) {
+    return Stack(
+      children: <Widget>[
+        Text(
+          text,
+          textAlign: TextAlign.center,
+          style: TextStyle(
+            fontSize: fontSize,
+            fontWeight: FontWeight.bold,
+            foreground: Paint()
+              ..style = PaintingStyle.stroke
+              ..strokeWidth = 2
+              ..color = Colors.black,
+          ),
+        ),
+        Text(
+          text,
+          textAlign: TextAlign.center,
+          style: TextStyle(
+            fontSize: fontSize,
+            fontWeight: FontWeight.bold,
+            color: const Color.fromARGB(255, 229, 94, 229),
+          ),
+        ),
+      ],
     );
   }
 }
