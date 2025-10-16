@@ -48,6 +48,12 @@ class _ThankYouScreenState extends State<ThankYouScreen>
     super.dispose();
   }
 
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    precacheImage(const AssetImage('assets/thank_many.png'), context);
+  }
+
   Future<void> _saveDataToFirestore(BuildContext context) async {
     setState(() {
       _isSaving = true;
@@ -159,7 +165,20 @@ class _ThankYouScreenState extends State<ThankYouScreen>
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 const Spacer(),
-                _buildStrokedText("🎉 Thank You! 🎉", screenWidth * 0.08),
+                ScaleTransition(
+                  scale: Tween<double>(begin: 0.9, end: 1.0).animate(
+                    CurvedAnimation(
+                      parent: _animationController,
+                      curve: Curves.easeInOut,
+                    ),
+                  ),
+                  child: _buildStrokedText("🎉 Thank You! 🎉", screenWidth * 0.08),
+                ),
+                const SizedBox(height: 40),
+                Image.asset(
+                  'assets/thank_many.png',
+                  height: 200,
+                ),
                 const SizedBox(height: 20),
                 Text(
                   "We're excited to help you on your health journey!",
