@@ -1,20 +1,23 @@
-import 'dart:typed_data';
 import 'package:bema_application/services/api_service.dart';
 import 'package:flutter/material.dart';
-import 'chat_message.dart';
+import 'package:dash_chat_2/dash_chat_2.dart';
 
 class ChatProvider extends ChangeNotifier {
   final List<ChatMessage> _messages = [];
   final ApiService _apiService = ApiService();
-  bool _isTyping = false;
+  bool _isBotTyping = false;
 
   List<ChatMessage> get messages => _messages;
-  bool get isTyping => _isTyping;
+  bool get isBotTyping => _isBotTyping;
 
   Future<void> sendTextMessage(String userInput) async {
-    ChatMessage userMessage = ChatMessage(text: userInput, sender: "user");
+    final userMessage = ChatMessage(
+      user: ChatUser(id: 'user'),
+      createdAt: DateTime.now(),
+      text: userInput,
+    );
     _messages.insert(0, userMessage);
-    _isTyping = true;
+    _isBotTyping = true;
     notifyListeners();
 
     var response = await _apiService.askBotQuestion(userInput);
@@ -22,32 +25,34 @@ class ChatProvider extends ChangeNotifier {
       final answer = response["answer"];
       if (answer is List) {
         for (final part in answer) {
-          _messages.insert(0, ChatMessage(text: part, sender: "AI"));
+          _messages.insert(
+              0,
+              ChatMessage(
+                user: ChatUser(id: 'bot'),
+                createdAt: DateTime.now(),
+                text: part,
+              ));
         }
       } else if (answer is String) {
-        _messages.insert(0, ChatMessage(text: answer, sender: "AI"));
+        _messages.insert(
+            0,
+            ChatMessage(
+              user: ChatUser(id: 'bot'),
+              createdAt: DateTime.now(),
+              text: answer,
+            ));
       }
     } else {
-      _messages.insert(0, const ChatMessage(text: "Sorry, I couldn't process your request.", sender: "AI"));
+      _messages.insert(
+          0,
+          ChatMessage(
+            user: ChatUser(id: 'bot'),
+            createdAt: DateTime.now(),
+            text: "Sorry, I couldn't process your request.",
+          ));
     }
 
-    _isTyping = false;
-    notifyListeners();
-  }
-
-  Future<void> sendAudioMessage(Uint8List audioData) async {
-    _messages.insert(0, const ChatMessage(sender: "user", isAudioMessage: true));
-    _isTyping = true;
-    notifyListeners();
-
-    Uint8List? audioResponse = await _apiService.sendAudioAndGetResponse(audioData);
-    if (audioResponse != null) {
-      _messages.insert(0, ChatMessage(sender: "AI", audioBytes: audioResponse));
-    } else {
-      _messages.insert(0, const ChatMessage(text: "Sorry, I couldn't process your audio message.", sender: "AI"));
-    }
-
-    _isTyping = false;
+    _isBotTyping = false;
     notifyListeners();
   }
 }

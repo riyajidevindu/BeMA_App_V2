@@ -120,35 +120,35 @@ class _MoodFriendState extends State<MoodFriend> with TickerProviderStateMixin {
     );
   }
 
-  Future<void> _sendAudioMessage(BuildContext context) async {
-    if (recordingFilePath != null) {
-      final file = File(recordingFilePath!);
-      if (await file.exists()) {
-        final bytes = await file.readAsBytes();
-        if (bytes.isNotEmpty) {
-          final chatProvider = Provider.of<ChatProvider>(context, listen: false);
-          setState(() {
-            _isLoading = true;
-            _isModelRotating = true;
-            _statusText = "Thinking...";
-          });
-          await chatProvider.sendAudioMessage(bytes);
-          setState(() {
-            _isLoading = false;
-            _isModelRotating = false;
-            _statusText = null; // Hide cloud when done
-          });
+  // Future<void> _sendAudioMessage(BuildContext context) async {
+  //   if (recordingFilePath != null) {
+  //     final file = File(recordingFilePath!);
+  //     if (await file.exists()) {
+  //       final bytes = await file.readAsBytes();
+  //       if (bytes.isNotEmpty) {
+  //         final chatProvider = Provider.of<ChatProvider>(context, listen: false);
+  //         setState(() {
+  //           _isLoading = true;
+  //           _isModelRotating = true;
+  //           _statusText = "Thinking...";
+  //         });
+  //         // await chatProvider.sendAudioMessage(bytes);
+  //         setState(() {
+  //           _isLoading = false;
+  //           _isModelRotating = false;
+  //           _statusText = null; // Hide cloud when done
+  //         });
 
-          if (chatProvider.messages.isNotEmpty) {
-            var lastMessage = chatProvider.messages.first;
-            if (lastMessage.audioBytes != null) {
-              _playAudio(lastMessage.audioBytes!);
-            }
-          }
-        }
-      }
-    }
-  }
+  //         if (chatProvider.messages.isNotEmpty) {
+  //           var lastMessage = chatProvider.messages.first;
+  //           // if (lastMessage.audioBytes != null) {
+  //           //   _playAudio(lastMessage.audioBytes!);
+  //           // }
+  //         }
+  //       }
+  //     }
+  //   }
+  // }
 
   Future<void> _playAudio(Uint8List audioBytes) async {
     final tempDir = await getTemporaryDirectory();
@@ -289,7 +289,7 @@ class _MoodFriendState extends State<MoodFriend> with TickerProviderStateMixin {
                                     recordingFilePath = filePath;
                                     _statusText = "Thinking...";
                                   });
-                                  await _sendAudioMessage(context);
+                                  // await _sendAudioMessage(context);
                                 }
                               } else {
                                 if (await _audioRecorder.hasPermission()) {
