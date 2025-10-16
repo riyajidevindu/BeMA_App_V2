@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'dart:typed_data';
+import 'package:animated_background/animated_background.dart';
 import 'package:bema_application/common/config/colors.dart';
 import 'package:bema_application/common/widgets/app_bar.dart';
 import 'package:flutter/material.dart';
@@ -16,7 +17,7 @@ class ChatScreen extends StatefulWidget {
   State<ChatScreen> createState() => _ChatScreenState();
 }
 
-class _ChatScreenState extends State<ChatScreen> {
+class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
   final TextEditingController _controller = TextEditingController();
   final Map<int, AudioPlayer> _audioPlayers = {};
   final Map<int, bool> _isPlayingMap = {};
@@ -239,31 +240,55 @@ class _ChatScreenState extends State<ChatScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: backgroundColor,
+      backgroundColor: Colors.lightBlue.shade100,
       appBar: AppBar(
-        backgroundColor: backgroundColor,
+        backgroundColor: Colors.transparent,
+        elevation: 0,
         title: const CustomAppBar(showBackButton: true),
         automaticallyImplyLeading: false,
       ),
-      body: Column(
-        children: [
-          Expanded(
-            child: Consumer<ChatProvider>(
-              builder: (context, chatProvider, _) {
-                return ListView.builder(
-                  reverse: true,
-                  itemCount: chatProvider.messages.length,
-                  itemBuilder: (context, index) {
-                    final message = chatProvider.messages[index];
-                    final isUser = message.sender == "user";
-                    return _buildChatBubble(message, isUser, index);
-                  },
-                );
-              },
-            ),
-          ),
-          _buildTextComposer(context),
-        ],
+      body: SafeArea(
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            return AnimatedBackground(
+              behaviour: RandomParticleBehaviour(
+                options: const ParticleOptions(
+                  baseColor: Colors.white,
+                  spawnOpacity: 0.0,
+                  opacityChangeRate: 0.25,
+                  minOpacity: 0.1,
+                  maxOpacity: 0.4,
+                  spawnMinSpeed: 30.0,
+                  spawnMaxSpeed: 70.0,
+                  spawnMinRadius: 7.0,
+                  spawnMaxRadius: 15.0,
+                  particleCount: 50,
+                ),
+              ),
+              vsync: this,
+              child: Column(
+                children: [
+                  Expanded(
+                    child: Consumer<ChatProvider>(
+                      builder: (context, chatProvider, _) {
+                        return ListView.builder(
+                          reverse: true,
+                          itemCount: chatProvider.messages.length,
+                          itemBuilder: (context, index) {
+                            final message = chatProvider.messages[index];
+                            final isUser = message.sender == "user";
+                            return _buildChatBubble(message, isUser, index);
+                          },
+                        );
+                      },
+                    ),
+                  ),
+                  _buildTextComposer(context),
+                ],
+              ),
+            );
+          },
+        ),
       ),
     );
   }

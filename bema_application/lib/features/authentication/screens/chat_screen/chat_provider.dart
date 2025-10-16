@@ -19,11 +19,13 @@ class ChatProvider extends ChangeNotifier {
 
     var response = await _apiService.askBotQuestion(userInput);
     if (response != null && response.containsKey("answer")) {
-         List<String> answerParts = response["answer"];
-
-      // Add each part of the answer as a separate message in the correct order
-     for (int i = 0; i < answerParts.length; i++) {
-        _messages.insert(0, ChatMessage(text: answerParts[i], sender: "AI"));
+      final answer = response["answer"];
+      if (answer is List) {
+        for (final part in answer) {
+          _messages.insert(0, ChatMessage(text: part, sender: "AI"));
+        }
+      } else if (answer is String) {
+        _messages.insert(0, ChatMessage(text: answer, sender: "AI"));
       }
     } else {
       _messages.insert(0, const ChatMessage(text: "Sorry, I couldn't process your request.", sender: "AI"));

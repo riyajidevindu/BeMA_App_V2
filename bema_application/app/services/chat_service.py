@@ -134,7 +134,7 @@ def answer_question_with_memory(question: str):
             add_to_memory(f"User asked: {question}")
             add_to_memory(f"BEMA's raw response: {llm_response_json_str}")
 
-        return llm_response_json_str
+        return json.loads(llm_response_json_str)
         
     except requests.RequestException as e:
         print(f"❌ Error calling Ollama API: {e}")
