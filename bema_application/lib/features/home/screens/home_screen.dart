@@ -1,11 +1,10 @@
 import 'dart:ui';
 import 'package:bema_application/common/config/colors.dart';
 import 'package:bema_application/common/widgets/app_bar.dart';
-import 'package:bema_application/features/authentication/data/models/profile_service.dart';
-import 'package:bema_application/features/authentication/data/models/user_model.dart';
-import 'package:firebase_auth/firebase_auth.dart';
+import 'package:bema_application/features/authentication/providers/authentication_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:provider/provider.dart';
 import 'package:bema_application/routes/route_names.dart';
 import 'package:intl/intl.dart';
 import 'package:animated_text_kit/animated_text_kit.dart';
@@ -19,10 +18,7 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen>
     with SingleTickerProviderStateMixin {
-  final profileService = ProfileService();
-  String userName = 'User'; // Default name while loading
   String greetingMessage = 'Good Day'; // Default greeting
-  bool isLoading = true; // Track loading state
   String formattedDate = ""; // To hold the formatted date
   late AnimationController _animationController;
   late Animation<double> _fadeAnimation;
@@ -48,30 +44,9 @@ class _HomeScreenState extends State<HomeScreen>
     _slideAnimation =
         Tween<Offset>(begin: const Offset(0, 0.2), end: Offset.zero)
             .animate(_animationController);
-    getUser(); // Fetch user details when the screen loads
     _setGreetingMessage(); // Set the appropriate greeting message
     _setFormattedDate(); // Set the formatted date
-  }
-
-  /// Fetches the user profile data
-  Future<void> getUser() async {
-    try {
-      UserModel? user =
-          await profileService.getUser(FirebaseAuth.instance.currentUser!.uid);
-
-      if (user != null && user.name.isNotEmpty) {
-        setState(() {
-          userName = user.name;
-        });
-      }
-    } catch (e) {
-      debugPrint("Error fetching user data: $e");
-    } finally {
-      setState(() {
-        isLoading = false; // Set loading to false once data is fetched
-      });
-      _animationController.forward();
-    }
+    _animationController.forward();
   }
 
   /// Sets the greeting message based on the current time
@@ -120,8 +95,8 @@ class _HomeScreenState extends State<HomeScreen>
 
   @override
   Widget build(BuildContext context) {
-    final double screenWidth = MediaQuery.of(context).size.width;
-    final double screenHeight = MediaQuery.of(context).size.height;
+    final authProvider = Provider.of<AuthenticationProvider>(context);
+    final userName = authProvider.user?.name ?? 'User';
 
     return Scaffold(
       backgroundColor: Colors.transparent,
