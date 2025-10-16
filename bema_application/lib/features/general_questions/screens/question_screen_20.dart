@@ -127,6 +127,11 @@ class _QuestionScreen20State extends State<QuestionScreen20>
                     },
                   ),
                 ),
+                const SizedBox(height: 30),
+                const Text(
+                  '🤔💭',
+                  style: TextStyle(fontSize: 52),
+                ),
                 const SizedBox(height: 40),
                 GestureDetector(
                   onTap: questionnaireProvider.activeMode != null
