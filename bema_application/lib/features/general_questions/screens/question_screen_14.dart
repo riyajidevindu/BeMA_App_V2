@@ -138,7 +138,13 @@ class _QuestionScreen14State extends State<QuestionScreen14>
                     color: Colors.white70,
                   ),
                 ),
+                const SizedBox(height: 30),
                 const SizedBox(height: 40),
+                Image.asset(
+                  'assets/say_hi.png',
+                  height: 200,
+                ),
+                const Spacer(),
                 GestureDetector(
                   onTap: () {
                     context.goNamed(RouteNames.questionScreen15);
