@@ -156,7 +156,7 @@ class _DailytaskScreenState extends State<DailytaskScreen> {
                                 color: Colors.white,
                               ),
                             ),
-                            backgroundColor: Colors.blueAccent.shade200,
+                            backgroundColor: const Color.fromARGB(255, 31, 135, 156),
                           ),
                           Stack(
                             alignment: Alignment.center,
@@ -176,7 +176,7 @@ class _DailytaskScreenState extends State<DailytaskScreen> {
                                 style: const TextStyle(
                                   fontSize: 16,
                                   fontWeight: FontWeight.bold,
-                                  color: Colors.white,
+                                  color: Color.fromARGB(255, 2, 127, 83),
                                 ),
                               ),
                             ],
@@ -187,8 +187,8 @@ class _DailytaskScreenState extends State<DailytaskScreen> {
                       Text(
                         'Completed $completedCount / $totalTasks tasks',
                         style: const TextStyle(
-                          fontSize: 16,
-                          color: Colors.white70,
+                          fontSize: 20,
+                          color: Color.fromARGB(179, 2, 5, 178),
                         ),
                       ),
                     ],
@@ -240,14 +240,14 @@ class _DailytaskScreenState extends State<DailytaskScreen> {
                                           MainAxisAlignment.center,
                                       children: [
                                         Icon(task.icon,
-                                            size: 50, color: Colors.white),
+                                            size: 50, color: const Color.fromARGB(255, 155, 3, 193)),
                                         const SizedBox(height: 10),
                                         Text(
                                           task.title,
                                           style: const TextStyle(
                                             fontSize: 24,
                                             fontWeight: FontWeight.w700,
-                                            color: Colors.white,
+                                            color: Color.fromARGB(255, 86, 1, 244),
                                           ),
                                         ),
                                         const SizedBox(height: 8),
@@ -256,7 +256,7 @@ class _DailytaskScreenState extends State<DailytaskScreen> {
                                           textAlign: TextAlign.center,
                                           style: const TextStyle(
                                             fontSize: 16,
-                                            color: Colors.white70,
+                                            color: Color.fromARGB(179, 3, 102, 148),
                                           ),
                                         ),
                                         const SizedBox(height: 20),
