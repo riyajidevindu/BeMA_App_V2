@@ -101,7 +101,7 @@ class _TasksSectionHomeState extends State<TasksSectionHome>
                     "Choose a task to proceed",
                     style: TextStyle(
                       fontSize: 18,
-                      color: Colors.white70,
+                      color: Color.fromARGB(179, 5, 25, 173),
                     ),
                   ),
                 ],

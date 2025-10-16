@@ -93,8 +93,10 @@ class _HomeScreenState extends State<HomeScreen>
   void _setFormattedDate() {
     final now = DateTime.now();
     final dayOfMonth = now.day;
-    final daySuffix = _getDaySuffix(dayOfMonth); // Get the correct day suffix (e.g., 1st, 2nd)
-    final formattedDay = DateFormat('EEEE').format(now); // Get the day of the week (e.g., Monday)
+    final daySuffix = _getDaySuffix(
+        dayOfMonth); // Get the correct day suffix (e.g., 1st, 2nd)
+    final formattedDay = DateFormat('EEEE')
+        .format(now); // Get the day of the week (e.g., Monday)
 
     setState(() {
       formattedDate = "$dayOfMonth$daySuffix $formattedDay";
@@ -169,12 +171,12 @@ class _HomeScreenState extends State<HomeScreen>
                               "$greetingMessage, $userName!",
                               textStyle: const TextStyle(
                                 fontSize: 22,
-                                color: Colors.white,
+                                color: Color.fromARGB(255, 3, 112, 3),
                                 fontWeight: FontWeight.bold,
                                 shadows: [
                                   Shadow(
                                     blurRadius: 10.0,
-                                    color: Colors.black,
+                                    color: Color.fromARGB(255, 235, 226, 132),
                                     offset: Offset(0, 0),
                                   ),
                                 ],
@@ -190,7 +192,7 @@ class _HomeScreenState extends State<HomeScreen>
                           formattedDate, // Dynamically set date here
                           style: const TextStyle(
                             fontSize: 18,
-                            color: Colors.white70,
+                            color: Color.fromARGB(179, 5, 19, 215),
                           ),
                         ),
                       ],
@@ -216,8 +218,7 @@ class _HomeScreenState extends State<HomeScreen>
                           _buildCard(
                             avatar: const CircleAvatar(
                               radius: 35,
-                              backgroundImage:
-                                  AssetImage('assets/tasks.png'),
+                              backgroundImage: AssetImage('assets/tasks.png'),
                             ),
                             title: "Daily Task",
                             subtitle: "Your Health Guide",
@@ -232,8 +233,7 @@ class _HomeScreenState extends State<HomeScreen>
                           _buildCard(
                             avatar: const CircleAvatar(
                               radius: 35,
-                              backgroundImage:
-                                  AssetImage('assets/relax.png'),
+                              backgroundImage: AssetImage('assets/relax.png'),
                             ),
                             title: "Relax Section",
                             subtitle: "Relax Your Mind",
@@ -248,8 +248,7 @@ class _HomeScreenState extends State<HomeScreen>
                           _buildCard(
                             avatar: const CircleAvatar(
                               radius: 35,
-                              backgroundImage:
-                                  AssetImage('assets/score.png'),
+                              backgroundImage: AssetImage('assets/score.png'),
                             ),
                             title: "Your Points",
                             subtitle: "Check Your Progress",
@@ -333,7 +332,7 @@ class _HomeScreenState extends State<HomeScreen>
                         textAlign: TextAlign.center,
                         style: const TextStyle(
                           fontSize: 14,
-                          color: Colors.white70,
+                          color: Color.fromARGB(179, 255, 255, 255),
                         ),
                       ),
                     ],

@@ -109,7 +109,7 @@ class _RelaxSectionHomeState extends State<RelaxSectionHome>
                     "Choose an option to relax",
                     style: TextStyle(
                       fontSize: 18,
-                      color: Colors.white70,
+                      color: Color.fromARGB(179, 6, 42, 141),
                     ),
                   ),
                 ],
