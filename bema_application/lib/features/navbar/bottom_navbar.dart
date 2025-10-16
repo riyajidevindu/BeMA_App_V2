@@ -86,10 +86,11 @@ class _BNavbarScreenState extends State<BNavbarScreen>
           ),
         ],
       ),
-      bottomNavigationBar: Container(
-        margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-        decoration: BoxDecoration(
-          color: Colors.white,
+      bottomNavigationBar: SafeArea(
+        child: Container(
+          margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+          decoration: BoxDecoration(
+            color: Colors.white,
           borderRadius: BorderRadius.circular(30),
           boxShadow: [
             BoxShadow(
@@ -139,7 +140,7 @@ class _BNavbarScreenState extends State<BNavbarScreen>
           elevation: 10, // Add some elevation to give a floating effect
           borderRadius: const Radius.circular(30),
         ),
-      ),
+      )),
     );
   }
 }

@@ -89,7 +89,7 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
                   alignment: Alignment.center,
                   children: [
                     SizedBox(
-                      height: 100,
+                      height: constraints.maxHeight * 0.2,
                       child: PageView(
                         controller: _pageController,
                         scrollDirection: Axis.horizontal,
@@ -347,8 +347,10 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
   }
 
   Widget buildFilterSection() {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+    return Wrap(
+      spacing: 8.0,
+      runSpacing: 4.0,
+      alignment: WrapAlignment.center,
       children: [
         buildFilterChip('All'),
         buildFilterChip('Completed'),
