@@ -131,6 +131,11 @@ class _QuestionScreen17State extends State<QuestionScreen17>
                     },
                   ),
                 ),
+                const SizedBox(height: 30),
+                const Text(
+                  '🙈',
+                  style: TextStyle(fontSize: 80),
+                ),
                 const SizedBox(height: 40),
                 GestureDetector(
                   onTap: questionnaireProvider.alcoholStatus != null
