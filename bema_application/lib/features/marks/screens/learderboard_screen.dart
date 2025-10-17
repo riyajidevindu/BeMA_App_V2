@@ -228,7 +228,7 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
                 style: TextStyle(
                   fontSize: fontSizePoints,
                   fontWeight: FontWeight.bold,
-                  color: Colors.white,
+                  color: const Color.fromARGB(255, 98, 7, 202),
                 ),
               ),
             ],
@@ -254,7 +254,7 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
             color: Colors.white.withOpacity(0.2),
             borderRadius: BorderRadius.circular(20),
             border: Border.all(
-              color: Colors.black,
+              color: const Color.fromARGB(255, 1, 81, 146),
               width: 2,
             ),
             boxShadow: [
@@ -271,7 +271,7 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
             children: [
               Row(
                 children: [
-                  Icon(icon, color: Colors.white, size: iconSize),
+                  Icon(icon, color: const Color.fromARGB(255, 209, 3, 99), size: iconSize),
                   const SizedBox(width: 10),
                   Expanded(
                     child: _buildStrokedText(
@@ -285,15 +285,15 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
                         const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                     decoration: BoxDecoration(
                       color: completed
-                          ? Colors.green.withOpacity(0.5)
-                          : Colors.orangeAccent.withOpacity(0.5),
+                          ? const Color.fromARGB(255, 35, 230, 42).withOpacity(0.5)
+                          : const Color.fromARGB(255, 255, 220, 64).withOpacity(0.5),
                       borderRadius: BorderRadius.circular(6),
                     ),
                     child: Text(
                       completed ? 'Completed' : marksText,
                       style: const TextStyle(
                         fontWeight: FontWeight.bold,
-                        color: Colors.white,
+                        color: Color.fromARGB(255, 23, 8, 230),
                       ),
                     ),
                   ),
@@ -313,18 +313,18 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
                 children: [
                   const Text(
                     '0%',
-                    style: TextStyle(fontSize: 12, color: Colors.white70),
+                    style: TextStyle(fontSize: 12, color: Color.fromARGB(179, 236, 15, 15)),
                   ),
                   Text(
                     '$progressPercentage%',
                     style: const TextStyle(
                         fontSize: 12,
                         fontWeight: FontWeight.bold,
-                        color: Colors.white),
+                        color: Color.fromARGB(255, 3, 15, 180)),
                   ),
                   const Text(
                     '100%',
-                    style: TextStyle(fontSize: 12, color: Colors.white70),
+                    style: TextStyle(fontSize: 12, color: Color.fromARGB(179, 25, 109, 4)),
                   ),
                 ],
               ),
@@ -338,11 +338,11 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
   /// Color based on progress for the progress bar
   Color getProgressColor(double progress) {
     if (progress >= 0.7) {
-      return Colors.green;
+      return const Color.fromARGB(255, 20, 133, 24);
     } else if (progress >= 0.3) {
       return Colors.blue;
     } else {
-      return Colors.redAccent;
+      return const Color.fromARGB(255, 170, 39, 39);
     }
   }
 
@@ -411,7 +411,7 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
           style: TextStyle(
             fontSize: fontSize,
             fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-            color: isSelected ? Colors.white : Colors.white.withOpacity(0.7),
+            color: isSelected ? const Color.fromARGB(255, 227, 217, 243) : Colors.white.withOpacity(0.7),
           ),
         ),
       ],
