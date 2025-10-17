@@ -21,10 +21,23 @@ async def query_voice(audio_file: UploadFile = File(...)):
         
         # Generate a response
         response = answer_question_with_memory(question=text)
-        response_text = response if isinstance(response, str) else str(response)
         
-        # Convert the response text to speech
-        audio_response = await text_to_speech(response_text)
+        # Extract only the "answer" part for TTS
+        answer_text = ""
+        if isinstance(response, dict):
+            answer_text = response.get("answer", "")
+        elif isinstance(response, str):
+            try:
+                response_dict = json.loads(response)
+                answer_text = response_dict.get("answer", response)
+            except json.JSONDecodeError:
+                answer_text = response
+        
+        if not answer_text:
+            raise HTTPException(status_code=500, detail="No answer found in response")
+        
+        # Convert only the answer text to speech
+        audio_response = await text_to_speech(answer_text)
         if not audio_response:
             raise HTTPException(status_code=500, detail="Failed to generate audio response")
         
