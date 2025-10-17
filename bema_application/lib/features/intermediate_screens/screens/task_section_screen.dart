@@ -3,8 +3,11 @@ import 'package:bema_application/features/daily_suggestions/screens/daily_sugges
 import 'package:bema_application/features/workout_plan/screens/workout_screen.dart';
 import 'package:bema_application/features/pose_coach/screens/pose_coach_screen.dart';
 import 'package:bema_application/features/pose_coach/screens/exercise_selection_screen.dart';
+import 'package:bema_application/features/pose_coach/screens/exercise_detail_screen.dart';
 import 'package:bema_application/features/pose_coach/screens/video_guide_screen.dart';
+import 'package:bema_application/features/pose_coach/screens/step_by_step_guide_screen.dart';
 import 'package:bema_application/features/pose_coach/models/exercise.dart';
+import 'package:bema_application/features/pose_coach/models/exercise_step.dart';
 import 'package:flutter/material.dart';
 import 'package:bema_application/routes/route_names.dart';
 import 'package:bema_application/common/widgets/app_bar.dart';
@@ -23,6 +26,21 @@ class TasksSectionScreen extends StatelessWidget {
           page = const WorkoutPlanScreen();
         } else if (settings.name == RouteNames.exerciseSelectionScreen) {
           page = const ExerciseSelectionScreen();
+        } else if (settings.name == RouteNames.exerciseDetailScreen) {
+          final exercise = settings.arguments as Exercise?;
+          page = exercise != null
+              ? ExerciseDetailScreen(exercise: exercise)
+              : const ExerciseSelectionScreen();
+        } else if (settings.name == RouteNames.stepByStepGuideScreen) {
+          final exercise = settings.arguments as Exercise?;
+          if (exercise != null) {
+            final guide = ExerciseGuide.getGuideByExerciseName(exercise.name);
+            page = guide != null
+                ? StepByStepGuideScreen(exercise: exercise, guide: guide)
+                : const ExerciseSelectionScreen();
+          } else {
+            page = const ExerciseSelectionScreen();
+          }
         } else if (settings.name == RouteNames.videoGuideScreen) {
           final exercise = settings.arguments as Exercise?;
           page = exercise != null

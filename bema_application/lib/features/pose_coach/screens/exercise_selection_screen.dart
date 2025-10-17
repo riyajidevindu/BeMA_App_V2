@@ -43,6 +43,8 @@ class _ExerciseSelectionScreenState extends State<ExerciseSelectionScreen>
   Widget build(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
     final crossAxisCount = screenWidth > 600 ? 3 : 2;
+    // Adjust aspect ratio based on screen size for better fit
+    final aspectRatio = screenWidth > 600 ? 0.8 : 0.68;
 
     return Scaffold(
       backgroundColor: Colors.transparent,
@@ -100,7 +102,7 @@ class _ExerciseSelectionScreenState extends State<ExerciseSelectionScreen>
                           crossAxisCount: crossAxisCount,
                           crossAxisSpacing: 16.0,
                           mainAxisSpacing: 16.0,
-                          childAspectRatio: 0.75,
+                          childAspectRatio: aspectRatio,
                         ),
                         itemCount: Exercise.allExercises.length,
                         itemBuilder: (context, index) {
@@ -120,6 +122,9 @@ class _ExerciseSelectionScreenState extends State<ExerciseSelectionScreen>
   }
 
   Widget _buildExerciseCard(BuildContext context, Exercise exercise) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final iconSize = screenWidth > 600 ? 70.0 : 60.0;
+
     Color cardColor;
     switch (exercise.type) {
       case ExerciseType.squats:
@@ -133,163 +138,131 @@ class _ExerciseSelectionScreenState extends State<ExerciseSelectionScreen>
         break;
     }
 
-    return Transform(
-      transform: Matrix4.identity()
-        ..setEntry(3, 2, 0.001)
-        ..rotateY(0.1),
-      alignment: FractionalOffset.center,
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(20),
-        child: BackdropFilter(
-          filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-          child: Container(
-            decoration: BoxDecoration(
-              color: cardColor.withOpacity(0.2),
-              borderRadius: BorderRadius.circular(20),
-              border: Border.all(
-                color: Colors.white.withOpacity(0.3),
-                width: 2,
-              ),
-              boxShadow: [
-                BoxShadow(
-                  color: cardColor.withOpacity(0.5),
-                  spreadRadius: 3,
-                  blurRadius: 10,
-                  offset: const Offset(0, 3),
+    return GestureDetector(
+      onTap: () {
+        Navigator.pushNamed(
+          context,
+          RouteNames.exerciseDetailScreen,
+          arguments: exercise,
+        );
+      },
+      child: Transform(
+        transform: Matrix4.identity()
+          ..setEntry(3, 2, 0.001)
+          ..rotateY(0.1),
+        alignment: FractionalOffset.center,
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(20),
+          child: BackdropFilter(
+            filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+            child: Container(
+              decoration: BoxDecoration(
+                color: cardColor.withOpacity(0.2),
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(
+                  color: Colors.white.withOpacity(0.3),
+                  width: 2,
                 ),
-              ],
-            ),
-            child: Padding(
-              padding: const EdgeInsets.all(12.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  // Exercise Icon/Image
-                  Expanded(
-                    flex: 3,
-                    child: Container(
+                boxShadow: [
+                  BoxShadow(
+                    color: cardColor.withOpacity(0.5),
+                    spreadRadius: 3,
+                    blurRadius: 10,
+                    offset: const Offset(0, 3),
+                  ),
+                ],
+              ),
+              child: Padding(
+                padding: EdgeInsets.all(screenWidth > 600 ? 16.0 : 12.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    // Exercise Icon/Image
+                    Container(
+                      width: iconSize,
+                      height: iconSize,
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
                         color: cardColor.withOpacity(0.3),
+                        border: Border.all(
+                          color: Colors.white.withOpacity(0.4),
+                          width: 2,
+                        ),
                       ),
                       child: Center(
                         child: Icon(
                           _getExerciseIcon(exercise.type),
-                          size: 60,
+                          size: iconSize * 0.5,
                           color: Colors.white,
                         ),
                       ),
                     ),
-                  ),
-                  const SizedBox(height: 10),
+                    SizedBox(height: screenWidth > 600 ? 15 : 10),
 
-                  // Exercise Name
-                  _buildStrokedText(exercise.name, 18),
-                  const SizedBox(height: 5),
+                    // Exercise Name
+                    _buildStrokedText(
+                        exercise.name, screenWidth > 600 ? 20 : 18),
+                    SizedBox(height: screenWidth > 600 ? 8 : 6),
 
-                  // Difficulty Badge
-                  Container(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                    decoration: BoxDecoration(
-                      color: _getDifficultyColor(exercise.difficulty),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Text(
-                      exercise.difficulty,
-                      style: const TextStyle(
-                        fontSize: 11,
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
+                    // Difficulty Badge
+                    Container(
+                      padding: EdgeInsets.symmetric(
+                          horizontal: screenWidth > 600 ? 12 : 10,
+                          vertical: screenWidth > 600 ? 6 : 4),
+                      decoration: BoxDecoration(
+                        color: _getDifficultyColor(exercise.difficulty),
+                        borderRadius: BorderRadius.circular(15),
                       ),
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-
-                  // Description
-                  Expanded(
-                    flex: 2,
-                    child: Text(
-                      exercise.description,
-                      textAlign: TextAlign.center,
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
-                        fontSize: 12,
-                        color: Color.fromARGB(200, 255, 255, 255),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 10),
-
-                  // Buttons
-                  Column(
-                    children: [
-                      // Watch Demo Button
-                      if (exercise.videoUrl != null)
-                        SizedBox(
-                          width: double.infinity,
-                          height: 32,
-                          child: ElevatedButton(
-                            onPressed: () {
-                              Navigator.pushNamed(
-                                context,
-                                RouteNames.videoGuideScreen,
-                                arguments: exercise,
-                              );
-                            },
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.white.withOpacity(0.2),
-                              padding: const EdgeInsets.symmetric(vertical: 6),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(10),
-                              ),
-                            ),
-                            child: const Text(
-                              '📹 Watch Demo',
-                              style: TextStyle(
-                                fontSize: 11,
-                                color: Colors.white,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ),
-                        ),
-                      const SizedBox(height: 6),
-
-                      // Start Coach Button
-                      SizedBox(
-                        width: double.infinity,
-                        height: 36,
-                        child: ElevatedButton(
-                          onPressed: () {
-                            Navigator.pushNamed(
-                              context,
-                              RouteNames.poseCoachScreen,
-                              arguments: exercise,
-                            );
-                          },
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: cardColor,
-                            padding: const EdgeInsets.symmetric(vertical: 8),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                          ),
-                          child: const Text(
-                            '🚀 Start Coach',
-                            style: TextStyle(
-                              fontSize: 12,
-                              color: Colors.white,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
+                      child: Text(
+                        exercise.difficulty,
+                        style: TextStyle(
+                          fontSize: screenWidth > 600 ? 12 : 11,
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
                         ),
                       ),
-                    ],
-                  ),
-                ],
+                    ),
+                    SizedBox(height: screenWidth > 600 ? 12 : 8),
+
+                    // Description - Flexible to adapt to available space
+                    Flexible(
+                      child: Text(
+                        exercise.description,
+                        textAlign: TextAlign.center,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          fontSize: screenWidth > 600 ? 13 : 12,
+                          color: const Color.fromARGB(200, 255, 255, 255),
+                          height: 1.2,
+                        ),
+                      ),
+                    ),
+                    SizedBox(height: screenWidth > 600 ? 12 : 8),
+
+                    // Tap to explore indicator
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(
+                          'Tap to explore',
+                          style: TextStyle(
+                            fontSize: screenWidth > 600 ? 12 : 11,
+                            color: Colors.white.withOpacity(0.7),
+                            fontStyle: FontStyle.italic,
+                          ),
+                        ),
+                        const SizedBox(width: 4),
+                        Icon(
+                          Icons.arrow_forward,
+                          size: screenWidth > 600 ? 14 : 12,
+                          color: Colors.white.withOpacity(0.7),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
               ),
             ),
           ),

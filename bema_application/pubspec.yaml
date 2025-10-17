@@ -99,6 +99,10 @@ flutter:
     - assets/squat_step_02.png
     - assets/squat_step_03.png
     - assets/squat_step_04.png
+    - assets/plank_step_01.png
+    - assets/plank_step_02.png
+    - assets/plank_step_03.png
+    - assets/plank_step_04.png
     - .env
   #   - images/a_dot_burr.jpeg
   #   - images/a_dot_ham.jpeg
