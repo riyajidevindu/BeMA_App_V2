@@ -19,8 +19,10 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
   @override
   void initState() {
     super.initState();
-    // Show emotion detection dialog when screen loads
-    WidgetsBinding.instance.addPostFrameCallback((_) {
+    // Load chat history first, then show emotion detection dialog
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      final chatProvider = Provider.of<ChatProvider>(context, listen: false);
+      await chatProvider.loadChatHistory();
       _showEmotionDetectionDialog();
     });
   }
@@ -130,6 +132,53 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
     }
   }
 
+  Future<void> _showClearChatDialog(ChatProvider chatProvider) async {
+    return showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: Row(
+          children: [
+            Icon(Icons.warning_amber_rounded, color: Colors.orange),
+            const SizedBox(width: 10),
+            const Text('Clear Chat History'),
+          ],
+        ),
+        content: const Text(
+          'Are you sure you want to clear all chat history? This action cannot be undone.',
+          style: TextStyle(fontSize: 16),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            onPressed: () async {
+              await chatProvider.clearChatHistory();
+              if (mounted) {
+                Navigator.pop(context);
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('Chat history cleared'),
+                    backgroundColor: Colors.green,
+                    behavior: SnackBarBehavior.floating,
+                    duration: Duration(seconds: 2),
+                  ),
+                );
+              }
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.red,
+              foregroundColor: Colors.white,
+            ),
+            child: const Text('Clear'),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -158,52 +207,78 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
         vsync: this,
         child: Consumer<ChatProvider>(
           builder: (context, chatProvider, child) {
-            return Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16.0),
-              child: DashChat(
-                currentUser: ChatUser(id: 'user', firstName: 'You'),
-                onSend: (ChatMessage message) {
-                  chatProvider.sendTextMessage(message.text);
-                },
-                messages: chatProvider.messages.map((m) {
-                  return ChatMessage(
-                    user: m.user.id == 'user'
-                        ? ChatUser(id: 'user', firstName: 'You')
-                        : ChatUser(
-                            id: 'bot',
-                            firstName: 'BEMA',
-                            profileImage: 'assets/logo.png',
-                          ),
-                    createdAt: m.createdAt,
-                    text: m.text,
-                  );
-                }).toList(),
-                typingUsers: chatProvider.isBotTyping
-                    ? [
-                        ChatUser(
-                          id: 'bot',
-                          firstName: 'BEMA',
-                          profileImage: 'assets/logo.png',
-                        )
-                      ]
-                    : [],
-                messageOptions: MessageOptions(
-                  currentUserContainerColor: Colors.lightBlueAccent,
-                  containerColor: Colors.white,
-                  textColor: Colors.black,
-                ),
-                inputOptions: InputOptions(
-                  inputDecoration: InputDecoration(
-                    hintText: 'Ask from BeMA...',
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(20),
+            return Column(
+              children: [
+                // Clear chat button below app bar
+                Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  child: ElevatedButton.icon(
+                    onPressed: () => _showClearChatDialog(chatProvider),
+                    icon: const Icon(Icons.delete_outline, size: 20),
+                    label: const Text('Clear Chat History'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.red.withOpacity(0.8),
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 16, vertical: 10),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(20),
+                      ),
                     ),
-                    filled: true,
-                    fillColor: Colors.white,
-                    contentPadding: const EdgeInsets.all(12),
                   ),
                 ),
-              ),
+                // Chat messages area
+                Expanded(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                    child: DashChat(
+                      currentUser: ChatUser(id: 'user', firstName: 'You'),
+                      onSend: (ChatMessage message) {
+                        chatProvider.sendTextMessage(message.text);
+                      },
+                      messages: chatProvider.messages.map((m) {
+                        return ChatMessage(
+                          user: m.user.id == 'user'
+                              ? ChatUser(id: 'user', firstName: 'You')
+                              : ChatUser(
+                                  id: 'bot',
+                                  firstName: 'BEMA',
+                                  profileImage: 'assets/logo.png',
+                                ),
+                          createdAt: m.createdAt,
+                          text: m.text,
+                        );
+                      }).toList(),
+                      typingUsers: chatProvider.isBotTyping
+                          ? [
+                              ChatUser(
+                                id: 'bot',
+                                firstName: 'BEMA',
+                                profileImage: 'assets/logo.png',
+                              )
+                            ]
+                          : [],
+                      messageOptions: MessageOptions(
+                        currentUserContainerColor: Colors.lightBlueAccent,
+                        containerColor: Colors.white,
+                        textColor: Colors.black,
+                      ),
+                      inputOptions: InputOptions(
+                        inputDecoration: InputDecoration(
+                          hintText: 'Ask from BeMA...',
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                          filled: true,
+                          fillColor: Colors.white,
+                          contentPadding: const EdgeInsets.all(12),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
             );
           },
         ),
