@@ -1,3 +1,4 @@
+import 'dart:math';
 import '../models/pose_session.dart';
 
 /// Feedback level for exercise form
@@ -48,28 +49,38 @@ abstract class ExerciseLogic {
   /// Get detailed form tips
   List<String> getFormTips();
 
-  /// Calculate angle between three points
+  /// Calculate angle between three points (point2 is the vertex)
   double calculateAngle(
     PoseLandmark point1,
     PoseLandmark point2,
     PoseLandmark point3,
   ) {
+    // Create vectors from vertex (point2) to the other two points
     final vector1X = point1.x - point2.x;
     final vector1Y = point1.y - point2.y;
     final vector2X = point3.x - point2.x;
     final vector2Y = point3.y - point2.y;
 
+    // Calculate dot product
     final dotProduct = vector1X * vector2X + vector1Y * vector2Y;
-    final magnitude1 =
-        (vector1X * vector1X + vector1Y * vector1Y).abs().toDouble();
-    final magnitude2 =
-        (vector2X * vector2X + vector2Y * vector2Y).abs().toDouble();
+
+    // Calculate magnitudes (lengths) of the vectors
+    final magnitude1 = sqrt(vector1X * vector1X + vector1Y * vector1Y);
+    final magnitude2 = sqrt(vector2X * vector2X + vector2Y * vector2Y);
 
     if (magnitude1 == 0 || magnitude2 == 0) return 0.0;
 
+    // Calculate cosine of angle
     final cosAngle = dotProduct / (magnitude1 * magnitude2);
-    final angleRad = cosAngle.clamp(-1.0, 1.0);
-    return angleRad * 57.2958; // Convert to degrees
+
+    // Clamp to valid range for acos
+    final clampedCos = cosAngle.clamp(-1.0, 1.0);
+
+    // Calculate angle in radians, then convert to degrees
+    final angleRad = acos(clampedCos);
+    final angleDeg = angleRad * 180.0 / pi;
+
+    return angleDeg;
   }
 
   /// Calculate distance between two points

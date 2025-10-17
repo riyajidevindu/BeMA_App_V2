@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:camera/camera.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 import 'package:speech_to_text/speech_to_text.dart' as stt;
+import 'package:permission_handler/permission_handler.dart';
 import 'package:bema_application/features/authentication/providers/authentication_provider.dart';
 import '../providers/pose_coach_provider.dart';
 import '../services/pose_detection_service.dart';
@@ -33,6 +34,8 @@ class _PoseCoachScreenState extends State<PoseCoachScreen>
   bool _isInitialized = false;
   bool _isProcessing = false;
   String? _error;
+  bool _hasPermissions = false;
+  bool _isCheckingPermissions = true;
   String _lastSpokenFeedback = '';
   DateTime? _lastFeedbackTime;
   final ApiService _apiService = ApiService();
@@ -58,6 +61,11 @@ class _PoseCoachScreenState extends State<PoseCoachScreen>
   bool _wasFullyVisible = false; // Was user fully visible in previous frame?
   bool _hasConfirmedVisibility = false; // Have we already said "I can see you"?
 
+  // Track ready state to tell user when to start
+  bool _isUserReady =
+      false; // Is user in frame, full body visible, and good orientation?
+  bool _hasAnnouncedReady = false; // Have we told user they're ready to start?
+
   // Track orientation feedback to avoid repetition
   String _lastOrientation = '';
   DateTime? _lastOrientationWarning;
@@ -73,9 +81,7 @@ class _PoseCoachScreenState extends State<PoseCoachScreen>
     _exerciseLogic?.initialize();
 
     WidgetsBinding.instance.addObserver(this);
-    _initializeCamera();
-    _initializeTts();
-    _initializeSpeechRecognition();
+    _checkAndRequestPermissions();
   }
 
   @override
@@ -98,7 +104,62 @@ class _PoseCoachScreenState extends State<PoseCoachScreen>
     if (state == AppLifecycleState.inactive) {
       controller.dispose();
     } else if (state == AppLifecycleState.resumed) {
-      _initializeCamera();
+      // Re-check permissions when app resumes
+      _checkAndRequestPermissions();
+    }
+  }
+
+  Future<void> _checkAndRequestPermissions() async {
+    setState(() {
+      _isCheckingPermissions = true;
+      _error = null;
+    });
+
+    try {
+      // Check camera permission
+      var cameraStatus = await Permission.camera.status;
+
+      // Check microphone permission for voice commands
+      var micStatus = await Permission.microphone.status;
+
+      // Request permissions if not granted
+      if (!cameraStatus.isGranted) {
+        cameraStatus = await Permission.camera.request();
+      }
+
+      if (!micStatus.isGranted) {
+        micStatus = await Permission.microphone.request();
+      }
+
+      final hasRequiredPermissions = cameraStatus.isGranted;
+      final hasMicPermission = micStatus.isGranted;
+
+      setState(() {
+        _hasPermissions = hasRequiredPermissions;
+        _isCheckingPermissions = false;
+      });
+
+      if (hasRequiredPermissions) {
+        // Initialize camera and services
+        await _initializeCamera();
+        await _initializeTts();
+
+        if (hasMicPermission) {
+          await _initializeSpeechRecognition();
+        } else {
+          debugPrint('Microphone permission denied - voice commands disabled');
+        }
+      } else {
+        setState(() {
+          _error = 'Camera permission is required to use AI Coach';
+        });
+      }
+    } catch (e) {
+      setState(() {
+        _isCheckingPermissions = false;
+        _error = 'Error checking permissions: $e';
+      });
+      debugPrint('Permission check error: $e');
     }
   }
 
@@ -107,7 +168,8 @@ class _PoseCoachScreenState extends State<PoseCoachScreen>
       final cameras = await availableCameras();
       if (cameras.isEmpty) {
         setState(() {
-          _error = 'No camera available';
+          _error = 'No camera available on this device';
+          _isInitialized = false;
         });
         return;
       }
@@ -140,36 +202,57 @@ class _PoseCoachScreenState extends State<PoseCoachScreen>
       setState(() {
         _isInitialized = true;
         _isSwitchingCamera = false;
+        _error = null; // Clear any previous errors
       });
+    } on CameraException catch (e) {
+      setState(() {
+        _error = 'Camera error: ${e.description ?? e.code}';
+        _isSwitchingCamera = false;
+        _isInitialized = false;
+      });
+      debugPrint('Camera exception: ${e.code} - ${e.description}');
     } catch (e) {
       setState(() {
-        _error = 'Failed to initialize camera: $e';
+        _error = 'Failed to initialize camera. Please check permissions.';
         _isSwitchingCamera = false;
+        _isInitialized = false;
       });
+      debugPrint('Camera initialization error: $e');
     }
   }
 
   Future<void> _initializeTts() async {
-    _flutterTts = FlutterTts();
-    await _flutterTts!.setLanguage("en-US");
-    await _flutterTts!.setSpeechRate(0.5);
-    await _flutterTts!.setVolume(1.0);
-    await _flutterTts!.setPitch(1.0);
+    try {
+      _flutterTts = FlutterTts();
+      await _flutterTts!.setLanguage("en-US");
+      await _flutterTts!.setSpeechRate(0.5);
+      await _flutterTts!.setVolume(1.0);
+      await _flutterTts!.setPitch(1.0);
+      debugPrint('Text-to-Speech initialized successfully');
+    } catch (e) {
+      debugPrint('Error initializing Text-to-Speech: $e');
+      // Don't show error to user - TTS is optional
+    }
   }
 
   Future<void> _initializeSpeechRecognition() async {
-    _speechToText = stt.SpeechToText();
-    bool available = await _speechToText!.initialize(
-      onStatus: (status) => debugPrint('Speech status: $status'),
-      onError: (error) => debugPrint('Speech error: $error'),
-    );
+    try {
+      _speechToText = stt.SpeechToText();
+      bool available = await _speechToText!.initialize(
+        onStatus: (status) => debugPrint('Speech status: $status'),
+        onError: (error) => debugPrint('Speech error: $error'),
+      );
 
-    if (available) {
-      debugPrint('Speech recognition initialized');
-      // Start listening for voice commands
-      _startVoiceCommands();
-    } else {
-      debugPrint('Speech recognition not available');
+      if (available) {
+        debugPrint('Speech recognition initialized successfully');
+        // Start listening for voice commands
+        _startVoiceCommands();
+      } else {
+        debugPrint('Speech recognition not available on this device');
+      }
+    } catch (e) {
+      debugPrint('Error initializing speech recognition: $e');
+      // Don't show error to user - voice commands are optional
     }
   }
 
@@ -390,81 +473,91 @@ class _PoseCoachScreenState extends State<PoseCoachScreen>
 
           final now = DateTime.now();
 
-          // Check if this is an orientation issue (user not sideways)
-          final needsOrientationFix =
-              result.additionalData?['needsOrientationFix'] == true;
+          // Get orientation data (non-blocking)
+          final isIdealOrientation =
+              result.additionalData?['isIdealOrientation'] ?? true;
+          final orientationHint =
+              result.additionalData?['orientationHint'] ?? '';
           final currentOrientation =
-              result.additionalData?['orientation'] ?? '';
+              result.additionalData?['orientation'] ?? 'sideways';
 
-          if (needsOrientationFix) {
-            // Handle orientation feedback with smart timing
-            // Only speak if:
-            // 1. Orientation changed OR
-            // 2. Same wrong orientation for 8+ seconds and haven't warned in last 12 seconds
+          // Check if user is in standing position and ready to start
+          final avgKneeAngle = result.additionalData?['avgKneeAngle'] ?? 0.0;
+          final isStanding = avgKneeAngle > 160;
+          final isInGoodPosition = isIdealOrientation && isStanding;
+
+          // Announce when user is ready to start (once per session or when they return)
+          if (isInGoodPosition && !_isUserReady) {
+            _isUserReady = true;
+            if (!_hasAnnouncedReady) {
+              _speak(
+                  'Perfect! You are in position and ready. You can start your ${_currentExercise?.name ?? 'exercise'} now!');
+              _hasAnnouncedReady = true;
+            }
+          } else if (!isInGoodPosition && _isUserReady) {
+            // Reset ready state if user moves out of position
+            _isUserReady = false;
+          }
+
+          // Update provider with exercise-specific feedback
+          poseProvider.updateExerciseFeedback(
+            result.feedback,
+            result.accuracy,
+            result.feedbackLevel == FeedbackLevel.excellent ||
+                result.feedbackLevel == FeedbackLevel.good,
+          );
+
+          // Count rep if completed
+          if (result.isRepCompleted) {
+            poseProvider.incrementRep();
+          }
+
+          // Voice feedback for form corrections
+          final currentFeedback = poseProvider.currentFeedback;
+
+          // Speak if:
+          // 1. Feedback text changed OR
+          // 2. Same form issue for 5+ seconds and haven't warned in last 8 seconds
+          //    (for form corrections like "Keep your back straight")
+          final feedbackChanged = currentFeedback != _lastFormFeedback;
+          final timeSinceLastFormWarning = _lastFormFeedbackTime != null
+              ? now.difference(_lastFormFeedbackTime!).inSeconds
+              : 999;
+
+          final isFormIssue =
+              result.feedbackLevel == FeedbackLevel.needsImprovement;
+
+          final shouldSpeak = poseProvider.showVisualFeedback &&
+              (feedbackChanged ||
+                  (isFormIssue && timeSinceLastFormWarning >= 8));
+
+          if (shouldSpeak) {
+            _speak(currentFeedback);
+            _lastFormFeedback = currentFeedback;
+            _lastFormFeedbackTime = now;
+          }
+
+          // Also update lastSpokenFeedback for backward compatibility
+          if (feedbackChanged) {
+            _lastSpokenFeedback = currentFeedback;
+            _lastFeedbackTime = now;
+          }
+
+          // Optional: Provide orientation hint as a gentle reminder (not blocking)
+          // Only speak orientation hint if not ideal and hasn't been warned recently
+          if (!isIdealOrientation && orientationHint.isNotEmpty) {
             final orientationChanged = currentOrientation != _lastOrientation;
             final timeSinceLastWarning = _lastOrientationWarning != null
                 ? now.difference(_lastOrientationWarning!).inSeconds
                 : 999;
 
             if (orientationChanged || timeSinceLastWarning >= 12) {
-              _speak(result.feedback);
+              _speak(orientationHint);
               _lastOrientation = currentOrientation;
               _lastOrientationWarning = now;
             }
-
-            // Update UI with orientation guidance
-            poseProvider.updateExerciseFeedback(
-              result.feedback,
-              0.0,
-              false,
-            );
           } else {
-            // Normal exercise tracking - user in correct orientation
-            _lastOrientation = 'sideways'; // Reset
-
-            // Update provider with exercise-specific feedback
-            poseProvider.updateExerciseFeedback(
-              result.feedback,
-              result.accuracy,
-              result.feedbackLevel == FeedbackLevel.excellent ||
-                  result.feedbackLevel == FeedbackLevel.good,
-            );
-
-            // Count rep if completed
-            if (result.isRepCompleted) {
-              poseProvider.incrementRep();
-            }
-
-            // Voice feedback for form corrections
-            final currentFeedback = poseProvider.currentFeedback;
-
-            // Speak if:
-            // 1. Feedback text changed OR
-            // 2. Same form issue for 5+ seconds and haven't warned in last 8 seconds
-            //    (for form corrections like "Keep your back straight")
-            final feedbackChanged = currentFeedback != _lastFormFeedback;
-            final timeSinceLastFormWarning = _lastFormFeedbackTime != null
-                ? now.difference(_lastFormFeedbackTime!).inSeconds
-                : 999;
-
-            final isFormIssue =
-                result.feedbackLevel == FeedbackLevel.needsImprovement;
-
-            final shouldSpeak = poseProvider.showVisualFeedback &&
-                (feedbackChanged ||
-                    (isFormIssue && timeSinceLastFormWarning >= 8));
-
-            if (shouldSpeak) {
-              _speak(currentFeedback);
-              _lastFormFeedback = currentFeedback;
-              _lastFormFeedbackTime = now;
-            }
-
-            // Also update lastSpokenFeedback for backward compatibility
-            if (feedbackChanged) {
-              _lastSpokenFeedback = currentFeedback;
-              _lastFeedbackTime = now;
-            }
+            _lastOrientation = 'sideways'; // Reset when orientation is good
           }
         }
       }
@@ -492,6 +585,9 @@ class _PoseCoachScreenState extends State<PoseCoachScreen>
       // Initialize tracking timestamps
       _lastSeenInFrame = DateTime.now();
       _lastOutOfFrameWarning = null;
+      // Reset ready state for new workout session
+      _isUserReady = false;
+      _hasAnnouncedReady = false;
     });
 
     _exerciseLogic?.reset();
@@ -601,162 +697,261 @@ class _PoseCoachScreenState extends State<PoseCoachScreen>
           onPressed: () => Navigator.pop(context),
         ),
       ),
-      body: _error != null
+      body: _isCheckingPermissions
           ? Center(
-              child: Text(_error!, style: const TextStyle(color: Colors.red)))
-          : !_isInitialized
-              ? const Center(child: CircularProgressIndicator())
-              : Stack(
-                  children: [
-                    // Camera preview
-                    Positioned.fill(
-                      child: _cameraController != null &&
-                              _cameraController!.value.isInitialized
-                          ? CameraPreview(_cameraController!)
-                          : const Center(child: CircularProgressIndicator()),
-                    ),
-
-                    // Pose detection overlay
-                    if (poseProvider.isWorkoutActive)
-                      CustomPaint(
-                        painter: PoseOverlayPainter(
-                          showGoodForm: poseProvider.showVisualFeedback,
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const CircularProgressIndicator(),
+                  const SizedBox(height: 20),
+                  Text(
+                    'Checking permissions...',
+                    style: TextStyle(color: Colors.white, fontSize: 16),
+                  ),
+                ],
+              ),
+            )
+          : _error != null
+              ? Center(
+                  child: Padding(
+                    padding: const EdgeInsets.all(24.0),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          _error!.contains('permission')
+                              ? Icons.lock_outline
+                              : Icons.error_outline,
+                          color: Colors.red,
+                          size: 64,
                         ),
-                        child: Container(),
-                      ),
-
-                    // Stats overlay
-                    Positioned(
-                      top: MediaQuery.of(context).padding.top + 60,
-                      left: 20,
-                      right: 20,
-                      child: _buildStatsOverlay(poseProvider),
+                        const SizedBox(height: 24),
+                        Text(
+                          _error!,
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                        const SizedBox(height: 16),
+                        Text(
+                          _error!.contains('permission')
+                              ? 'Please grant camera permission in your device settings to use AI Coach.'
+                              : 'Please try again or restart the app.',
+                          style: const TextStyle(
+                            color: Colors.white70,
+                            fontSize: 14,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                        const SizedBox(height: 32),
+                        ElevatedButton.icon(
+                          onPressed: () async {
+                            if (_error!.contains('permission')) {
+                              // Open app settings
+                              await openAppSettings();
+                            } else {
+                              // Retry initialization
+                              await _checkAndRequestPermissions();
+                            }
+                          },
+                          icon: Icon(_error!.contains('permission')
+                              ? Icons.settings
+                              : Icons.refresh),
+                          label: Text(_error!.contains('permission')
+                              ? 'Open Settings'
+                              : 'Retry'),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.blue,
+                            foregroundColor: Colors.white,
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 32,
+                              vertical: 16,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+                        TextButton(
+                          onPressed: () => Navigator.pop(context),
+                          child: const Text(
+                            'Go Back',
+                            style: TextStyle(color: Colors.white70),
+                          ),
+                        ),
+                      ],
                     ),
+                  ),
+                )
+              : !_isInitialized
+                  ? Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          const CircularProgressIndicator(),
+                          const SizedBox(height: 20),
+                          Text(
+                            'Initializing camera...',
+                            style: TextStyle(color: Colors.white, fontSize: 16),
+                          ),
+                        ],
+                      ),
+                    )
+                  : Stack(
+                      children: [
+                        // Camera preview
+                        Positioned.fill(
+                          child: _cameraController != null &&
+                                  _cameraController!.value.isInitialized
+                              ? CameraPreview(_cameraController!)
+                              : const Center(
+                                  child: CircularProgressIndicator()),
+                        ),
 
-                    // Camera flip button - top right
-                    if (_availableCameras.length > 1)
-                      Positioned(
-                        top: MediaQuery.of(context).padding.top + 60,
-                        right: 20,
-                        child: Material(
-                          color: Colors.black.withOpacity(0.6),
-                          borderRadius: BorderRadius.circular(30),
-                          child: InkWell(
-                            onTap: _isSwitchingCamera ? null : _switchCamera,
-                            borderRadius: BorderRadius.circular(30),
+                        // Pose detection overlay
+                        if (poseProvider.isWorkoutActive)
+                          CustomPaint(
+                            painter: PoseOverlayPainter(
+                              showGoodForm: poseProvider.showVisualFeedback,
+                            ),
+                            child: Container(),
+                          ),
+
+                        // Stats overlay
+                        Positioned(
+                          top: MediaQuery.of(context).padding.top + 60,
+                          left: 20,
+                          right: 20,
+                          child: _buildStatsOverlay(poseProvider),
+                        ),
+
+                        // Camera flip button - top right
+                        if (_availableCameras.length > 1)
+                          Positioned(
+                            top: MediaQuery.of(context).padding.top + 60,
+                            right: 20,
+                            child: Material(
+                              color: Colors.black.withOpacity(0.6),
+                              borderRadius: BorderRadius.circular(30),
+                              child: InkWell(
+                                onTap:
+                                    _isSwitchingCamera ? null : _switchCamera,
+                                borderRadius: BorderRadius.circular(30),
+                                child: Container(
+                                  padding: const EdgeInsets.all(12),
+                                  child: _isSwitchingCamera
+                                      ? const SizedBox(
+                                          width: 24,
+                                          height: 24,
+                                          child: CircularProgressIndicator(
+                                            strokeWidth: 2,
+                                            valueColor:
+                                                AlwaysStoppedAnimation<Color>(
+                                                    Colors.white),
+                                          ),
+                                        )
+                                      : const Icon(
+                                          Icons.flip_camera_ios,
+                                          color: Colors.white,
+                                          size: 24,
+                                        ),
+                                ),
+                              ),
+                            ),
+                          ),
+
+                        // Positioning Mode Overlay
+                        if (_isPositioningMode)
+                          Positioned(
+                            top: MediaQuery.of(context).size.height * 0.35,
+                            left: 20,
+                            right: 20,
                             child: Container(
-                              padding: const EdgeInsets.all(12),
-                              child: _isSwitchingCamera
-                                  ? const SizedBox(
-                                      width: 24,
-                                      height: 24,
-                                      child: CircularProgressIndicator(
-                                        strokeWidth: 2,
-                                        valueColor:
-                                            AlwaysStoppedAnimation<Color>(
-                                                Colors.white),
-                                      ),
-                                    )
-                                  : const Icon(
-                                      Icons.flip_camera_ios,
-                                      color: Colors.white,
-                                      size: 24,
-                                    ),
-                            ),
-                          ),
-                        ),
-                      ),
-
-                    // Positioning Mode Overlay
-                    if (_isPositioningMode)
-                      Positioned(
-                        top: MediaQuery.of(context).size.height * 0.35,
-                        left: 20,
-                        right: 20,
-                        child: Container(
-                          padding: const EdgeInsets.all(24),
-                          decoration: BoxDecoration(
-                            gradient: LinearGradient(
-                              colors: [
-                                Colors.blue.withOpacity(0.8),
-                                Colors.purple.withOpacity(0.8),
-                              ],
-                            ),
-                            borderRadius: BorderRadius.circular(16),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.black.withOpacity(0.3),
-                                blurRadius: 10,
-                                offset: const Offset(0, 5),
-                              ),
-                            ],
-                          ),
-                          child: Column(
-                            children: [
-                              const Icon(
-                                Icons.person_pin,
-                                color: Colors.white,
-                                size: 48,
-                              ),
-                              const SizedBox(height: 16),
-                              Text(
-                                _positioningStatus,
-                                style: const TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.bold,
-                                  shadows: [
-                                    Shadow(
-                                      color: Colors.black,
-                                      offset: Offset(1, 1),
-                                      blurRadius: 3,
-                                    ),
+                              padding: const EdgeInsets.all(24),
+                              decoration: BoxDecoration(
+                                gradient: LinearGradient(
+                                  colors: [
+                                    Colors.blue.withOpacity(0.8),
+                                    Colors.purple.withOpacity(0.8),
                                   ],
                                 ),
-                                textAlign: TextAlign.center,
+                                borderRadius: BorderRadius.circular(16),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.black.withOpacity(0.3),
+                                    blurRadius: 10,
+                                    offset: const Offset(0, 5),
+                                  ),
+                                ],
                               ),
-                              const SizedBox(height: 16),
-                              if (_isListening)
-                                Row(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    const Icon(
-                                      Icons.mic,
+                              child: Column(
+                                children: [
+                                  const Icon(
+                                    Icons.person_pin,
+                                    color: Colors.white,
+                                    size: 48,
+                                  ),
+                                  const SizedBox(height: 16),
+                                  Text(
+                                    _positioningStatus,
+                                    style: const TextStyle(
                                       color: Colors.white,
-                                      size: 20,
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.bold,
+                                      shadows: [
+                                        Shadow(
+                                          color: Colors.black,
+                                          offset: Offset(1, 1),
+                                          blurRadius: 3,
+                                        ),
+                                      ],
                                     ),
-                                    const SizedBox(width: 8),
-                                    const Text(
-                                      'Listening for "Start"...',
-                                      style: TextStyle(
-                                        color: Colors.white,
-                                        fontSize: 14,
-                                      ),
+                                    textAlign: TextAlign.center,
+                                  ),
+                                  const SizedBox(height: 16),
+                                  if (_isListening)
+                                    Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      children: [
+                                        const Icon(
+                                          Icons.mic,
+                                          color: Colors.white,
+                                          size: 20,
+                                        ),
+                                        const SizedBox(width: 8),
+                                        const Text(
+                                          'Listening for "Start"...',
+                                          style: TextStyle(
+                                            color: Colors.white,
+                                            fontSize: 14,
+                                          ),
+                                        ),
+                                      ],
                                     ),
-                                  ],
-                                ),
-                            ],
+                                ],
+                              ),
+                            ),
                           ),
+
+                        // Feedback overlay - responsive positioning
+                        Positioned(
+                          bottom: screenHeight * 0.2 + bottomPadding,
+                          left: 20,
+                          right: 20,
+                          child: _buildFeedbackOverlay(poseProvider),
                         ),
-                      ),
 
-                    // Feedback overlay - responsive positioning
-                    Positioned(
-                      bottom: screenHeight * 0.2 + bottomPadding,
-                      left: 20,
-                      right: 20,
-                      child: _buildFeedbackOverlay(poseProvider),
+                        // Control buttons - lower, closer to navbar
+                        Positioned(
+                          bottom: bottomPadding + 20,
+                          left: 0,
+                          right: 0,
+                          child: _buildControls(poseProvider),
+                        ),
+                      ],
                     ),
-
-                    // Control buttons - lower, closer to navbar
-                    Positioned(
-                      bottom: bottomPadding + 20,
-                      left: 0,
-                      right: 0,
-                      child: _buildControls(poseProvider),
-                    ),
-                  ],
-                ),
     );
   }
 
