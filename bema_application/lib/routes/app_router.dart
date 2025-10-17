@@ -29,6 +29,7 @@ import 'package:bema_application/features/home/screens/home_screen.dart';
 import 'package:bema_application/features/instant_stress_release/screens/instant_stress_release_screen.dart';
 import 'package:bema_application/features/navbar/bottom_navbar.dart';
 import 'package:bema_application/features/workout_plan/screens/workout_screen.dart';
+import 'package:bema_application/features/pose_coach/screens/pose_coach_screen.dart';
 import 'package:bema_application/routes/authendication_wrapper.dart';
 import 'package:bema_application/features/authentication/screens/mood_screen/mood_friend.dart';
 import 'package:bema_application/routes/route_names.dart';
@@ -36,23 +37,23 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 final goRouter = GoRouter(initialLocation: '/${RouteNames.wrapper}', routes: [
-      GoRoute(
-      path: '/${RouteNames.bottomNavigationBarScreen}',
-      name: RouteNames.bottomNavigationBarScreen,
-      pageBuilder: (context, state) {
-        int id = state.extra as int; // Pass index for initial tab
-        return MaterialPage(
-          child: BNavbarScreen(initialIndex: id),
-        );
-      },
+  GoRoute(
+    path: '/${RouteNames.bottomNavigationBarScreen}',
+    name: RouteNames.bottomNavigationBarScreen,
+    pageBuilder: (context, state) {
+      int id = state.extra as int; // Pass index for initial tab
+      return MaterialPage(
+        child: BNavbarScreen(initialIndex: id),
+      );
+    },
+  ),
+  GoRoute(
+    path: '/${RouteNames.wrapper}',
+    name: RouteNames.wrapper,
+    pageBuilder: (context, state) => const MaterialPage(
+      child: AuthenticationWrapper(),
     ),
-    GoRoute(
-      path: '/${RouteNames.wrapper}',
-      name: RouteNames.wrapper,
-      pageBuilder: (context, state) => const MaterialPage(
-        child: AuthenticationWrapper(),
-      ),
-    ),
+  ),
   GoRoute(
     path: '/${RouteNames.registerScreen}',
     name: RouteNames.registerScreen,
@@ -263,12 +264,18 @@ final goRouter = GoRouter(initialLocation: '/${RouteNames.wrapper}', routes: [
       child: WorkoutPlanScreen(),
     ),
   ),
-   GoRoute(
+  GoRoute(
     path: '/${RouteNames.diveReflexScreen}',
     name: RouteNames.diveReflexScreen,
     pageBuilder: (context, state) => const MaterialPage(
       child: DiveReflexScreen(),
     ),
   ),
-  
+  GoRoute(
+    path: '/${RouteNames.poseCoachScreen}',
+    name: RouteNames.poseCoachScreen,
+    pageBuilder: (context, state) => const MaterialPage(
+      child: PoseCoachScreen(),
+    ),
+  ),
 ]);

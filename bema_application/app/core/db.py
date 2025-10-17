@@ -79,6 +79,22 @@ TABLES['user_suggestions'] = (
     ") ENGINE=InnoDB"
 )
 
+TABLES['workout_sessions'] = (
+    "CREATE TABLE IF NOT EXISTS `workout_sessions` ("
+    "  `id` INT AUTO_INCREMENT NOT NULL,"
+    "  `user_id` VARCHAR(255) NOT NULL,"
+    "  `exercise` VARCHAR(100) NOT NULL,"
+    "  `reps` INT NOT NULL,"
+    "  `accuracy` FLOAT NOT NULL,"
+    "  `timestamp` VARCHAR(50) NOT NULL,"
+    "  `duration` INT NOT NULL,"
+    "  `feedback_points` TEXT NULL,"
+    "  `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,"
+    "  PRIMARY KEY (`id`),"
+    "  FOREIGN KEY (`user_id`) REFERENCES `user_health_profiles`(`userId`) ON DELETE CASCADE"
+    ") ENGINE=InnoDB"
+)
+
 
 def store_user_health_profile(profile: UserHealthProfile):
     """Stores or updates a UserHealthProfile in the database."""

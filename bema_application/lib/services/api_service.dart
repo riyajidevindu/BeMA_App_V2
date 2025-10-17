@@ -5,7 +5,8 @@ import 'package:http/http.dart' as http;
 class ApiService {
   //final String baseUrl = "http://192.168.37.242:8000"; // For Emulator
   //final String baseUrl = 'https://d843-175-157-137-228.ngrok-free.app'; // Old ngrok URL
-  final String baseUrl = 'https://24b2453e7102.ngrok-free.app'; // Local backend for testing
+  final String baseUrl =
+      'https://65cf3f312342.ngrok-free.app'; // Local backend for testing
   // TODO: Update with ngrok URL when deploying: https://c9e65c1bbd09.ngrok-free.app
 
   // Function to ask a question to the bot
@@ -94,6 +95,28 @@ class ApiService {
       return jsonDecode(response.body);
     } else {
       print("Failed to send data: ${response.statusCode}");
+      return null;
+    }
+  }
+
+  // Function to send workout summary to the backend
+  Future<Map<String, dynamic>?> sendWorkoutSummary(
+      Map<String, dynamic> sessionData) async {
+    try {
+      final response = await http.post(
+        Uri.parse("$baseUrl/api/workout/pose-summary"),
+        headers: {"Content-Type": "application/json"},
+        body: jsonEncode(sessionData),
+      );
+
+      if (response.statusCode == 200) {
+        return jsonDecode(response.body);
+      } else {
+        print("Failed to send workout summary: ${response.statusCode}");
+        return null;
+      }
+    } catch (e) {
+      print("Error sending workout summary: $e");
       return null;
     }
   }

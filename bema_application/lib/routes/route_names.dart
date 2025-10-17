@@ -37,4 +37,5 @@ class RouteNames {
   static const LearderboardScreen = 'LearderboardScreen';
   static const WorkoutPlanScreen = 'WorkoutPlanScreen';
   static const diveReflexScreen = 'diveReflexScreen';
+  static const poseCoachScreen = 'poseCoachScreen';
 }

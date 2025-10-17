@@ -3,6 +3,7 @@ from routes.chat_routes import router as chat_router
 from routes.agent_routes import router as agent_router
 from routes.voice_routes import router as voice_router
 from routes.emotion_route import router as emotion_router
+from routes.workout_routes import router as workout_router
 from core.db import initialize_database
 from utils.retriever import check_and_create_vector_store
 from contextlib import asynccontextmanager
@@ -35,6 +36,7 @@ app.include_router(chat_router, prefix="/api", tags=["Chat"])
 app.include_router(agent_router, prefix="/api", tags=["RAG Agent"])
 app.include_router(voice_router, prefix="/api", tags=["Voice"])
 app.include_router(emotion_router, prefix="/api", tags=["Emotion"])
+app.include_router(workout_router, prefix="/api", tags=["Workout"])
 
 @app.get("/", tags=["Root"])
 async def root():
