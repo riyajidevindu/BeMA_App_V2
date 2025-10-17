@@ -2,6 +2,9 @@ import 'dart:ui';
 import 'package:bema_application/common/config/colors.dart';
 import 'package:bema_application/common/widgets/app_bar.dart';
 import 'package:bema_application/features/authentication/providers/authentication_provider.dart';
+import 'package:bema_application/features/daily_suggestions/data/services/task_service.dart';
+import 'package:bema_application/features/workout_plan/data/services/workout_service.dart';
+import 'package:bema_application/features/home/widgets/summary_card.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
@@ -23,6 +26,19 @@ class _HomeScreenState extends State<HomeScreen>
   late AnimationController _animationController;
   late Animation<double> _fadeAnimation;
   late Animation<Offset> _slideAnimation;
+
+  // Task and Workout stats
+  final TaskService _taskService = TaskService();
+  final WorkoutService _workoutService = WorkoutService();
+  int _totalTasks = 0;
+  int _completedTasks = 0;
+  bool _hasTasks = false;
+  bool _isLoadingTasks = true;
+
+  int _totalWorkouts = 0;
+  int _completedWorkouts = 0;
+  bool _hasWorkouts = false;
+  bool _isLoadingWorkouts = true;
 
   @override
   void didChangeDependencies() {
@@ -47,6 +63,68 @@ class _HomeScreenState extends State<HomeScreen>
     _setGreetingMessage(); // Set the appropriate greeting message
     _setFormattedDate(); // Set the formatted date
     _animationController.forward();
+    _loadTasksAndWorkouts(); // Load task and workout stats
+  }
+
+  /// Load tasks and workouts statistics
+  Future<void> _loadTasksAndWorkouts() async {
+    await Future.wait([
+      _loadTaskStats(),
+      _loadWorkoutStats(),
+    ]);
+  }
+
+  /// Load task statistics
+  Future<void> _loadTaskStats() async {
+    try {
+      setState(() => _isLoadingTasks = true);
+
+      final tasks = await _taskService.fetchUserTasks([]);
+
+      if (tasks.isNotEmpty) {
+        setState(() {
+          _hasTasks = true;
+          _totalTasks = tasks.length;
+          _completedTasks = tasks.where((task) => task.completed).length;
+        });
+      } else {
+        setState(() {
+          _hasTasks = false;
+        });
+      }
+    } catch (e) {
+      print("Error loading tasks: $e");
+      setState(() => _hasTasks = false);
+    } finally {
+      setState(() => _isLoadingTasks = false);
+    }
+  }
+
+  /// Load workout statistics
+  Future<void> _loadWorkoutStats() async {
+    try {
+      setState(() => _isLoadingWorkouts = true);
+
+      final workouts = await _workoutService.fetchUserWorkoutPlans([]);
+
+      if (workouts.isNotEmpty) {
+        setState(() {
+          _hasWorkouts = true;
+          _totalWorkouts = workouts.length;
+          _completedWorkouts =
+              workouts.where((workout) => workout.completed).length;
+        });
+      } else {
+        setState(() {
+          _hasWorkouts = false;
+        });
+      }
+    } catch (e) {
+      print("Error loading workouts: $e");
+      setState(() => _hasWorkouts = false);
+    } finally {
+      setState(() => _isLoadingWorkouts = false);
+    }
   }
 
   /// Sets the greeting message based on the current time
@@ -93,6 +171,34 @@ class _HomeScreenState extends State<HomeScreen>
       default:
         return 'th';
     }
+  }
+
+  Widget _buildLoadingCard() {
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(20),
+      child: BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+        child: Container(
+          height: 160,
+          decoration: BoxDecoration(
+            color: Colors.white.withOpacity(0.1),
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(
+              color: Colors.white.withOpacity(0.3),
+              width: 1.5,
+            ),
+          ),
+          child: Center(
+            child: CircularProgressIndicator(
+              valueColor: AlwaysStoppedAnimation<Color>(
+                Colors.white.withOpacity(0.7),
+              ),
+              strokeWidth: 2,
+            ),
+          ),
+        ),
+      ),
+    );
   }
 
   @override
@@ -177,59 +283,203 @@ class _HomeScreenState extends State<HomeScreen>
               ),
             ),
             const SizedBox(height: 20),
-            Expanded(
-              child: AnimatedBuilder(
-                animation: _animationController,
-                builder: (context, child) {
-                  return FadeTransition(
-                    opacity: _fadeAnimation,
-                    child: SlideTransition(
-                      position: _slideAnimation,
-                      child: GridView.count(
-                        crossAxisCount: 2,
-                        crossAxisSpacing: 16.0,
-                        mainAxisSpacing: 16.0,
+
+            // Summary Section - Tasks and Workouts
+            AnimatedBuilder(
+              animation: _animationController,
+              builder: (context, child) {
+                return FadeTransition(
+                  opacity: _fadeAnimation,
+                  child: SlideTransition(
+                    position: _slideAnimation,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // Section Title
+                        Padding(
+                          padding: const EdgeInsets.only(left: 4, bottom: 12),
+                          child: Text(
+                            'Today\'s Overview',
+                            style: TextStyle(
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white,
+                              shadows: [
+                                Shadow(
+                                  blurRadius: 10.0,
+                                  color: primaryColor.withOpacity(0.5),
+                                  offset: const Offset(0, 2),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+
+                        // Summary Cards Row
+                        Row(
+                          children: [
+                            // Tasks Summary Card
+                            Expanded(
+                              child: _isLoadingTasks
+                                  ? _buildLoadingCard()
+                                  : _hasTasks
+                                      ? SummaryCard(
+                                          icon: Icons.check_circle_outline,
+                                          title: 'Daily Tasks',
+                                          mainText:
+                                              '$_completedTasks/$_totalTasks',
+                                          subText: 'Completed today',
+                                          primaryColor: const Color(0xFF4CAF50),
+                                          secondaryColor:
+                                              const Color(0xFF81C784),
+                                          onTap: () {
+                                            context.push(
+                                              '/${RouteNames.bottomNavigationBarScreen}',
+                                              extra: 1,
+                                            );
+                                          },
+                                        )
+                                      : SummaryCard(
+                                          icon: Icons.assignment_outlined,
+                                          title: 'Daily Tasks',
+                                          mainText: 'No tasks yet',
+                                          subText: '',
+                                          primaryColor: const Color(0xFF4CAF50),
+                                          secondaryColor:
+                                              const Color(0xFF81C784),
+                                          showGetButton: true,
+                                          buttonText: 'Get Tasks',
+                                          onTap: () {
+                                            context.push(
+                                              '/${RouteNames.bottomNavigationBarScreen}',
+                                              extra: 1,
+                                            );
+                                          },
+                                        ),
+                            ),
+                            const SizedBox(width: 12),
+
+                            // Workouts Summary Card
+                            Expanded(
+                              child: _isLoadingWorkouts
+                                  ? _buildLoadingCard()
+                                  : _hasWorkouts
+                                      ? SummaryCard(
+                                          icon: Icons.fitness_center,
+                                          title: 'Workouts',
+                                          mainText:
+                                              '$_completedWorkouts/$_totalWorkouts',
+                                          subText: 'Exercises done',
+                                          primaryColor: const Color(0xFFFF9800),
+                                          secondaryColor:
+                                              const Color(0xFFFFB74D),
+                                          onTap: () {
+                                            context.push(
+                                              '/${RouteNames.bottomNavigationBarScreen}',
+                                              extra: 1,
+                                            );
+                                          },
+                                        )
+                                      : SummaryCard(
+                                          icon: Icons.fitness_center,
+                                          title: 'Workouts',
+                                          mainText: 'No plan yet',
+                                          subText: '',
+                                          primaryColor: const Color(0xFFFF9800),
+                                          secondaryColor:
+                                              const Color(0xFFFFB74D),
+                                          showGetButton: true,
+                                          buttonText: 'Get Plan',
+                                          onTap: () {
+                                            context.push(
+                                              '/${RouteNames.bottomNavigationBarScreen}',
+                                              extra: 1,
+                                            );
+                                          },
+                                        ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              },
+            ),
+
+            const SizedBox(height: 24),
+
+            // Quick Actions Section
+            Padding(
+              padding: const EdgeInsets.only(left: 4, bottom: 12),
+              child: Text(
+                'Quick Actions',
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
+                  shadows: [
+                    Shadow(
+                      blurRadius: 10.0,
+                      color: primaryColor.withOpacity(0.5),
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+
+            // Three tiles in one row
+            AnimatedBuilder(
+              animation: _animationController,
+              builder: (context, child) {
+                return FadeTransition(
+                  opacity: _fadeAnimation,
+                  child: SlideTransition(
+                    position: _slideAnimation,
+                    child: SingleChildScrollView(
+                      scrollDirection: Axis.horizontal,
+                      child: Row(
                         children: [
-                          _buildCard(
+                          _buildCompactCard(
                             avatar: const CircleAvatar(
-                              radius: 35,
+                              radius: 22,
                               backgroundImage: AssetImage('assets/tasks.png'),
                             ),
                             title: "Daily Task",
-                            subtitle: "Your Health Guide",
+                            subtitle: "Health Guide",
                             color: Colors.lightBlueAccent,
                             onTap: () {
-                              // Navigate to Daily Task tab (index 3)
                               context.push(
                                   '/${RouteNames.bottomNavigationBarScreen}',
                                   extra: 1);
                             },
                           ),
-                          _buildCard(
+                          const SizedBox(width: 12),
+                          _buildCompactCard(
                             avatar: const CircleAvatar(
-                              radius: 35,
+                              radius: 22,
                               backgroundImage: AssetImage('assets/relax.png'),
                             ),
-                            title: "Relax Section",
-                            subtitle: "Relax Your Mind",
+                            title: "Relax",
+                            subtitle: "Mind & Body",
                             color: Colors.orange,
                             onTap: () {
-                              // Navigate to Relax tab (index 1)
                               context.push(
                                   '/${RouteNames.bottomNavigationBarScreen}',
                                   extra: 2);
                             },
                           ),
-                          _buildCard(
+                          const SizedBox(width: 12),
+                          _buildCompactCard(
                             avatar: const CircleAvatar(
-                              radius: 35,
+                              radius: 22,
                               backgroundImage: AssetImage('assets/score.png'),
                             ),
-                            title: "Your Points",
-                            subtitle: "Check Your Progress",
+                            title: "Points",
+                            subtitle: "Your Progress",
                             color: Colors.lightBlue,
                             onTap: () {
-                              // Navigate to Points tab (index 4)
                               context.push(
                                   '/${RouteNames.bottomNavigationBarScreen}',
                                   extra: 3);
@@ -238,115 +488,121 @@ class _HomeScreenState extends State<HomeScreen>
                         ],
                       ),
                     ),
-                  );
-                },
-              ),
+                  ),
+                );
+              },
             ),
+
+            const SizedBox(height: 20),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildCard({
-    required Widget avatar, // Accepts any widget (e.g., CircleAvatar)
+  Widget _buildCompactCard({
+    required Widget avatar,
     required String title,
     required String subtitle,
     required Color color,
-    VoidCallback? onTap, // onTap can be null if not provided
+    VoidCallback? onTap,
   }) {
-    return MouseRegion(
-      onEnter: (event) {
-        setState(() {});
-      },
-      onExit: (event) {
-        setState(() {});
-      },
-      child: Transform(
-        transform: Matrix4.identity()
-          ..setEntry(3, 2, 0.001)
-          ..rotateY(0.1),
-        alignment: FractionalOffset.center,
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(20),
-          child: BackdropFilter(
-            filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-            child: GestureDetector(
-              onTap: onTap, // Trigger the onTap function if tapped
-              child: Container(
-                decoration: BoxDecoration(
-                  color: color.withOpacity(0.2),
-                  borderRadius: BorderRadius.circular(20),
-                  border: Border.all(
-                    color: Colors.black,
-                    width: 2,
-                  ),
-                  boxShadow: [
-                    BoxShadow(
-                      color: color.withOpacity(0.5),
-                      spreadRadius: 5,
-                      blurRadius: 10,
-                      offset: const Offset(0, 3),
+    return GestureDetector(
+      onTap: onTap,
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(16),
+        child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+          child: Container(
+            width: 105, // Slightly reduced width
+            height: 135, // Slightly increased height
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [
+                  color.withOpacity(0.3),
+                  color.withOpacity(0.15),
+                ],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(
+                color: Colors.white.withOpacity(0.3),
+                width: 1.5,
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: color.withOpacity(0.3),
+                  blurRadius: 12,
+                  spreadRadius: 1,
+                  offset: const Offset(0, 4),
+                ),
+              ],
+            ),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 6),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  // Avatar with background
+                  Container(
+                    padding: const EdgeInsets.all(6),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.2),
+                      shape: BoxShape.circle,
+                      border: Border.all(
+                        color: Colors.white.withOpacity(0.4),
+                        width: 1,
+                      ),
                     ),
-                  ],
-                ),
-                child: Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      avatar, // Display the passed widget (CircleAvatar in this case)
-                      const SizedBox(height: 5),
-                      _buildStrokedText(
-                        title,
-                        18,
-                      ),
-                      const SizedBox(height: 8),
-                      Text(
-                        subtitle,
-                        textAlign: TextAlign.center,
-                        style: const TextStyle(
-                          fontSize: 14,
-                          color: Color.fromARGB(179, 255, 255, 255),
-                        ),
-                      ),
-                    ],
+                    child: avatar,
                   ),
-                ),
+                  const SizedBox(height: 6),
+                  // Title - with proper constraints
+                  Flexible(
+                    child: Text(
+                      title,
+                      textAlign: TextAlign.center,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                        height: 1.1,
+                        shadows: [
+                          Shadow(
+                            blurRadius: 4.0,
+                            color: Colors.black45,
+                            offset: Offset(0, 1),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  // Subtitle - with proper constraints
+                  Flexible(
+                    child: Text(
+                      subtitle,
+                      textAlign: TextAlign.center,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        fontSize: 9,
+                        color: Colors.white.withOpacity(0.8),
+                        fontWeight: FontWeight.w500,
+                        height: 1.1,
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ),
           ),
         ),
       ),
-    );
-  }
-
-  Widget _buildStrokedText(String text, double fontSize,
-      {bool isSelected = true}) {
-    return Stack(
-      children: <Widget>[
-        // Stroked text as border.
-        Text(
-          text,
-          style: TextStyle(
-            fontSize: fontSize,
-            fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-            foreground: Paint()
-              ..style = PaintingStyle.stroke
-              ..strokeWidth = 2
-              ..color = Colors.black,
-          ),
-        ),
-        // Solid text as fill.
-        Text(
-          text,
-          style: TextStyle(
-            fontSize: fontSize,
-            fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-            color: isSelected ? Colors.white : Colors.white.withOpacity(0.7),
-          ),
-        ),
-      ],
     );
   }
 }
