@@ -57,6 +57,37 @@ class SquatsLogic extends ExerciseLogic {
     final rightAnkle = landmarks[28];
     final leftShoulder = landmarks[11];
     final rightShoulder = landmarks[12];
+    final nose = landmarks[0];
+
+    // Check user orientation (facing, sideways, or back to camera)
+    final orientation = _detectOrientation(
+        leftShoulder, rightShoulder, leftHip, rightHip, nose);
+
+    // If not in correct orientation (sideways), return orientation feedback
+    if (orientation != 'sideways') {
+      String orientationFeedback = '';
+      if (orientation == 'facing') {
+        orientationFeedback =
+            'Turn sideways to the camera. Stand with your side facing the camera.';
+      } else if (orientation == 'back') {
+        orientationFeedback =
+            'I can see your back. Please turn to face sideways to the camera.';
+      } else {
+        orientationFeedback =
+            'Please position yourself sideways to the camera for proper tracking.';
+      }
+
+      return ExerciseAnalysisResult(
+        isRepCompleted: false,
+        feedbackLevel: FeedbackLevel.needsImprovement,
+        feedback: orientationFeedback,
+        accuracy: 0.0,
+        additionalData: {
+          'orientation': orientation,
+          'needsOrientationFix': true,
+        },
+      );
+    }
 
     // Calculate knee angles (hip-knee-ankle)
     final leftKneeAngle = calculateAngle(leftHip, leftKnee, leftAnkle);
@@ -72,19 +103,21 @@ class SquatsLogic extends ExerciseLogic {
     final backAlignment =
         _calculateBackAlignment(leftShoulder, rightShoulder, leftHip, rightHip);
 
-    // Determine if in squat position (knee angle < 100 degrees)
-    final isInSquatPosition = avgKneeAngle < 100;
+    // Determine if in squat position (knee angle < 110 degrees)
+    final isInSquatPosition = avgKneeAngle < 110;
 
     // Determine if standing (knee angle > 160 degrees)
     final isStanding = avgKneeAngle > 160;
 
-    // Form feedback
+    // Form feedback with priorities
     String feedback = '';
     FeedbackLevel feedbackLevel = FeedbackLevel.good;
     double accuracy = 0.0;
+    bool hasFormIssue = false;
 
-    // Check form quality
+    // Check form quality during squat
     if (isInSquatPosition) {
+      // First priority: Good depth
       if (avgKneeAngle >= 70 && avgKneeAngle <= 100) {
         feedback = 'Perfect squat depth!';
         feedbackLevel = FeedbackLevel.excellent;
@@ -93,47 +126,56 @@ class SquatsLogic extends ExerciseLogic {
         feedback = 'Too deep. Knees at 90 degrees.';
         feedbackLevel = FeedbackLevel.needsImprovement;
         accuracy = 70.0;
+        hasFormIssue = true;
       } else {
         feedback = 'Go lower for full squat.';
         feedbackLevel = FeedbackLevel.needsImprovement;
         accuracy = 75.0;
       }
 
-      // Check back alignment
-      if (backAlignment < 0.8) {
+      // Second priority: Check back alignment
+      if (backAlignment < 0.7) {
         feedback = 'Keep your back straight!';
         feedbackLevel = FeedbackLevel.needsImprovement;
-        accuracy = accuracy * 0.8;
+        accuracy = accuracy * 0.75;
+        hasFormIssue = true;
       }
 
-      // Check knee alignment (knees shouldn't go too far forward)
-      if (avgHipAngle < 60) {
+      // Third priority: Check hip position (less strict threshold)
+      // Only warn if hips are significantly not pushed back
+      if (avgHipAngle < 50 && !hasFormIssue) {
         feedback = 'Push hips back more!';
         feedbackLevel = FeedbackLevel.needsImprovement;
         accuracy = accuracy * 0.85;
+        hasFormIssue = true;
       }
     } else if (isStanding) {
       feedback = 'Stand tall, ready for next rep';
       feedbackLevel = FeedbackLevel.good;
       accuracy = 90.0;
     } else {
+      // Transitioning
       feedback = 'Keep going...';
       feedbackLevel = FeedbackLevel.good;
       accuracy = 80.0;
     }
 
-    // Count reps
+    // Count reps - simplified logic
     bool isRepCompleted = false;
+
+    // Going down
     if (_wasStanding && isInSquatPosition && !_isSquatting) {
       _isSquatting = true;
       _wasStanding = false;
-    } else if (_isSquatting && isStanding) {
+    }
+    // Coming up and completing rep
+    else if (_isSquatting && isStanding && !_wasStanding) {
       _isSquatting = false;
       _wasStanding = true;
       _repCount++;
       _accuracyScores.add(accuracy);
       isRepCompleted = true;
-      feedback = 'Rep $_repCount completed! Great form!';
+      feedback = 'Rep $_repCount completed! Excellent!';
       feedbackLevel = FeedbackLevel.excellent;
     }
 
@@ -146,9 +188,45 @@ class SquatsLogic extends ExerciseLogic {
         'leftKneeAngle': leftKneeAngle,
         'rightKneeAngle': rightKneeAngle,
         'avgKneeAngle': avgKneeAngle,
+        'avgHipAngle': avgHipAngle,
         'backAlignment': backAlignment,
+        'hasFormIssue': hasFormIssue,
       },
     );
+  }
+
+  String _detectOrientation(
+    PoseLandmark leftShoulder,
+    PoseLandmark rightShoulder,
+    PoseLandmark leftHip,
+    PoseLandmark rightHip,
+    PoseLandmark nose,
+  ) {
+    // Calculate shoulder width (horizontal distance)
+    final shoulderWidth = (leftShoulder.x - rightShoulder.x).abs();
+
+    // Calculate hip width
+    final hipWidth = (leftHip.x - rightHip.x).abs();
+
+    // Calculate average body width
+    final avgBodyWidth = (shoulderWidth + hipWidth) / 2;
+
+    // Thresholds for orientation detection
+    // - Sideways: narrow width, high depth difference
+    // - Facing: wide width, low depth difference
+    // - Back: wide width, low depth difference (+ nose visibility)
+
+    if (avgBodyWidth < 0.15) {
+      // Very narrow - likely sideways (CORRECT for squats)
+      return 'sideways';
+    } else if (avgBodyWidth > 0.25) {
+      // Wide - either facing or back to camera
+      // Could check nose.z for back detection but simplified for now
+      return 'facing';
+    } else {
+      // In between - partially turned
+      return 'partial';
+    }
   }
 
   double _calculateBackAlignment(

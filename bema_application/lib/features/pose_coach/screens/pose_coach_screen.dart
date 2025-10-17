@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:camera/camera.dart';
 import 'package:flutter_tts/flutter_tts.dart';
+import 'package:speech_to_text/speech_to_text.dart' as stt;
 import 'package:bema_application/features/authentication/providers/authentication_provider.dart';
 import '../providers/pose_coach_provider.dart';
 import '../services/pose_detection_service.dart';
@@ -26,14 +27,42 @@ class _PoseCoachScreenState extends State<PoseCoachScreen>
   CameraController? _cameraController;
   PoseDetectionService? _poseDetectionService;
   FlutterTts? _flutterTts;
+  stt.SpeechToText? _speechToText;
   ExerciseLogic? _exerciseLogic;
   Exercise? _currentExercise;
   bool _isInitialized = false;
   bool _isProcessing = false;
   String? _error;
   String _lastSpokenFeedback = '';
+  DateTime? _lastFeedbackTime;
   final ApiService _apiService = ApiService();
   final PoseFirebaseService _firebaseService = PoseFirebaseService();
+
+  // Camera switching
+  List<CameraDescription> _availableCameras = [];
+  int _currentCameraIndex = 0;
+  bool _isSwitchingCamera = false;
+
+  // Positioning and voice control
+  bool _isPositioningMode = true;
+  bool _isListening = false;
+  String _positioningStatus = 'Getting ready...';
+  DateTime? _lastPositionCheck;
+  bool _hasSpokenPositionInstructions = false;
+
+  // Track when user was last seen (to avoid annoying "cannot see you" messages)
+  DateTime? _lastSeenInFrame;
+  DateTime? _lastOutOfFrameWarning;
+
+  // Track positioning states to avoid repeating "I can see you"
+  bool _wasFullyVisible = false; // Was user fully visible in previous frame?
+  bool _hasConfirmedVisibility = false; // Have we already said "I can see you"?
+
+  // Track orientation feedback to avoid repetition
+  String _lastOrientation = '';
+  DateTime? _lastOrientationWarning;
+  String _lastFormFeedback = '';
+  DateTime? _lastFormFeedbackTime;
 
   @override
   void initState() {
@@ -46,6 +75,7 @@ class _PoseCoachScreenState extends State<PoseCoachScreen>
     WidgetsBinding.instance.addObserver(this);
     _initializeCamera();
     _initializeTts();
+    _initializeSpeechRecognition();
   }
 
   @override
@@ -54,6 +84,7 @@ class _PoseCoachScreenState extends State<PoseCoachScreen>
     _cameraController?.dispose();
     _poseDetectionService?.dispose();
     _flutterTts?.stop();
+    _speechToText?.stop();
     super.dispose();
   }
 
@@ -81,14 +112,17 @@ class _PoseCoachScreenState extends State<PoseCoachScreen>
         return;
       }
 
-      // Use front camera for self-view
-      final frontCamera = cameras.firstWhere(
-        (camera) => camera.lensDirection == CameraLensDirection.front,
-        orElse: () => cameras.first,
-      );
+      // Store available cameras
+      _availableCameras = cameras;
+
+      // If first initialization, use front camera (index 0)
+      // Otherwise use the current index
+      if (_currentCameraIndex >= _availableCameras.length) {
+        _currentCameraIndex = 0;
+      }
 
       _cameraController = CameraController(
-        frontCamera,
+        _availableCameras[_currentCameraIndex],
         ResolutionPreset.high,
         enableAudio: false,
         imageFormatGroup: ImageFormatGroup.yuv420,
@@ -105,10 +139,12 @@ class _PoseCoachScreenState extends State<PoseCoachScreen>
 
       setState(() {
         _isInitialized = true;
+        _isSwitchingCamera = false;
       });
     } catch (e) {
       setState(() {
         _error = 'Failed to initialize camera: $e';
+        _isSwitchingCamera = false;
       });
     }
   }
@@ -121,11 +157,107 @@ class _PoseCoachScreenState extends State<PoseCoachScreen>
     await _flutterTts!.setPitch(1.0);
   }
 
+  Future<void> _initializeSpeechRecognition() async {
+    _speechToText = stt.SpeechToText();
+    bool available = await _speechToText!.initialize(
+      onStatus: (status) => debugPrint('Speech status: $status'),
+      onError: (error) => debugPrint('Speech error: $error'),
+    );
+
+    if (available) {
+      debugPrint('Speech recognition initialized');
+      // Start listening for voice commands
+      _startVoiceCommands();
+    } else {
+      debugPrint('Speech recognition not available');
+    }
+  }
+
+  void _startVoiceCommands() {
+    if (_speechToText == null || _isListening) return;
+
+    setState(() {
+      _isListening = true;
+    });
+
+    _speechToText!.listen(
+      onResult: (result) {
+        if (result.finalResult) {
+          _handleVoiceCommand(result.recognizedWords.toLowerCase());
+        }
+      },
+      listenMode: stt.ListenMode.confirmation,
+      pauseFor: const Duration(seconds: 3),
+      listenFor: const Duration(seconds: 30),
+    );
+  }
+
+  void _handleVoiceCommand(String command) {
+    debugPrint('Voice command: $command');
+
+    final poseProvider = Provider.of<PoseCoachProvider>(context, listen: false);
+
+    if (command.contains('start') || command.contains('begin')) {
+      if (_isPositioningMode) {
+        // Skip positioning mode if user is ready
+        setState(() {
+          _isPositioningMode = false;
+        });
+        _speak('Starting workout now!');
+      } else if (!poseProvider.isWorkoutActive) {
+        _startWorkout();
+      }
+    } else if (command.contains('stop') ||
+        command.contains('end') ||
+        command.contains('finish')) {
+      if (poseProvider.isWorkoutActive) {
+        _endWorkout();
+      }
+    } else if (command.contains('pause')) {
+      // Future: Implement pause functionality
+      _speak('Pause feature coming soon');
+    }
+
+    // Restart listening
+    Future.delayed(const Duration(milliseconds: 500), () {
+      if (mounted && !_isListening) {
+        _startVoiceCommands();
+      }
+    });
+  }
+
+  Future<void> _switchCamera() async {
+    if (_isSwitchingCamera || _availableCameras.length < 2) return;
+
+    setState(() {
+      _isSwitchingCamera = true;
+      _isInitialized = false;
+    });
+
+    try {
+      // Stop current camera
+      await _cameraController?.stopImageStream();
+      await _cameraController?.dispose();
+
+      // Switch to next camera
+      _currentCameraIndex =
+          (_currentCameraIndex + 1) % _availableCameras.length;
+
+      // Reinitialize with new camera
+      await _initializeCamera();
+    } catch (e) {
+      debugPrint('Error switching camera: $e');
+      setState(() {
+        _isSwitchingCamera = false;
+        _isInitialized = true;
+      });
+    }
+  }
+
   void _processCameraImage(CameraImage image) async {
     if (_isProcessing || _exerciseLogic == null) return;
 
     final poseProvider = Provider.of<PoseCoachProvider>(context, listen: false);
-    if (!poseProvider.isWorkoutActive) return;
 
     _isProcessing = true;
 
@@ -133,30 +265,207 @@ class _PoseCoachScreenState extends State<PoseCoachScreen>
       // Detect pose landmarks
       final rawLandmarks = await _poseDetectionService!.detectPose(image);
 
-      if (rawLandmarks != null && rawLandmarks.isNotEmpty) {
-        // Use exercise-specific logic to analyze pose
-        final landmarks = rawLandmarks.cast<PoseLandmark>();
-        final result = _exerciseLogic!.analyzePose(landmarks);
+      // POSITIONING MODE - Check if user is in frame
+      if (_isPositioningMode) {
+        final now = DateTime.now();
 
-        // Update provider with exercise-specific feedback
-        poseProvider.updateExerciseFeedback(
-          result.feedback,
-          result.accuracy,
-          result.feedbackLevel == FeedbackLevel.excellent ||
-              result.feedbackLevel == FeedbackLevel.good,
-        );
+        if (rawLandmarks == null || rawLandmarks.isEmpty) {
+          // No body detected
+          // Reset visibility flags when user is not visible
+          if (_wasFullyVisible) {
+            _wasFullyVisible = false;
+            _hasConfirmedVisibility = false;
+          }
 
-        // Count rep if completed
-        if (result.isRepCompleted) {
-          poseProvider.incrementRep();
+          if (_lastPositionCheck == null ||
+              now.difference(_lastPositionCheck!).inSeconds >= 3) {
+            setState(() {
+              _positioningStatus = 'Step back so I can see your full body';
+            });
+            if (!_hasSpokenPositionInstructions) {
+              _speak(
+                  'Please step back so I can see your full body. Make sure your head, arms, hips, and legs are visible in the camera.');
+              _hasSpokenPositionInstructions = true;
+            }
+            _lastPositionCheck = now;
+          }
+        } else {
+          final landmarks = rawLandmarks.cast<PoseLandmark>();
+
+          // Check if full body is visible (key points)
+          final hasHead = landmarks.length > 0;
+          final hasShoulders = landmarks.length > 12;
+          final hasHips = landmarks.length > 24;
+          final hasKnees = landmarks.length > 26;
+          final hasAnkles = landmarks.length > 28;
+
+          if (hasHead && hasShoulders && hasHips && hasKnees && hasAnkles) {
+            // Full body detected!
+            // Only speak if:
+            // 1. This is the first time we see them fully (transition from not visible to visible) OR
+            // 2. They left and came back (wasFullyVisible was false, now true again)
+            final shouldConfirmVisibility = !_hasConfirmedVisibility ||
+                (!_wasFullyVisible && !_hasConfirmedVisibility);
+
+            if (shouldConfirmVisibility) {
+              setState(() {
+                _positioningStatus =
+                    'Perfect! I can see you clearly. Say "Start" to begin!';
+                _wasFullyVisible = true;
+                _hasConfirmedVisibility = true;
+              });
+              _speak(
+                  'Perfect! I can see you clearly. Say Start when you are ready, or tap the start button.');
+              _lastPositionCheck = now;
+              _hasSpokenPositionInstructions = true;
+            } else {
+              // User is still visible, just update status text silently
+              setState(() {
+                _positioningStatus =
+                    'Perfect! I can see you clearly. Say "Start" to begin!';
+                _wasFullyVisible = true;
+              });
+            }
+          } else {
+            // Partial body detected
+            // Reset visibility flag when user is only partially visible
+            if (_wasFullyVisible) {
+              _wasFullyVisible = false;
+              _hasConfirmedVisibility = false;
+            }
+
+            String missingParts = '';
+            if (!hasHead) missingParts += 'head, ';
+            if (!hasShoulders) missingParts += 'shoulders, ';
+            if (!hasHips) missingParts += 'hips, ';
+            if (!hasKnees) missingParts += 'knees, ';
+            if (!hasAnkles) missingParts += 'feet, ';
+
+            if (missingParts.isNotEmpty) {
+              missingParts = missingParts.substring(0, missingParts.length - 2);
+            }
+
+            if (_lastPositionCheck == null ||
+                now.difference(_lastPositionCheck!).inSeconds >= 3) {
+              setState(() {
+                _positioningStatus =
+                    'Step back a bit more. I need to see your $missingParts';
+              });
+              _speak(
+                  'Step back a bit more. I need to see your $missingParts clearly.');
+              _lastPositionCheck = now;
+            }
+          }
         }
+      }
+      // WORKOUT MODE - Normal exercise tracking
+      else if (poseProvider.isWorkoutActive) {
+        if (rawLandmarks == null || rawLandmarks.isEmpty) {
+          // Lost tracking during workout - user not in frame
+          final now = DateTime.now();
 
-        // Provide voice feedback
-        final currentFeedback = poseProvider.currentFeedback;
-        if (currentFeedback != _lastSpokenFeedback &&
-            poseProvider.showVisualFeedback) {
-          _speak(currentFeedback);
-          _lastSpokenFeedback = currentFeedback;
+          // Only warn if:
+          // 1. User was previously seen in frame AND
+          // 2. Has been out of frame for at least 6 seconds AND
+          // 3. Haven't warned in the last 10 seconds
+          if (_lastSeenInFrame != null) {
+            final timeSinceLastSeen =
+                now.difference(_lastSeenInFrame!).inSeconds;
+            final timeSinceLastWarning = _lastOutOfFrameWarning != null
+                ? now.difference(_lastOutOfFrameWarning!).inSeconds
+                : 999;
+
+            if (timeSinceLastSeen >= 6 && timeSinceLastWarning >= 10) {
+              _speak('I cannot see you. Please step back into the frame.');
+              _lastOutOfFrameWarning = now;
+            }
+          }
+        } else {
+          // User is in frame - update last seen time
+          _lastSeenInFrame = DateTime.now();
+
+          // Use exercise-specific logic to analyze pose
+          final landmarks = rawLandmarks.cast<PoseLandmark>();
+          final result = _exerciseLogic!.analyzePose(landmarks);
+
+          final now = DateTime.now();
+
+          // Check if this is an orientation issue (user not sideways)
+          final needsOrientationFix =
+              result.additionalData?['needsOrientationFix'] == true;
+          final currentOrientation =
+              result.additionalData?['orientation'] ?? '';
+
+          if (needsOrientationFix) {
+            // Handle orientation feedback with smart timing
+            // Only speak if:
+            // 1. Orientation changed OR
+            // 2. Same wrong orientation for 8+ seconds and haven't warned in last 12 seconds
+            final orientationChanged = currentOrientation != _lastOrientation;
+            final timeSinceLastWarning = _lastOrientationWarning != null
+                ? now.difference(_lastOrientationWarning!).inSeconds
+                : 999;
+
+            if (orientationChanged || timeSinceLastWarning >= 12) {
+              _speak(result.feedback);
+              _lastOrientation = currentOrientation;
+              _lastOrientationWarning = now;
+            }
+
+            // Update UI with orientation guidance
+            poseProvider.updateExerciseFeedback(
+              result.feedback,
+              0.0,
+              false,
+            );
+          } else {
+            // Normal exercise tracking - user in correct orientation
+            _lastOrientation = 'sideways'; // Reset
+
+            // Update provider with exercise-specific feedback
+            poseProvider.updateExerciseFeedback(
+              result.feedback,
+              result.accuracy,
+              result.feedbackLevel == FeedbackLevel.excellent ||
+                  result.feedbackLevel == FeedbackLevel.good,
+            );
+
+            // Count rep if completed
+            if (result.isRepCompleted) {
+              poseProvider.incrementRep();
+            }
+
+            // Voice feedback for form corrections
+            final currentFeedback = poseProvider.currentFeedback;
+
+            // Speak if:
+            // 1. Feedback text changed OR
+            // 2. Same form issue for 5+ seconds and haven't warned in last 8 seconds
+            //    (for form corrections like "Keep your back straight")
+            final feedbackChanged = currentFeedback != _lastFormFeedback;
+            final timeSinceLastFormWarning = _lastFormFeedbackTime != null
+                ? now.difference(_lastFormFeedbackTime!).inSeconds
+                : 999;
+
+            final isFormIssue =
+                result.feedbackLevel == FeedbackLevel.needsImprovement;
+
+            final shouldSpeak = poseProvider.showVisualFeedback &&
+                (feedbackChanged ||
+                    (isFormIssue && timeSinceLastFormWarning >= 8));
+
+            if (shouldSpeak) {
+              _speak(currentFeedback);
+              _lastFormFeedback = currentFeedback;
+              _lastFormFeedbackTime = now;
+            }
+
+            // Also update lastSpokenFeedback for backward compatibility
+            if (feedbackChanged) {
+              _lastSpokenFeedback = currentFeedback;
+              _lastFeedbackTime = now;
+            }
+          }
         }
       }
     } catch (e) {
@@ -176,10 +485,22 @@ class _PoseCoachScreenState extends State<PoseCoachScreen>
 
   void _startWorkout() {
     final poseProvider = Provider.of<PoseCoachProvider>(context, listen: false);
+
+    // Exit positioning mode
+    setState(() {
+      _isPositioningMode = false;
+      // Initialize tracking timestamps
+      _lastSeenInFrame = DateTime.now();
+      _lastOutOfFrameWarning = null;
+    });
+
     _exerciseLogic?.reset();
     poseProvider.startWorkout(_currentExercise?.id ?? 'squats');
     _speak('Starting ${_currentExercise?.name ?? "squat"} workout. Get ready!');
-    _speak('Starting squat workout. Get ready!');
+  }
+
+  void _endWorkout() {
+    _stopWorkout();
   }
 
   Future<void> _stopWorkout() async {
@@ -312,6 +633,113 @@ class _PoseCoachScreenState extends State<PoseCoachScreen>
                       child: _buildStatsOverlay(poseProvider),
                     ),
 
+                    // Camera flip button - top right
+                    if (_availableCameras.length > 1)
+                      Positioned(
+                        top: MediaQuery.of(context).padding.top + 60,
+                        right: 20,
+                        child: Material(
+                          color: Colors.black.withOpacity(0.6),
+                          borderRadius: BorderRadius.circular(30),
+                          child: InkWell(
+                            onTap: _isSwitchingCamera ? null : _switchCamera,
+                            borderRadius: BorderRadius.circular(30),
+                            child: Container(
+                              padding: const EdgeInsets.all(12),
+                              child: _isSwitchingCamera
+                                  ? const SizedBox(
+                                      width: 24,
+                                      height: 24,
+                                      child: CircularProgressIndicator(
+                                        strokeWidth: 2,
+                                        valueColor:
+                                            AlwaysStoppedAnimation<Color>(
+                                                Colors.white),
+                                      ),
+                                    )
+                                  : const Icon(
+                                      Icons.flip_camera_ios,
+                                      color: Colors.white,
+                                      size: 24,
+                                    ),
+                            ),
+                          ),
+                        ),
+                      ),
+
+                    // Positioning Mode Overlay
+                    if (_isPositioningMode)
+                      Positioned(
+                        top: MediaQuery.of(context).size.height * 0.35,
+                        left: 20,
+                        right: 20,
+                        child: Container(
+                          padding: const EdgeInsets.all(24),
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              colors: [
+                                Colors.blue.withOpacity(0.8),
+                                Colors.purple.withOpacity(0.8),
+                              ],
+                            ),
+                            borderRadius: BorderRadius.circular(16),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withOpacity(0.3),
+                                blurRadius: 10,
+                                offset: const Offset(0, 5),
+                              ),
+                            ],
+                          ),
+                          child: Column(
+                            children: [
+                              const Icon(
+                                Icons.person_pin,
+                                color: Colors.white,
+                                size: 48,
+                              ),
+                              const SizedBox(height: 16),
+                              Text(
+                                _positioningStatus,
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                  shadows: [
+                                    Shadow(
+                                      color: Colors.black,
+                                      offset: Offset(1, 1),
+                                      blurRadius: 3,
+                                    ),
+                                  ],
+                                ),
+                                textAlign: TextAlign.center,
+                              ),
+                              const SizedBox(height: 16),
+                              if (_isListening)
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    const Icon(
+                                      Icons.mic,
+                                      color: Colors.white,
+                                      size: 20,
+                                    ),
+                                    const SizedBox(width: 8),
+                                    const Text(
+                                      'Listening for "Start"...',
+                                      style: TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 14,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                            ],
+                          ),
+                        ),
+                      ),
+
                     // Feedback overlay - responsive positioning
                     Positioned(
                       bottom: screenHeight * 0.2 + bottomPadding,
@@ -417,6 +845,41 @@ class _PoseCoachScreenState extends State<PoseCoachScreen>
   }
 
   Widget _buildControls(PoseCoachProvider provider) {
+    // In positioning mode, show "I'm Ready" button
+    if (_isPositioningMode) {
+      return Center(
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 20),
+          child: ElevatedButton(
+            onPressed: _startWorkout,
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.blue,
+              padding: const EdgeInsets.symmetric(horizontal: 48, vertical: 16),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(30),
+              ),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: const [
+                Icon(Icons.play_arrow, color: Colors.white),
+                SizedBox(width: 8),
+                Text(
+                  'I\'m Ready - Start!',
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+    }
+
+    // In workout mode, show Start/Stop button
     return Center(
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 20),
