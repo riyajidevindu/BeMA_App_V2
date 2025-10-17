@@ -41,6 +41,11 @@ class _PoseCoachScreenState extends State<PoseCoachScreen>
   final ApiService _apiService = ApiService();
   final PoseFirebaseService _firebaseService = PoseFirebaseService();
 
+  // Voice queue management to prevent overlapping speech
+  bool _isSpeaking = false;
+  List<String> _speechQueue = [];
+  DateTime? _lastSpeechTime;
+
   // Camera switching
   List<CameraDescription> _availableCameras = [];
   int _currentCameraIndex = 0;
@@ -569,10 +574,57 @@ class _PoseCoachScreenState extends State<PoseCoachScreen>
   }
 
   Future<void> _speak(String text) async {
+    if (text.isEmpty || _flutterTts == null) return;
+
+    // Don't allow the same text to be spoken multiple times in rapid succession
+    final now = DateTime.now();
+    if (_lastSpeechTime != null &&
+        now.difference(_lastSpeechTime!).inMilliseconds < 500 &&
+        _speechQueue.isNotEmpty &&
+        _speechQueue.last == text) {
+      debugPrint('TTS: Skipping duplicate message within 500ms: $text');
+      return;
+    }
+
+    // If already speaking, add to queue but limit queue size
+    if (_isSpeaking) {
+      if (_speechQueue.length < 2) {
+        // Only queue up to 2 messages
+        _speechQueue.add(text);
+        debugPrint(
+            'TTS: Queued message (queue size: ${_speechQueue.length}): $text');
+      } else {
+        debugPrint('TTS: Queue full, skipping message: $text');
+      }
+      return;
+    }
+
+    // Speak immediately
+    _isSpeaking = true;
+    _lastSpeechTime = now;
+
     try {
+      debugPrint('TTS: Speaking now: $text');
       await _flutterTts?.speak(text);
+
+      // Wait for speech to complete (estimate based on text length)
+      // Average speaking rate: ~150 words per minute = 2.5 words per second
+      final wordCount = text.split(' ').length;
+      final estimatedDuration =
+          ((wordCount / 2.5) * 1000).toInt(); // milliseconds
+      await Future.delayed(
+          Duration(milliseconds: estimatedDuration + 500)); // Add buffer
     } catch (e) {
       debugPrint('TTS error: $e');
+    } finally {
+      _isSpeaking = false;
+
+      // Process next item in queue if any
+      if (_speechQueue.isNotEmpty) {
+        final nextMessage = _speechQueue.removeAt(0);
+        debugPrint('TTS: Processing queued message: $nextMessage');
+        _speak(nextMessage); // Recursive call for next message
+      }
     }
   }
 

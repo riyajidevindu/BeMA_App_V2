@@ -69,49 +69,49 @@ class PushupsLogic extends ExerciseLogic {
     final rightBodyAngle = calculateAngle(rightShoulder, rightHip, rightKnee);
     final avgBodyAngle = (leftBodyAngle + rightBodyAngle) / 2;
 
-    // Determine if in down position (elbow angle < 90 degrees)
-    final isInDownPosition = avgElbowAngle < 90;
+    // Determine if in down position (elbow angle < 100 degrees - STRICTER)
+    final isInDownPosition = avgElbowAngle < 100;
 
-    // Determine if in up position (elbow angle > 160 degrees)
-    final isInUpPosition = avgElbowAngle > 160;
+    // Determine if in up position (elbow angle > 165 degrees - STRICTER)
+    final isInUpPosition = avgElbowAngle > 165;
 
     // Form feedback
     String feedback = '';
     FeedbackLevel feedbackLevel = FeedbackLevel.good;
     double accuracy = 0.0;
 
-    // Check form quality
+    // Check form quality (STRICTER requirements)
     if (isInDownPosition) {
-      if (avgElbowAngle >= 70 && avgElbowAngle <= 90) {
+      if (avgElbowAngle >= 75 && avgElbowAngle <= 95) {
         feedback = 'Perfect depth! Now push up!';
         feedbackLevel = FeedbackLevel.excellent;
         accuracy = 95.0;
-      } else if (avgElbowAngle < 70) {
+      } else if (avgElbowAngle < 75) {
         feedback = 'Too low! 90 degrees is enough.';
         feedbackLevel = FeedbackLevel.needsImprovement;
         accuracy = 70.0;
       } else {
         feedback = 'Go lower, chest to ground!';
         feedbackLevel = FeedbackLevel.needsImprovement;
-        accuracy = 75.0;
+        accuracy = 70.0; // Reduced accuracy for shallow pushups
       }
 
-      // Check body alignment (should maintain plank position)
-      if (avgBodyAngle < 160) {
+      // Check body alignment (should maintain plank position) - STRICTER
+      if (avgBodyAngle < 165) {
         feedback = 'Keep your body straight! No sagging hips.';
         feedbackLevel = FeedbackLevel.needsImprovement;
-        accuracy = accuracy * 0.7;
+        accuracy = accuracy * 0.65; // More penalty for bad form
       }
     } else if (isInUpPosition) {
       feedback = 'Arms extended, ready!';
       feedbackLevel = FeedbackLevel.good;
       accuracy = 90.0;
 
-      // Still check alignment in up position
-      if (avgBodyAngle < 160) {
+      // Still check alignment in up position - STRICTER
+      if (avgBodyAngle < 165) {
         feedback = 'Maintain straight body line!';
         feedbackLevel = FeedbackLevel.needsImprovement;
-        accuracy = 75.0;
+        accuracy = 70.0; // Reduced accuracy
       }
     } else {
       feedback = 'Keep going...';

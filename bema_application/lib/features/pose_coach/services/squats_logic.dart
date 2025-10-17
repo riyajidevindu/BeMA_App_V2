@@ -86,12 +86,12 @@ class SquatsLogic extends ExerciseLogic {
     final backAlignment =
         _calculateBackAlignment(leftShoulder, rightShoulder, leftHip, rightHip);
 
-    // More lenient thresholds for squat detection
-    // Determine if in squat position (knee angle < 120 degrees - more lenient)
-    final isInSquatPosition = avgKneeAngle < 120;
+    // STRICTER thresholds for squat detection to prevent false positives
+    // Determine if in squat position (knee angle < 110 degrees - STRICTER)
+    final isInSquatPosition = avgKneeAngle < 110;
 
-    // Determine if standing (knee angle > 150 degrees - more lenient)
-    final isStanding = avgKneeAngle > 150;
+    // Determine if standing (knee angle > 160 degrees - STRICTER)
+    final isStanding = avgKneeAngle > 160;
 
     // Form feedback with priorities
     String feedback = '';
@@ -101,37 +101,37 @@ class SquatsLogic extends ExerciseLogic {
 
     // Check form quality during squat
     if (isInSquatPosition) {
-      // First priority: Good depth
-      // More lenient depth ranges
-      if (avgKneeAngle >= 60 && avgKneeAngle <= 110) {
+      // First priority: Good depth (STRICTER requirements)
+      if (avgKneeAngle >= 70 && avgKneeAngle <= 105) {
+        // Proper squat depth - thighs parallel or just below
         feedback = 'Perfect squat depth!';
         feedbackLevel = FeedbackLevel.excellent;
         accuracy = 95.0;
-      } else if (avgKneeAngle < 60) {
+      } else if (avgKneeAngle < 70) {
         feedback = 'Too deep. Knees at 90 degrees.';
         feedbackLevel = FeedbackLevel.needsImprovement;
         accuracy = 75.0;
         hasFormIssue = true;
-      } else if (avgKneeAngle < 120) {
+      } else if (avgKneeAngle < 110) {
         // Partial squat - still counts but not perfect
-        feedback = 'Go a bit lower for full squat.';
+        feedback = 'Go lower for full squat.';
         feedbackLevel = FeedbackLevel.good;
-        accuracy = 80.0;
+        accuracy = 75.0; // Reduced accuracy for partial squats
       }
 
-      // Second priority: Check back alignment (more lenient)
-      if (backAlignment < 0.6 && !hasFormIssue) {
+      // Second priority: Check back alignment (STRICTER)
+      if (backAlignment < 0.65 && !hasFormIssue) {
         feedback = 'Keep your back straight!';
         feedbackLevel = FeedbackLevel.needsImprovement;
-        accuracy = accuracy * 0.85;
+        accuracy = accuracy * 0.80; // More penalty for bad back form
         hasFormIssue = true;
       }
 
-      // Third priority: Check hip position (very lenient now)
-      if (avgHipAngle < 40 && !hasFormIssue) {
+      // Third priority: Check hip position (STRICTER)
+      if (avgHipAngle < 50 && !hasFormIssue) {
         feedback = 'Push hips back more!';
         feedbackLevel = FeedbackLevel.needsImprovement;
-        accuracy = accuracy * 0.90;
+        accuracy = accuracy * 0.85;
         hasFormIssue = true;
       }
     } else if (isStanding) {
@@ -152,8 +152,8 @@ class SquatsLogic extends ExerciseLogic {
     print('DEBUG SQUAT: avgKneeAngle=${avgKneeAngle.toStringAsFixed(1)}°, '
         'leftKnee=${leftKneeAngle.toStringAsFixed(1)}°, '
         'rightKnee=${rightKneeAngle.toStringAsFixed(1)}°, '
-        'isStanding=$isStanding (>150°), '
-        'isSquatting=$isInSquatPosition (<120°), '
+        'isStanding=$isStanding (>160°), '
+        'isSquatting=$isInSquatPosition (<110°), '
         '_wasStanding=$_wasStanding, _isSquatting=$_isSquatting');
 
     // Going down
