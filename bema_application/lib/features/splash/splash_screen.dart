@@ -130,7 +130,7 @@ class _SplashScreenState extends State<SplashScreen>
 
                       // Tagline
                       Text(
-                        'AI Pose Coach',
+                        'For Healthier You',
                         style: TextStyle(
                           fontSize: 20,
                           color: Colors.white.withOpacity(0.9),
