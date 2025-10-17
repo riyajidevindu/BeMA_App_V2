@@ -2,8 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:camera/camera.dart';
 import 'package:flutter_tts/flutter_tts.dart';
-import 'package:bema_application/common/config/colors.dart';
-import 'package:bema_application/common/widgets/app_bar.dart';
 import 'package:bema_application/features/authentication/providers/authentication_provider.dart';
 import '../providers/pose_coach_provider.dart';
 import '../services/pose_detection_service.dart';
@@ -268,14 +266,19 @@ class _PoseCoachScreenState extends State<PoseCoachScreen>
   @override
   Widget build(BuildContext context) {
     final poseProvider = Provider.of<PoseCoachProvider>(context);
+    final screenHeight = MediaQuery.of(context).size.height;
+    final bottomPadding = MediaQuery.of(context).padding.bottom;
 
     return Scaffold(
-      backgroundColor: primaryColor,
+      backgroundColor: Colors.black,
+      extendBodyBehindAppBar: true,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
-        title: const CustomAppBar(showBackButton: true),
-        automaticallyImplyLeading: false,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: Colors.white),
+          onPressed: () => Navigator.pop(context),
+        ),
       ),
       body: _error != null
           ? Center(
@@ -303,23 +306,23 @@ class _PoseCoachScreenState extends State<PoseCoachScreen>
 
                     // Stats overlay
                     Positioned(
-                      top: 20,
+                      top: MediaQuery.of(context).padding.top + 60,
                       left: 20,
                       right: 20,
                       child: _buildStatsOverlay(poseProvider),
                     ),
 
-                    // Feedback overlay
+                    // Feedback overlay - responsive positioning
                     Positioned(
-                      bottom: 120,
+                      bottom: screenHeight * 0.2 + bottomPadding,
                       left: 20,
                       right: 20,
                       child: _buildFeedbackOverlay(poseProvider),
                     ),
 
-                    // Control buttons
+                    // Control buttons - above navbar with proper padding
                     Positioned(
-                      bottom: 20,
+                      bottom: bottomPadding + 80,
                       left: 0,
                       right: 0,
                       child: _buildControls(poseProvider),
