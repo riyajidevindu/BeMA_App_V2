@@ -110,7 +110,6 @@ class _MoodFriendState extends State<MoodFriend> with TickerProviderStateMixin {
           modelPaths: [
             'assets/girl.glb',
             'assets/white_cartoon_dog.glb',
-            'assets/professor_einstein.glb',
           ],
           onModelSelected: (modelPath) {
             setState(() {
@@ -119,7 +118,12 @@ class _MoodFriendState extends State<MoodFriend> with TickerProviderStateMixin {
           },
         );
       },
-    );
+    ).then((value) {
+      // If dialog is closed without selecting a character, go back to relax section
+      if (_selectedModelPath == null) {
+        Navigator.of(context).pop(); // Go back to the intermediate screen
+      }
+    });
   }
 
   Future<void> _sendAudioMessage(BuildContext context) async {
