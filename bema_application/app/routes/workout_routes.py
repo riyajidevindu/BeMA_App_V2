@@ -1,6 +1,6 @@
 from fastapi import APIRouter, HTTPException
 from models.pose_session import PoseSessionRequest, PoseSessionResponse
-from core.db import get_db_connection
+from core.db import get_db_connection, DB_CONFIG
 from datetime import datetime
 import logging
 import requests
@@ -51,7 +51,7 @@ async def save_pose_session(session: PoseSessionRequest):
     Save workout session data and generate AI motivational feedback
     """
     try:
-        connection = get_db_connection()
+        connection = get_db_connection(DB_CONFIG)
         cursor = connection.cursor()
 
         # Insert workout session into database
