@@ -7,11 +7,10 @@ import 'package:go_router/go_router.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:model_viewer_plus/model_viewer_plus.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:provider/provider.dart';
 import 'package:record/record.dart';
 import 'package:path/path.dart' as path;
-import 'package:bema_application/features/authentication/screens/chat_screen/chat_provider.dart';
 import 'package:bema_application/routes/route_names.dart';
+import 'package:bema_application/services/api_service.dart';
 import 'custom_painters.dart'; // Import the custom painters
 import 'model_selection_dialog.dart'; // Import the model selection dialog
 
@@ -36,7 +35,7 @@ class _MoodFriendState extends State<MoodFriend> with TickerProviderStateMixin {
   late Animation<double> _bounceAnimation;
   late AnimationController _waveAnimationController;
   late Animation<double> _waveAnimation;
-  
+
   String? _statusText; // Nullable to hide the cloud when null
   String? _selectedModelPath; // Path to the selected model
 
@@ -47,13 +46,15 @@ class _MoodFriendState extends State<MoodFriend> with TickerProviderStateMixin {
       duration: const Duration(milliseconds: 500),
       vsync: this,
     );
-    _bounceAnimation = Tween<double>(begin: 0, end: 10).animate(_bounceAnimationController);
+    _bounceAnimation =
+        Tween<double>(begin: 0, end: 10).animate(_bounceAnimationController);
 
     _waveAnimationController = AnimationController(
       duration: const Duration(milliseconds: 1000),
       vsync: this,
     );
-    _waveAnimation = Tween<double>(begin: 0, end: 1).animate(_waveAnimationController);
+    _waveAnimation =
+        Tween<double>(begin: 0, end: 1).animate(_waveAnimationController);
 
     _audioPlayer.playerStateStream.listen((state) {
       if (mounted) {
@@ -102,7 +103,8 @@ class _MoodFriendState extends State<MoodFriend> with TickerProviderStateMixin {
   void _showModelSelectionDialog() {
     showDialog(
       context: context,
-      barrierDismissible: false, // Prevent dismissing the dialog by tapping outside
+      barrierDismissible:
+          false, // Prevent dismissing the dialog by tapping outside
       builder: (BuildContext context) {
         return ModelSelectionDialog(
           modelPaths: [
@@ -120,35 +122,65 @@ class _MoodFriendState extends State<MoodFriend> with TickerProviderStateMixin {
     );
   }
 
-  // Future<void> _sendAudioMessage(BuildContext context) async {
-  //   if (recordingFilePath != null) {
-  //     final file = File(recordingFilePath!);
-  //     if (await file.exists()) {
-  //       final bytes = await file.readAsBytes();
-  //       if (bytes.isNotEmpty) {
-  //         final chatProvider = Provider.of<ChatProvider>(context, listen: false);
-  //         setState(() {
-  //           _isLoading = true;
-  //           _isModelRotating = true;
-  //           _statusText = "Thinking...";
-  //         });
-  //         // await chatProvider.sendAudioMessage(bytes);
-  //         setState(() {
-  //           _isLoading = false;
-  //           _isModelRotating = false;
-  //           _statusText = null; // Hide cloud when done
-  //         });
+  Future<void> _sendAudioMessage(BuildContext context) async {
+    if (recordingFilePath != null) {
+      final file = File(recordingFilePath!);
+      if (await file.exists()) {
+        final bytes = await file.readAsBytes();
+        if (bytes.isNotEmpty) {
+          setState(() {
+            _isLoading = true;
+            _isModelRotating = true;
+            _statusText = "Thinking...";
+          });
 
-  //         if (chatProvider.messages.isNotEmpty) {
-  //           var lastMessage = chatProvider.messages.first;
-  //           // if (lastMessage.audioBytes != null) {
-  //           //   _playAudio(lastMessage.audioBytes!);
-  //           // }
-  //         }
-  //       }
-  //     }
-  //   }
-  // }
+          try {
+            // Call the API service directly
+            final apiService = ApiService();
+            final audioResponse =
+                await apiService.sendAudioAndGetResponse(bytes);
+
+            setState(() {
+              _isLoading = false;
+              _isModelRotating = false;
+            });
+
+            if (audioResponse != null && audioResponse.isNotEmpty) {
+              // Play the audio response
+              await _playAudio(audioResponse);
+            } else {
+              setState(() {
+                _statusText = "No response";
+              });
+              // Hide status after 2 seconds
+              Future.delayed(const Duration(seconds: 2), () {
+                if (mounted) {
+                  setState(() {
+                    _statusText = null;
+                  });
+                }
+              });
+            }
+          } catch (e) {
+            print("Error sending audio: $e");
+            setState(() {
+              _isLoading = false;
+              _isModelRotating = false;
+              _statusText = "Error occurred";
+            });
+            // Hide status after 2 seconds
+            Future.delayed(const Duration(seconds: 2), () {
+              if (mounted) {
+                setState(() {
+                  _statusText = null;
+                });
+              }
+            });
+          }
+        }
+      }
+    }
+  }
 
   Future<void> _playAudio(Uint8List audioBytes) async {
     final tempDir = await getTemporaryDirectory();
@@ -207,7 +239,8 @@ class _MoodFriendState extends State<MoodFriend> with TickerProviderStateMixin {
                           );
                         },
                       ),
-                    if (_statusText != null) // Show the cloud only if text is present
+                    if (_statusText !=
+                        null) // Show the cloud only if text is present
                       Positioned(
                         top: 40,
                         left: MediaQuery.of(context).size.width * 0.4,
@@ -257,7 +290,8 @@ class _MoodFriendState extends State<MoodFriend> with TickerProviderStateMixin {
                         children: [
                           Text(_formatDuration(_position)),
                           IconButton(
-                            icon: Icon(_isPlaying ? Icons.pause : Icons.play_arrow),
+                            icon: Icon(
+                                _isPlaying ? Icons.pause : Icons.play_arrow),
                             onPressed: () {
                               if (_isPlaying) {
                                 _audioPlayer.pause();
@@ -287,22 +321,22 @@ class _MoodFriendState extends State<MoodFriend> with TickerProviderStateMixin {
                                   setState(() {
                                     _isRecording = false;
                                     recordingFilePath = filePath;
-                                    _statusText = "Thinking...";
                                   });
-                                  // await _sendAudioMessage(context);
+                                  await _sendAudioMessage(context);
                                 }
                               } else {
                                 if (await _audioRecorder.hasPermission()) {
-                                  final Directory appDocDir = await getApplicationDocumentsDirectory();
-                                  final String filePath = path.join(appDocDir.path, 'audio.wav');
+                                  final Directory appDocDir =
+                                      await getApplicationDocumentsDirectory();
+                                  final String filePath =
+                                      path.join(appDocDir.path, 'audio.wav');
                                   await _audioRecorder.start(
-                                    const RecordConfig(
-                                      encoder: AudioEncoder.wav,
-                                      bitRate: 128000,
-                                      sampleRate: 44100,
-                                    ), 
-                                    path: filePath
-                                  );
+                                      const RecordConfig(
+                                        encoder: AudioEncoder.wav,
+                                        bitRate: 128000,
+                                        sampleRate: 44100,
+                                      ),
+                                      path: filePath);
                                   setState(() {
                                     _isRecording = true;
                                     recordingFilePath = filePath;
@@ -315,8 +349,11 @@ class _MoodFriendState extends State<MoodFriend> with TickerProviderStateMixin {
                             iconSize: 48,
                           ),
                           Text(
-                            _isRecording ? "Tap to stop recording" : "Tap to ask question",
-                            style: const TextStyle(fontSize: 16, color: Colors.blueGrey),
+                            _isRecording
+                                ? "Tap to stop recording"
+                                : "Tap to ask question",
+                            style: const TextStyle(
+                                fontSize: 16, color: Colors.blueGrey),
                           ),
                         ],
                       ),
@@ -340,13 +377,15 @@ class _MoodFriendState extends State<MoodFriend> with TickerProviderStateMixin {
               width: 40, // Adjust the width of the circle
               height: 40, // Adjust the height of the circle
               decoration: BoxDecoration(
-                color: Colors.grey.shade300.withOpacity(0.5), // Transparent ash color background
+                color: Colors.grey.shade300
+                    .withOpacity(0.5), // Transparent ash color background
                 shape: BoxShape.circle,
               ),
               child: IconButton(
                 icon: const Icon(Icons.arrow_back, color: Colors.black),
                 onPressed: () {
-                  context.go('/${RouteNames.bottomNavigationBarScreen}', extra: 0);
+                  context.go('/${RouteNames.bottomNavigationBarScreen}',
+                      extra: 0);
                 },
               ),
             ),
