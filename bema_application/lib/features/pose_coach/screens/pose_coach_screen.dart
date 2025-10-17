@@ -320,9 +320,9 @@ class _PoseCoachScreenState extends State<PoseCoachScreen>
                       child: _buildFeedbackOverlay(poseProvider),
                     ),
 
-                    // Control buttons - above navbar with proper padding
+                    // Control buttons - lower, closer to navbar
                     Positioned(
-                      bottom: bottomPadding + 80,
+                      bottom: bottomPadding + 20,
                       left: 0,
                       right: 0,
                       child: _buildControls(poseProvider),

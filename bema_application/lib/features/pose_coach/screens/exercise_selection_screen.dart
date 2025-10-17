@@ -62,25 +62,48 @@ class _ExerciseSelectionScreenState extends State<ExerciseSelectionScreen>
             // Header
             Container(
               width: double.infinity,
-              padding: const EdgeInsets.all(16.0),
+              padding: const EdgeInsets.all(20.0),
               margin: const EdgeInsets.only(bottom: 20.0, top: 20),
               decoration: BoxDecoration(
-                color: Colors.deepPurple.withOpacity(0.2),
+                gradient: LinearGradient(
+                  colors: [
+                    Colors.deepPurple.withOpacity(0.7),
+                    Colors.purple.withOpacity(0.5),
+                  ],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
                 borderRadius: BorderRadius.circular(20),
                 border: Border.all(
-                  color: Colors.white.withOpacity(0.3),
+                  color: Colors.white.withOpacity(0.4),
+                  width: 2,
                 ),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.deepPurple.withOpacity(0.3),
+                    blurRadius: 15,
+                    offset: const Offset(0, 5),
+                  ),
+                ],
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                   _buildStrokedText('Choose Your Exercise', 22),
-                  const SizedBox(height: 5),
-                  const Text(
+                  const SizedBox(height: 8),
+                  Text(
                     'Select an exercise to get started',
                     style: TextStyle(
                       fontSize: 16,
-                      color: Color.fromARGB(179, 255, 255, 255),
+                      color: Colors.white,
+                      fontWeight: FontWeight.w500,
+                      shadows: [
+                        Shadow(
+                          color: Colors.black.withOpacity(0.5),
+                          offset: const Offset(1, 1),
+                          blurRadius: 3,
+                        ),
+                      ],
                     ),
                   ),
                 ],
@@ -157,18 +180,25 @@ class _ExerciseSelectionScreenState extends State<ExerciseSelectionScreen>
             filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
             child: Container(
               decoration: BoxDecoration(
-                color: cardColor.withOpacity(0.2),
+                gradient: LinearGradient(
+                  colors: [
+                    cardColor.withOpacity(0.5),
+                    cardColor.withOpacity(0.3),
+                  ],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
                 borderRadius: BorderRadius.circular(20),
                 border: Border.all(
-                  color: Colors.white.withOpacity(0.3),
+                  color: Colors.white.withOpacity(0.4),
                   width: 2,
                 ),
                 boxShadow: [
                   BoxShadow(
-                    color: cardColor.withOpacity(0.5),
-                    spreadRadius: 3,
-                    blurRadius: 10,
-                    offset: const Offset(0, 3),
+                    color: cardColor.withOpacity(0.4),
+                    spreadRadius: 2,
+                    blurRadius: 12,
+                    offset: const Offset(0, 4),
                   ),
                 ],
               ),
@@ -184,11 +214,25 @@ class _ExerciseSelectionScreenState extends State<ExerciseSelectionScreen>
                       height: iconSize,
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
-                        color: cardColor.withOpacity(0.3),
-                        border: Border.all(
-                          color: Colors.white.withOpacity(0.4),
-                          width: 2,
+                        gradient: LinearGradient(
+                          colors: [
+                            cardColor.withOpacity(0.6),
+                            cardColor.withOpacity(0.3),
+                          ],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
                         ),
+                        border: Border.all(
+                          color: Colors.white.withOpacity(0.6),
+                          width: 3,
+                        ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: cardColor.withOpacity(0.5),
+                            blurRadius: 8,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
                       ),
                       child: Center(
                         child: Icon(
@@ -211,8 +255,22 @@ class _ExerciseSelectionScreenState extends State<ExerciseSelectionScreen>
                           horizontal: screenWidth > 600 ? 12 : 10,
                           vertical: screenWidth > 600 ? 6 : 4),
                       decoration: BoxDecoration(
-                        color: _getDifficultyColor(exercise.difficulty),
+                        gradient: LinearGradient(
+                          colors: [
+                            _getDifficultyColor(exercise.difficulty),
+                            _getDifficultyColor(exercise.difficulty)
+                                .withOpacity(0.7),
+                          ],
+                        ),
                         borderRadius: BorderRadius.circular(15),
+                        boxShadow: [
+                          BoxShadow(
+                            color: _getDifficultyColor(exercise.difficulty)
+                                .withOpacity(0.5),
+                            blurRadius: 4,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
                       ),
                       child: Text(
                         exercise.difficulty,
@@ -220,6 +278,13 @@ class _ExerciseSelectionScreenState extends State<ExerciseSelectionScreen>
                           fontSize: screenWidth > 600 ? 12 : 11,
                           color: Colors.white,
                           fontWeight: FontWeight.bold,
+                          shadows: [
+                            Shadow(
+                              color: Colors.black.withOpacity(0.5),
+                              offset: const Offset(1, 1),
+                              blurRadius: 2,
+                            ),
+                          ],
                         ),
                       ),
                     ),
@@ -234,32 +299,52 @@ class _ExerciseSelectionScreenState extends State<ExerciseSelectionScreen>
                         overflow: TextOverflow.ellipsis,
                         style: TextStyle(
                           fontSize: screenWidth > 600 ? 13 : 12,
-                          color: const Color.fromARGB(200, 255, 255, 255),
-                          height: 1.2,
+                          color: Colors.white,
+                          fontWeight: FontWeight.w500,
+                          height: 1.3,
+                          shadows: [
+                            Shadow(
+                              color: Colors.black.withOpacity(0.7),
+                              offset: const Offset(1, 1),
+                              blurRadius: 3,
+                            ),
+                          ],
                         ),
                       ),
                     ),
                     SizedBox(height: screenWidth > 600 ? 12 : 8),
 
                     // Tap to explore indicator
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Text(
-                          'Tap to explore',
-                          style: TextStyle(
-                            fontSize: screenWidth > 600 ? 12 : 11,
-                            color: Colors.white.withOpacity(0.7),
-                            fontStyle: FontStyle.italic,
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 12, vertical: 6),
+                      decoration: BoxDecoration(
+                        color: Colors.black.withOpacity(0.3),
+                        borderRadius: BorderRadius.circular(20),
+                        border: Border.all(
+                          color: Colors.white.withOpacity(0.3),
+                        ),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(
+                            'Tap to explore',
+                            style: TextStyle(
+                              fontSize: screenWidth > 600 ? 12 : 11,
+                              color: Colors.white,
+                              fontWeight: FontWeight.w600,
+                            ),
                           ),
-                        ),
-                        const SizedBox(width: 4),
-                        Icon(
-                          Icons.arrow_forward,
-                          size: screenWidth > 600 ? 14 : 12,
-                          color: Colors.white.withOpacity(0.7),
-                        ),
-                      ],
+                          const SizedBox(width: 4),
+                          Icon(
+                            Icons.arrow_forward,
+                            size: screenWidth > 600 ? 14 : 12,
+                            color: Colors.white,
+                          ),
+                        ],
+                      ),
                     ),
                   ],
                 ),

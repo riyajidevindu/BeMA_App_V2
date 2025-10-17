@@ -264,10 +264,18 @@ class _ExerciseDetailScreenState extends State<ExerciseDetailScreen>
         child: Container(
           padding: const EdgeInsets.all(20),
           decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.1),
+            gradient: LinearGradient(
+              colors: [
+                Colors.black.withOpacity(0.5),
+                Colors.black.withOpacity(0.3),
+              ],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
             borderRadius: BorderRadius.circular(20),
             border: Border.all(
-              color: Colors.white.withOpacity(0.3),
+              color: Colors.white.withOpacity(0.4),
+              width: 2,
             ),
           ),
           child: Column(
@@ -275,44 +283,89 @@ class _ExerciseDetailScreenState extends State<ExerciseDetailScreen>
             children: [
               Row(
                 children: [
-                  Icon(
-                    Icons.info_outline,
-                    color: _exerciseColor,
-                    size: 24,
+                  Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: _exerciseColor.withOpacity(0.3),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(
+                        color: _exerciseColor.withOpacity(0.5),
+                        width: 2,
+                      ),
+                    ),
+                    child: Icon(
+                      Icons.info_outline,
+                      color: Colors.white,
+                      size: 24,
+                    ),
                   ),
-                  const SizedBox(width: 10),
+                  const SizedBox(width: 12),
                   _buildStrokedText('About This Exercise', 18),
                 ],
               ),
-              const SizedBox(height: 12),
+              const SizedBox(height: 15),
               Text(
                 widget.exercise.description,
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 15,
                   color: Colors.white,
-                  height: 1.5,
+                  fontWeight: FontWeight.w500,
+                  height: 1.6,
+                  shadows: [
+                    Shadow(
+                      color: Colors.black.withOpacity(0.5),
+                      offset: const Offset(1, 1),
+                      blurRadius: 2,
+                    ),
+                  ],
                 ),
               ),
-              const SizedBox(height: 15),
-              Row(
-                children: [
-                  Icon(
-                    Icons.check_circle,
-                    color: Colors.green,
-                    size: 20,
+              const SizedBox(height: 18),
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Colors.green.withOpacity(0.2),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(
+                    color: Colors.green.withOpacity(0.5),
+                    width: 2,
                   ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: Text(
-                      widget.exercise.benefits,
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: Colors.white.withOpacity(0.9),
-                        height: 1.4,
+                ),
+                child: Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(6),
+                      decoration: BoxDecoration(
+                        color: Colors.green.withOpacity(0.3),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: const Icon(
+                        Icons.check_circle,
+                        color: Colors.white,
+                        size: 22,
                       ),
                     ),
-                  ),
-                ],
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Text(
+                        widget.exercise.benefits,
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: Colors.white,
+                          fontWeight: FontWeight.w500,
+                          height: 1.5,
+                          shadows: [
+                            Shadow(
+                              color: Colors.black.withOpacity(0.5),
+                              offset: const Offset(1, 1),
+                              blurRadius: 2,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ],
           ),
@@ -345,21 +398,36 @@ class _ExerciseDetailScreenState extends State<ExerciseDetailScreen>
               gradient: isHighlighted
                   ? LinearGradient(
                       colors: [
-                        color.withOpacity(0.3),
-                        color.withOpacity(0.15),
+                        color.withOpacity(0.6),
+                        color.withOpacity(0.4),
                       ],
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
                     )
-                  : null,
-              color: isHighlighted ? null : Colors.white.withOpacity(0.1),
+                  : LinearGradient(
+                      colors: [
+                        Colors.black.withOpacity(0.5),
+                        Colors.black.withOpacity(0.3),
+                      ],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
               borderRadius: BorderRadius.circular(20),
               border: Border.all(
                 color: isHighlighted
-                    ? color.withOpacity(0.6)
-                    : Colors.white.withOpacity(0.3),
+                    ? color.withOpacity(0.8)
+                    : Colors.white.withOpacity(0.4),
                 width: isHighlighted ? 2.5 : 2,
               ),
+              boxShadow: [
+                BoxShadow(
+                  color: isHighlighted
+                      ? color.withOpacity(0.4)
+                      : Colors.black.withOpacity(0.3),
+                  blurRadius: 12,
+                  offset: const Offset(0, 4),
+                ),
+              ],
             ),
             child: Row(
               children: [
@@ -368,12 +436,24 @@ class _ExerciseDetailScreenState extends State<ExerciseDetailScreen>
                   width: iconSize,
                   height: iconSize,
                   decoration: BoxDecoration(
-                    color: color.withOpacity(0.3),
+                    gradient: LinearGradient(
+                      colors: [
+                        color.withOpacity(0.6),
+                        color.withOpacity(0.4),
+                      ],
+                    ),
                     borderRadius: BorderRadius.circular(15),
                     border: Border.all(
-                      color: color.withOpacity(0.5),
+                      color: Colors.white.withOpacity(0.6),
                       width: 2,
                     ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: color.withOpacity(0.5),
+                        blurRadius: 8,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
                   ),
                   child: Icon(
                     icon,
@@ -394,6 +474,13 @@ class _ExerciseDetailScreenState extends State<ExerciseDetailScreen>
                           fontSize: screenWidth > 600 ? 17 : 16,
                           fontWeight: FontWeight.bold,
                           color: Colors.white,
+                          shadows: [
+                            Shadow(
+                              color: Colors.black.withOpacity(0.7),
+                              offset: const Offset(1, 1),
+                              blurRadius: 3,
+                            ),
+                          ],
                         ),
                       ),
                       const SizedBox(height: 6),
@@ -401,8 +488,16 @@ class _ExerciseDetailScreenState extends State<ExerciseDetailScreen>
                         description,
                         style: TextStyle(
                           fontSize: screenWidth > 600 ? 13 : 12,
-                          color: Colors.white.withOpacity(0.85),
+                          color: Colors.white,
+                          fontWeight: FontWeight.w500,
                           height: 1.4,
+                          shadows: [
+                            Shadow(
+                              color: Colors.black.withOpacity(0.7),
+                              offset: const Offset(1, 1),
+                              blurRadius: 2,
+                            ),
+                          ],
                         ),
                       ),
                     ],
@@ -410,10 +505,17 @@ class _ExerciseDetailScreenState extends State<ExerciseDetailScreen>
                 ),
 
                 // Arrow Icon
-                Icon(
-                  Icons.arrow_forward_ios,
-                  color: Colors.white.withOpacity(0.7),
-                  size: screenWidth > 600 ? 20 : 18,
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.2),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Icon(
+                    Icons.arrow_forward_ios,
+                    color: Colors.white,
+                    size: screenWidth > 600 ? 20 : 18,
+                  ),
                 ),
               ],
             ),
