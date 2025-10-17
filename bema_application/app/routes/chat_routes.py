@@ -1,4 +1,5 @@
 import json
+from typing import Optional
 
 from requests import request
 from fastapi import APIRouter, HTTPException
@@ -10,11 +11,15 @@ router = APIRouter()
 
 class QuestionRequest(BaseModel):
     question: str
+    emotion: Optional[str] = None
 
 @router.post("/bot/")
 async def query_agent(request: QuestionRequest):
     try:
-        response = answer_question_with_memory(question=request.question)
+        response = answer_question_with_memory(
+            question=request.question,
+            emotion=request.emotion if request.emotion is not None else ""
+        )
         return response
     except Exception as e:
         print(f"Error in query_agent: {str(e)}")
