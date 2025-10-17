@@ -77,26 +77,33 @@ def get_relevant_history(question: str, k: int = 3) -> str:
     return formatted_history
 
 
-def answer_question_with_memory(question: str, emotion: str) -> dict:
+def answer_question_with_memory(question: str, emotion: str = None) -> dict:
     """
     Answers a question by first retrieving relevant context from chat history,
     then calling the LLM, and finally saving the new exchange to memory.
+    
+    Args:
+        question: The user's question
+        emotion: Optional emotion context from the user (default: None)
+    
+    Returns:
+        dict: Response with 'answer' and 'justification' keys
     """
     
     # 1. Retrieve relevant chat history
     history = get_relevant_history(question)
 
     # 2. Create a new prompt with the retrieved history
+    emotion_context = f"\n\nUser Emotion: {emotion}" if emotion else ""
+    
     prompt = f"""You are an AI assistant doctor named BEMA who specializes in all kinds of health-related problems.
-    Answer the following question based on the provided conversation history and your best knowledge and if the emotion is provided then use it. Be specific and accurate.
+    Answer the following question based on the provided conversation history and your best knowledge. Be specific and accurate.
     Your response should be in JSON format with 'answer' and 'justification' as the main keys.
 
     Conversation History:
     {history}
     
-    New Question: {question}
-
-    User Emotion: {emotion if emotion else "Not provided"}
+    New Question: {question}{emotion_context}
     
     Response format:
     {{
@@ -140,7 +147,17 @@ def answer_question_with_memory(question: str, emotion: str) -> dict:
         
     except requests.RequestException as e:
         print(f"❌ Error calling Ollama API: {e}")
+        import traceback
+        traceback.print_exc()
         return {
             "answer": "I'm sorry, but I'm unable to provide an answer at this time.",
             "justification": "There was an error while trying to retrieve the answer."
+        }
+    except Exception as e:
+        print(f"❌ Unexpected error in answer_question_with_memory: {e}")
+        import traceback
+        traceback.print_exc()
+        return {
+            "answer": "I'm sorry, but I encountered an unexpected error.",
+            "justification": "An unexpected error occurred while processing your question."
         }
