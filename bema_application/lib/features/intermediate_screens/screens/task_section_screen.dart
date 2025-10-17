@@ -1,6 +1,7 @@
 import 'dart:ui';
 import 'package:bema_application/features/daily_suggestions/screens/daily_suggestions_screen.dart';
 import 'package:bema_application/features/workout_plan/screens/workout_screen.dart';
+import 'package:bema_application/features/pose_coach/screens/pose_coach_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:bema_application/routes/route_names.dart';
 import 'package:bema_application/common/config/colors.dart';
@@ -18,6 +19,8 @@ class TasksSectionScreen extends StatelessWidget {
           page = const DailytaskScreen();
         } else if (settings.name == RouteNames.WorkoutPlanScreen) {
           page = const WorkoutPlanScreen();
+        } else if (settings.name == RouteNames.poseCoachScreen) {
+          page = const PoseCoachScreen();
         }
         return MaterialPageRoute(builder: (_) => page);
       },
@@ -124,8 +127,7 @@ class _TasksSectionHomeState extends State<TasksSectionHome>
                           _buildCard(
                             avatar: const CircleAvatar(
                               radius: 35,
-                              backgroundImage:
-                                  AssetImage('assets/tasks.png'),
+                              backgroundImage: AssetImage('assets/tasks.png'),
                             ),
                             title: "Daily Task",
                             subtitle: "Your Health Guide",
@@ -147,6 +149,24 @@ class _TasksSectionHomeState extends State<TasksSectionHome>
                             onTap: () {
                               Navigator.pushNamed(
                                   context, RouteNames.WorkoutPlanScreen);
+                            },
+                          ),
+                          _buildCard(
+                            avatar: const CircleAvatar(
+                              radius: 35,
+                              backgroundColor: Colors.deepPurple,
+                              child: Icon(
+                                Icons.fitness_center,
+                                size: 40,
+                                color: Colors.white,
+                              ),
+                            ),
+                            title: "AI Pose Coach",
+                            subtitle: "Real-time Form Check",
+                            color: Colors.deepPurpleAccent,
+                            onTap: () {
+                              Navigator.pushNamed(
+                                  context, RouteNames.poseCoachScreen);
                             },
                           ),
                         ],
