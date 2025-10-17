@@ -78,7 +78,7 @@ class _VideoGuideScreenState extends State<VideoGuideScreen> {
         automaticallyImplyLeading: false,
       ),
       body: SafeArea(
-        child: Padding(
+        child: SingleChildScrollView(
           padding: const EdgeInsets.all(16.0),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -133,27 +133,24 @@ class _VideoGuideScreenState extends State<VideoGuideScreen> {
                 ),
               ),
 
-              // Video Player
-              Expanded(
-                flex: 3,
+              // Video Player - Fixed height
+              SizedBox(
+                height: 250,
                 child: _buildVideoPlayer(),
               ),
               const SizedBox(height: 20),
 
-              // Exercise Info
-              Expanded(
-                flex: 2,
-                child: _buildExerciseInfo(),
-              ),
+              // Video Controls
+              _buildControlButtons(),
               const SizedBox(height: 20),
 
-              // Video Controls - Always visible
-              _buildControlButtons(),
+              // Ready Button
+              _buildReadyButton(),
               const SizedBox(height: 25),
 
-              // Ready Button - Always visible
-              _buildReadyButton(),
-              const SizedBox(height: 10),
+              // Scrollable Exercise Info
+              _buildExerciseInfo(),
+              const SizedBox(height: 20),
             ],
           ),
         ),
@@ -242,116 +239,114 @@ class _VideoGuideScreenState extends State<VideoGuideScreen> {
               width: 2,
             ),
           ),
-          child: SingleChildScrollView(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.all(6),
-                      decoration: BoxDecoration(
-                        color: Colors.blue.withOpacity(0.3),
-                        borderRadius: BorderRadius.circular(10),
-                        border: Border.all(
-                          color: Colors.blue.withOpacity(0.5),
-                          width: 2,
-                        ),
-                      ),
-                      child: const Icon(
-                        Icons.star,
-                        color: Colors.white,
-                        size: 20,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(6),
+                    decoration: BoxDecoration(
+                      color: Colors.blue.withOpacity(0.3),
+                      borderRadius: BorderRadius.circular(10),
+                      border: Border.all(
+                        color: Colors.blue.withOpacity(0.5),
+                        width: 2,
                       ),
                     ),
-                    const SizedBox(width: 10),
-                    _buildStrokedText('Key Points:', 18),
-                  ],
-                ),
-                const SizedBox(height: 12),
-                Container(
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: Colors.blue.withOpacity(0.2),
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(
-                      color: Colors.blue.withOpacity(0.4),
-                      width: 1.5,
-                    ),
-                  ),
-                  child: Text(
-                    widget.exercise.benefits,
-                    style: TextStyle(
-                      fontSize: 14,
+                    child: const Icon(
+                      Icons.star,
                       color: Colors.white,
-                      fontWeight: FontWeight.w500,
-                      height: 1.5,
-                      shadows: [
-                        Shadow(
-                          color: Colors.black.withOpacity(0.5),
-                          offset: const Offset(1, 1),
-                          blurRadius: 2,
-                        ),
-                      ],
+                      size: 20,
                     ),
                   ),
-                ),
-                const SizedBox(height: 16),
-                Row(
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.all(6),
-                      decoration: BoxDecoration(
-                        color: Colors.green.withOpacity(0.3),
-                        borderRadius: BorderRadius.circular(10),
-                        border: Border.all(
-                          color: Colors.green.withOpacity(0.5),
-                          width: 2,
-                        ),
-                      ),
-                      child: const Icon(
-                        Icons.check_circle,
-                        color: Colors.white,
-                        size: 20,
-                      ),
-                    ),
-                    const SizedBox(width: 10),
-                    _buildStrokedText('Form Tips:', 16),
-                  ],
-                ),
-                const SizedBox(height: 10),
-                Container(
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: Colors.green.withOpacity(0.2),
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(
-                      color: Colors.green.withOpacity(0.4),
-                      width: 1.5,
-                    ),
+                  const SizedBox(width: 10),
+                  _buildStrokedText('Key Points:', 18),
+                ],
+              ),
+              const SizedBox(height: 12),
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Colors.blue.withOpacity(0.2),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(
+                    color: Colors.blue.withOpacity(0.4),
+                    width: 1.5,
                   ),
-                  child: Text(
-                    '✓ Maintain proper posture throughout\n'
-                    '✓ Control your movement speed\n'
-                    '✓ Breathe steadily and consistently\n'
-                    '✓ Focus on quality over quantity',
-                    style: TextStyle(
-                      fontSize: 13,
+                ),
+                child: Text(
+                  widget.exercise.benefits,
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: Colors.white,
+                    fontWeight: FontWeight.w500,
+                    height: 1.5,
+                    shadows: [
+                      Shadow(
+                        color: Colors.black.withOpacity(0.5),
+                        offset: const Offset(1, 1),
+                        blurRadius: 2,
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+              Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(6),
+                    decoration: BoxDecoration(
+                      color: Colors.green.withOpacity(0.3),
+                      borderRadius: BorderRadius.circular(10),
+                      border: Border.all(
+                        color: Colors.green.withOpacity(0.5),
+                        width: 2,
+                      ),
+                    ),
+                    child: const Icon(
+                      Icons.check_circle,
                       color: Colors.white,
-                      fontWeight: FontWeight.w500,
-                      height: 1.6,
-                      shadows: [
-                        Shadow(
-                          color: Colors.black.withOpacity(0.5),
-                          offset: const Offset(1, 1),
-                          blurRadius: 2,
-                        ),
-                      ],
+                      size: 20,
                     ),
                   ),
+                  const SizedBox(width: 10),
+                  _buildStrokedText('Form Tips:', 16),
+                ],
+              ),
+              const SizedBox(height: 10),
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Colors.green.withOpacity(0.2),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(
+                    color: Colors.green.withOpacity(0.4),
+                    width: 1.5,
+                  ),
                 ),
-              ],
-            ),
+                child: Text(
+                  '✓ Maintain proper posture throughout\n'
+                  '✓ Control your movement speed\n'
+                  '✓ Breathe steadily and consistently\n'
+                  '✓ Focus on quality over quantity',
+                  style: TextStyle(
+                    fontSize: 13,
+                    color: Colors.white,
+                    fontWeight: FontWeight.w500,
+                    height: 1.6,
+                    shadows: [
+                      Shadow(
+                        color: Colors.black.withOpacity(0.5),
+                        offset: const Offset(1, 1),
+                        blurRadius: 2,
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
           ),
         ),
       ),
