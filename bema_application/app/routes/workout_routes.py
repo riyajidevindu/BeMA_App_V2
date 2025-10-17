@@ -1,49 +1,19 @@
+import json
+from models.user_health import UserHealthProfile
 from fastapi import APIRouter, HTTPException
 from models.pose_session import PoseSessionRequest, PoseSessionResponse
-from core.db import get_db_connection, DB_CONFIG
+from core.db import get_db_connection, DB_CONFIG, get_user_health_profile
 from datetime import datetime
 import logging
 import requests
 import os
 from dotenv import load_dotenv
+from services.workout_service import generate_workout_motivation, generate_workout_times_per_day
 
 load_dotenv()
 
 router = APIRouter()
 logger = logging.getLogger(__name__)
-
-NGROK_URL = os.getenv("NGROK_URL")
-
-
-async def generate_workout_motivation(user_id: str, performance_context: str) -> str:
-    """Generate AI motivational feedback for workout performance"""
-    try:
-        prompt = f"""You are a supportive fitness coach. Based on the user's workout performance, provide a brief, motivational message (2-3 sentences max).
-        
-Performance: {performance_context}
-
-Provide encouragement, celebrate achievements, and offer constructive tips for improvement. Be positive and energetic!"""
-
-        payload = {
-            "model": "qwen3:8b",
-            "prompt": prompt,
-            "stream": False,
-            "options": {"temperature": 0.7}
-        }
-        
-        res = requests.post(
-            f"{NGROK_URL}/api/generate",
-            headers={"Content-Type": "application/json"},
-            json=payload,
-            timeout=30
-        )
-        res.raise_for_status()
-        
-        return res.json().get('response', 'Great job! Keep up the excellent work!')
-    except Exception as e:
-        logger.error(f"Error generating motivation: {str(e)}")
-        return "Great work! Keep pushing yourself to be better every day!"
-
 
 @router.post("/workout/pose-summary", response_model=PoseSessionResponse)
 async def save_pose_session(session: PoseSessionRequest):
@@ -98,3 +68,20 @@ async def save_pose_session(session: PoseSessionRequest):
     except Exception as e:
         logger.error(f"Error saving workout session: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Failed to save workout session: {str(e)}")
+    
+@router.get("/workout/plan/{user_id}", response_model=dict)
+async def get_workout_plan(user_id: str):
+    """
+    Get personalized workout plan for the user
+    """
+    try:
+        user_health_profile =  get_user_health_profile(user_id)
+        if not user_health_profile:
+            raise HTTPException(status_code=404, detail="User health profile not found")
+
+        workout_plan = await generate_workout_times_per_day(user_id, user_health_profile)
+        return {"user_id": user_id, "workout_plan": workout_plan}
+
+    except Exception as e:
+        logger.error(f"Error fetching workout plan: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to fetch workout plan: {str(e)}")

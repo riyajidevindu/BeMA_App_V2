@@ -250,6 +250,32 @@ def initialize_database():
         cursor.close()
         db_conn.close()
 
+def get_user_health_profile(userId: str) -> UserHealthProfile | None:
+    """Fetches a UserHealthProfile from the database by userId."""
+    db_conn = get_db_connection(DB_CONFIG)
+    if not db_conn:
+        return None
+
+    cursor = db_conn.cursor(dictionary=True)
+    query = "SELECT * FROM user_health_profiles WHERE userId = %s"
+    
+    try:
+        cursor.execute(query, (userId,))
+        result = cursor.fetchone()
+        if result:
+            profile = UserHealthProfile(**result)
+            print(f"✅ Successfully fetched profile for user: {userId}")
+            return profile
+        else:
+            print(f"⚠️ No profile found for user: {userId}")
+            return None
+    except mysql.connector.Error as err:
+        print(f"❌ Failed to fetch profile for user {userId}: {err}")
+        return None
+    finally:
+        cursor.close()
+        db_conn.close()
+
 # To run this script directly for setup:
 if __name__ == "__main__":
     initialize_database()
