@@ -2,9 +2,11 @@ import 'dart:ui';
 import 'package:bema_application/features/daily_suggestions/screens/daily_suggestions_screen.dart';
 import 'package:bema_application/features/workout_plan/screens/workout_screen.dart';
 import 'package:bema_application/features/pose_coach/screens/pose_coach_screen.dart';
+import 'package:bema_application/features/pose_coach/screens/exercise_selection_screen.dart';
+import 'package:bema_application/features/pose_coach/screens/video_guide_screen.dart';
+import 'package:bema_application/features/pose_coach/models/exercise.dart';
 import 'package:flutter/material.dart';
 import 'package:bema_application/routes/route_names.dart';
-import 'package:bema_application/common/config/colors.dart';
 import 'package:bema_application/common/widgets/app_bar.dart';
 
 class TasksSectionScreen extends StatelessWidget {
@@ -19,8 +21,16 @@ class TasksSectionScreen extends StatelessWidget {
           page = const DailytaskScreen();
         } else if (settings.name == RouteNames.WorkoutPlanScreen) {
           page = const WorkoutPlanScreen();
+        } else if (settings.name == RouteNames.exerciseSelectionScreen) {
+          page = const ExerciseSelectionScreen();
+        } else if (settings.name == RouteNames.videoGuideScreen) {
+          final exercise = settings.arguments as Exercise?;
+          page = exercise != null
+              ? VideoGuideScreen(exercise: exercise)
+              : const ExerciseSelectionScreen();
         } else if (settings.name == RouteNames.poseCoachScreen) {
-          page = const PoseCoachScreen();
+          final exercise = settings.arguments as Exercise?;
+          page = PoseCoachScreen(exercise: exercise);
         }
         return MaterialPageRoute(builder: (_) => page);
       },
@@ -65,9 +75,6 @@ class _TasksSectionHomeState extends State<TasksSectionHome>
 
   @override
   Widget build(BuildContext context) {
-    final double screenWidth = MediaQuery.of(context).size.width;
-    final double screenHeight = MediaQuery.of(context).size.height;
-
     return Scaffold(
       backgroundColor: Colors.transparent,
       appBar: AppBar(
@@ -162,11 +169,11 @@ class _TasksSectionHomeState extends State<TasksSectionHome>
                               ),
                             ),
                             title: "AI Pose Coach",
-                            subtitle: "Real-time Form Check",
+                            subtitle: "Your Coach",
                             color: Colors.deepPurpleAccent,
                             onTap: () {
                               Navigator.pushNamed(
-                                  context, RouteNames.poseCoachScreen);
+                                  context, RouteNames.exerciseSelectionScreen);
                             },
                           ),
                         ],

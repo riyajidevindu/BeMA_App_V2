@@ -221,6 +221,34 @@ class PoseCoachProvider with ChangeNotifier {
     }
   }
 
+  // Update feedback for any exercise (used by exercise logic)
+  void updateExerciseFeedback(
+      String feedback, double accuracy, bool isGoodForm) {
+    _currentFeedback = feedback;
+    _showVisualFeedback = isGoodForm;
+
+    // Update running accuracy
+    if (_repCount > 0) {
+      _accuracy = (_accuracy * _repCount + accuracy / 100.0) / (_repCount + 1);
+      _accuracy = _accuracy.clamp(0.0, 1.0);
+    }
+
+    notifyListeners();
+  }
+
+  // Increment rep count (called by exercise logic when rep is completed)
+  void incrementRep() {
+    _repCount++;
+    _feedbackHistory.add('Rep $_repCount completed!');
+
+    // Milestone feedback
+    if (_repCount % 5 == 0) {
+      _feedbackHistory.add('🎉 ${_repCount} reps completed!');
+    }
+
+    notifyListeners();
+  }
+
   // Reset provider state
   void reset() {
     _isWorkoutActive = false;

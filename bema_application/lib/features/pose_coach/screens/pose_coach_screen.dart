@@ -3,15 +3,21 @@ import 'package:provider/provider.dart';
 import 'package:camera/camera.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 import 'package:bema_application/common/config/colors.dart';
+import 'package:bema_application/common/widgets/app_bar.dart';
 import 'package:bema_application/features/authentication/providers/authentication_provider.dart';
 import '../providers/pose_coach_provider.dart';
 import '../services/pose_detection_service.dart';
 import '../services/pose_firebase_service.dart';
+import '../services/exercise_logic.dart';
+import '../services/exercise_logic_factory.dart';
 import '../models/pose_session.dart';
+import '../models/exercise.dart';
 import 'package:bema_application/services/api_service.dart';
 
 class PoseCoachScreen extends StatefulWidget {
-  const PoseCoachScreen({super.key});
+  final Exercise? exercise;
+
+  const PoseCoachScreen({super.key, this.exercise});
 
   @override
   State<PoseCoachScreen> createState() => _PoseCoachScreenState();
@@ -22,6 +28,8 @@ class _PoseCoachScreenState extends State<PoseCoachScreen>
   CameraController? _cameraController;
   PoseDetectionService? _poseDetectionService;
   FlutterTts? _flutterTts;
+  ExerciseLogic? _exerciseLogic;
+  Exercise? _currentExercise;
   bool _isInitialized = false;
   bool _isProcessing = false;
   String? _error;
@@ -32,6 +40,11 @@ class _PoseCoachScreenState extends State<PoseCoachScreen>
   @override
   void initState() {
     super.initState();
+    // Initialize exercise logic based on passed exercise or default to squats
+    _currentExercise = widget.exercise ?? Exercise.squats;
+    _exerciseLogic = ExerciseLogicFactory.createLogic(_currentExercise!.type);
+    _exerciseLogic?.initialize();
+
     WidgetsBinding.instance.addObserver(this);
     _initializeCamera();
     _initializeTts();
@@ -111,7 +124,7 @@ class _PoseCoachScreenState extends State<PoseCoachScreen>
   }
 
   void _processCameraImage(CameraImage image) async {
-    if (_isProcessing) return;
+    if (_isProcessing || _exerciseLogic == null) return;
 
     final poseProvider = Provider.of<PoseCoachProvider>(context, listen: false);
     if (!poseProvider.isWorkoutActive) return;
@@ -123,9 +136,24 @@ class _PoseCoachScreenState extends State<PoseCoachScreen>
       final rawLandmarks = await _poseDetectionService!.detectPose(image);
 
       if (rawLandmarks != null && rawLandmarks.isNotEmpty) {
-        // Analyze pose
-        poseProvider.analyzeSquatPose(
-            rawLandmarks.cast<PoseLandmark>()); // Provide voice feedback
+        // Use exercise-specific logic to analyze pose
+        final landmarks = rawLandmarks.cast<PoseLandmark>();
+        final result = _exerciseLogic!.analyzePose(landmarks);
+
+        // Update provider with exercise-specific feedback
+        poseProvider.updateExerciseFeedback(
+          result.feedback,
+          result.accuracy,
+          result.feedbackLevel == FeedbackLevel.excellent ||
+              result.feedbackLevel == FeedbackLevel.good,
+        );
+
+        // Count rep if completed
+        if (result.isRepCompleted) {
+          poseProvider.incrementRep();
+        }
+
+        // Provide voice feedback
         final currentFeedback = poseProvider.currentFeedback;
         if (currentFeedback != _lastSpokenFeedback &&
             poseProvider.showVisualFeedback) {
@@ -150,7 +178,9 @@ class _PoseCoachScreenState extends State<PoseCoachScreen>
 
   void _startWorkout() {
     final poseProvider = Provider.of<PoseCoachProvider>(context, listen: false);
-    poseProvider.startWorkout('squat');
+    _exerciseLogic?.reset();
+    poseProvider.startWorkout(_currentExercise?.id ?? 'squats');
+    _speak('Starting ${_currentExercise?.name ?? "squat"} workout. Get ready!');
     _speak('Starting squat workout. Get ready!');
   }
 
@@ -242,9 +272,10 @@ class _PoseCoachScreenState extends State<PoseCoachScreen>
     return Scaffold(
       backgroundColor: primaryColor,
       appBar: AppBar(
-        title: const Text('AI Pose Coach'),
-        backgroundColor: primaryColor,
+        backgroundColor: Colors.transparent,
         elevation: 0,
+        title: const CustomAppBar(showBackButton: true),
+        automaticallyImplyLeading: false,
       ),
       body: _error != null
           ? Center(

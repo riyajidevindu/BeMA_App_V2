@@ -38,4 +38,6 @@ class RouteNames {
   static const WorkoutPlanScreen = 'WorkoutPlanScreen';
   static const diveReflexScreen = 'diveReflexScreen';
   static const poseCoachScreen = 'poseCoachScreen';
+  static const exerciseSelectionScreen = 'exerciseSelectionScreen';
+  static const videoGuideScreen = 'videoGuideScreen';
 }
