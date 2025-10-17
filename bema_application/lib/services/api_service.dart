@@ -159,4 +159,24 @@ class ApiService {
       return null;
     }
   }
+
+  // Function to get personalized workout plan
+  Future<Map<String, dynamic>?> getWorkoutPlan(String userId) async {
+    try {
+      final response = await http.get(
+        Uri.parse("$baseUrl/api/workout/plan/$userId"),
+        headers: {"Content-Type": "application/json"},
+      );
+
+      if (response.statusCode == 200) {
+        return jsonDecode(response.body);
+      } else {
+        print("Failed to get workout plan: ${response.statusCode}");
+        return null;
+      }
+    } catch (e) {
+      print("Error getting workout plan: $e");
+      return null;
+    }
+  }
 }
