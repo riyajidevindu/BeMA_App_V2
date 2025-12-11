@@ -30,6 +30,9 @@ import 'package:bema_application/features/instant_stress_release/screens/instant
 import 'package:bema_application/features/navbar/bottom_navbar.dart';
 import 'package:bema_application/features/workout_plan/screens/workout_screen.dart';
 import 'package:bema_application/features/pose_coach/screens/pose_coach_screen.dart';
+import 'package:bema_application/features/pose_coach/screens/pose_session_gallery_screen.dart';
+import 'package:bema_application/features/pose_coach/screens/pose_session_player_screen.dart';
+import 'package:bema_application/features/pose_coach/models/pose_session.dart';
 import 'package:bema_application/routes/authendication_wrapper.dart';
 import 'package:bema_application/features/authentication/screens/mood_screen/mood_friend.dart';
 import 'package:bema_application/routes/route_names.dart';
@@ -277,5 +280,30 @@ final goRouter = GoRouter(initialLocation: '/${RouteNames.wrapper}', routes: [
     pageBuilder: (context, state) => const MaterialPage(
       child: PoseCoachScreen(),
     ),
+  ),
+  GoRoute(
+    path: '/${RouteNames.poseSessionGalleryScreen}',
+    name: RouteNames.poseSessionGalleryScreen,
+    pageBuilder: (context, state) {
+      // Get optional exercise filter from extra
+      final exerciseFilter = state.extra as String?;
+      return MaterialPage(
+        child: PoseSessionGalleryScreen(exerciseFilter: exerciseFilter),
+      );
+    },
+  ),
+  GoRoute(
+    path: PoseSessionPlayerScreen.routePath,
+    name: RouteNames.poseSessionPlayerScreen,
+    pageBuilder: (context, state) {
+      final session = state.extra as PoseSession?;
+      if (session == null) {
+        return const MaterialPage(
+            child: Scaffold(body: Center(child: Text('Session missing'))));
+      }
+      return MaterialPage(
+        child: PoseSessionPlayerScreen(session: session),
+      );
+    },
   ),
 ]);

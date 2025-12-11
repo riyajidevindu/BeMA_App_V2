@@ -34,6 +34,7 @@ class SummaryCard extends StatelessWidget {
         child: BackdropFilter(
           filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
           child: Container(
+            constraints: const BoxConstraints(minHeight: 150),
             decoration: BoxDecoration(
               gradient: LinearGradient(
                 colors: [
@@ -60,6 +61,7 @@ class SummaryCard extends StatelessWidget {
             child: Padding(
               padding: const EdgeInsets.all(16.0),
               child: Column(
+                mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   // Icon and Title Row

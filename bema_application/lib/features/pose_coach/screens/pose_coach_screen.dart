@@ -1,16 +1,21 @@
+import 'dart:io' show Platform;
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:camera/camera.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 import 'package:speech_to_text/speech_to_text.dart' as stt;
 import 'package:permission_handler/permission_handler.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:bema_application/features/authentication/providers/authentication_provider.dart';
 import '../providers/pose_coach_provider.dart';
 import '../services/pose_detection_service.dart';
 import '../services/pose_firebase_service.dart';
+import '../services/pose_local_storage_service.dart';
 import '../services/exercise_logic.dart';
 import '../services/exercise_logic_factory.dart';
 import '../models/pose_session.dart';
+import 'package:go_router/go_router.dart';
+import 'package:bema_application/routes/route_names.dart';
 import '../models/exercise.dart';
 import 'package:bema_application/services/api_service.dart';
 
@@ -34,10 +39,7 @@ class _PoseCoachScreenState extends State<PoseCoachScreen>
   bool _isInitialized = false;
   bool _isProcessing = false;
   String? _error;
-  bool _hasPermissions = false;
   bool _isCheckingPermissions = true;
-  String _lastSpokenFeedback = '';
-  DateTime? _lastFeedbackTime;
   final ApiService _apiService = ApiService();
   final PoseFirebaseService _firebaseService = PoseFirebaseService();
 
@@ -71,11 +73,25 @@ class _PoseCoachScreenState extends State<PoseCoachScreen>
       false; // Is user in frame, full body visible, and good orientation?
   bool _hasAnnouncedReady = false; // Have we told user they're ready to start?
 
+  // Pose overlay state
+  List<PoseLandmark>? _lastLandmarks;
+  Size? _lastImageSize;
+  Size? _previewSize;
+  DateTime? _lastOverlayUpdate;
+
   // Track orientation feedback to avoid repetition
   String _lastOrientation = '';
   DateTime? _lastOrientationWarning;
   String _lastFormFeedback = '';
   DateTime? _lastFormFeedbackTime;
+  String _lastSpokenFeedback = '';
+  DateTime? _lastFeedbackTime;
+
+  // Video recording
+  bool _isRecordingVideo = false;
+  String? _recordedVideoPath;
+  final PoseLocalStorageService _localStorageService =
+      PoseLocalStorageService();
 
   @override
   void initState() {
@@ -140,7 +156,6 @@ class _PoseCoachScreenState extends State<PoseCoachScreen>
       final hasMicPermission = micStatus.isGranted;
 
       setState(() {
-        _hasPermissions = hasRequiredPermissions;
         _isCheckingPermissions = false;
       });
 
@@ -196,10 +211,18 @@ class _PoseCoachScreenState extends State<PoseCoachScreen>
       );
 
       await _cameraController!.initialize();
+      _previewSize = _cameraController!.value.previewSize;
 
       // Initialize pose detection service
       _poseDetectionService = PoseDetectionService();
       await _poseDetectionService!.initialize();
+
+      // Pass camera info for proper rotation calculation
+      final camera = _availableCameras[_currentCameraIndex];
+      _poseDetectionService!.setCameraInfo(
+        camera.sensorOrientation,
+        camera.lensDirection,
+      );
 
       // Start image stream for pose detection
       _cameraController!.startImageStream(_processCameraImage);
@@ -230,7 +253,8 @@ class _PoseCoachScreenState extends State<PoseCoachScreen>
     try {
       _flutterTts = FlutterTts();
       await _flutterTts!.setLanguage("en-US");
-      await _flutterTts!.setSpeechRate(0.5);
+      await _flutterTts!
+          .setSpeechRate(0.35); // Slower for better user comprehension
       await _flutterTts!.setVolume(1.0);
       await _flutterTts!.setPitch(1.0);
       debugPrint('Text-to-Speech initialized successfully');
@@ -352,6 +376,18 @@ class _PoseCoachScreenState extends State<PoseCoachScreen>
     try {
       // Detect pose landmarks
       final rawLandmarks = await _poseDetectionService!.detectPose(image);
+
+      // Persist landmarks for overlay
+      if (rawLandmarks != null && rawLandmarks.isNotEmpty) {
+        _lastLandmarks = rawLandmarks.cast<PoseLandmark>();
+        _lastImageSize = Size(image.width.toDouble(), image.height.toDouble());
+        final now = DateTime.now();
+        if (_lastOverlayUpdate == null ||
+            now.difference(_lastOverlayUpdate!).inMilliseconds >= 80) {
+          _lastOverlayUpdate = now;
+          if (mounted) setState(() {});
+        }
+      }
 
       // POSITIONING MODE - Check if user is in frame
       if (_isPositioningMode) {
@@ -628,7 +664,51 @@ class _PoseCoachScreenState extends State<PoseCoachScreen>
     }
   }
 
-  void _startWorkout() {
+  Future<void> _startVideoRecording() async {
+    if (_cameraController == null ||
+        !_cameraController!.value.isInitialized ||
+        _isRecordingVideo) {
+      return;
+    }
+
+    try {
+      // Stop image stream before recording video
+      await _cameraController!.stopImageStream();
+
+      // Start video recording
+      await _cameraController!.startVideoRecording();
+      setState(() {
+        _isRecordingVideo = true;
+      });
+      debugPrint('Video recording started');
+    } catch (e) {
+      debugPrint('Error starting video recording: $e');
+    }
+  }
+
+  Future<String?> _stopVideoRecording() async {
+    if (_cameraController == null || !_isRecordingVideo) {
+      return null;
+    }
+
+    try {
+      final videoFile = await _cameraController!.stopVideoRecording();
+      setState(() {
+        _isRecordingVideo = false;
+        _recordedVideoPath = videoFile.path;
+      });
+      debugPrint('Video recording stopped: ${videoFile.path}');
+      return videoFile.path;
+    } catch (e) {
+      debugPrint('Error stopping video recording: $e');
+      setState(() {
+        _isRecordingVideo = false;
+      });
+      return null;
+    }
+  }
+
+  void _startWorkout() async {
     final poseProvider = Provider.of<PoseCoachProvider>(context, listen: false);
 
     // Exit positioning mode
@@ -644,6 +724,10 @@ class _PoseCoachScreenState extends State<PoseCoachScreen>
 
     _exerciseLogic?.reset();
     poseProvider.startWorkout(_currentExercise?.id ?? 'squats');
+
+    // Start video recording
+    await _startVideoRecording();
+
     _speak('Starting ${_currentExercise?.name ?? "squat"} workout. Get ready!');
   }
 
@@ -655,6 +739,9 @@ class _PoseCoachScreenState extends State<PoseCoachScreen>
     final poseProvider = Provider.of<PoseCoachProvider>(context, listen: false);
     final authProvider =
         Provider.of<AuthenticationProvider>(context, listen: false);
+
+    // Stop video recording first
+    final videoPath = await _stopVideoRecording();
 
     // Get Firebase user ID (consistent with the rest of your app)
     final userId = authProvider.firebaseUser?.uid ?? '';
@@ -671,7 +758,18 @@ class _PoseCoachScreenState extends State<PoseCoachScreen>
 
     // Save to both Firebase and backend
     try {
-      // 1. Save to Firebase Firestore first (primary storage)
+      // 1. Save video locally with session metadata
+      if (videoPath != null) {
+        final savedSession =
+            await _localStorageService.saveSession(session, videoPath);
+        if (savedSession != null) {
+          debugPrint('Workout video saved locally: ${savedSession.videoPath}');
+        } else {
+          debugPrint('Failed to save video locally');
+        }
+      }
+
+      // 2. Save to Firebase Firestore (primary storage)
       final firebaseSessionId = await _firebaseService.saveWorkoutSession(
         userId: userId,
         session: session,
@@ -683,24 +781,28 @@ class _PoseCoachScreenState extends State<PoseCoachScreen>
         debugPrint('Failed to save to Firebase');
       }
 
-      // 2. Send session data to backend (for AI analysis and additional features)
+      // 3. Send session data to backend (for AI analysis and additional features)
       final response = await _apiService.sendWorkoutSummary(session.toJson());
 
       if (response != null && mounted) {
         // Show motivational feedback from AI
-        _showWorkoutSummary(session, response['motivation'] ?? 'Great work!');
+        _showWorkoutSummary(session, response['motivation'] ?? 'Great work!',
+            hasVideo: videoPath != null);
       } else if (mounted) {
-        _showWorkoutSummary(session, 'Excellent workout!');
+        _showWorkoutSummary(session, 'Excellent workout!',
+            hasVideo: videoPath != null);
       }
     } catch (e) {
       debugPrint('Error saving workout: $e');
       if (mounted) {
-        _showWorkoutSummary(session, 'Excellent workout!');
+        _showWorkoutSummary(session, 'Excellent workout!',
+            hasVideo: videoPath != null);
       }
     }
   }
 
-  void _showWorkoutSummary(PoseSession session, String motivation) {
+  void _showWorkoutSummary(PoseSession session, String motivation,
+      {bool hasVideo = false}) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -712,6 +814,17 @@ class _PoseCoachScreenState extends State<PoseCoachScreen>
             Text('Reps: ${session.reps}'),
             Text('Accuracy: ${(session.accuracy * 100).toStringAsFixed(1)}%'),
             Text('Duration: ${session.duration}s'),
+            if (hasVideo) ...[
+              const SizedBox(height: 8),
+              Row(
+                children: [
+                  Icon(Icons.videocam, size: 16, color: Colors.green),
+                  const SizedBox(width: 4),
+                  Text('Video saved for review',
+                      style: TextStyle(color: Colors.green, fontSize: 12)),
+                ],
+              ),
+            ],
             const SizedBox(height: 16),
             Text(
               motivation,
@@ -862,12 +975,19 @@ class _PoseCoachScreenState extends State<PoseCoachScreen>
                         ),
 
                         // Pose detection overlay
-                        if (poseProvider.isWorkoutActive)
-                          CustomPaint(
-                            painter: PoseOverlayPainter(
-                              showGoodForm: poseProvider.showVisualFeedback,
+                        if (_lastLandmarks != null && _lastImageSize != null)
+                          Positioned.fill(
+                            child: CustomPaint(
+                              painter: PoseSkeletonPainter(
+                                landmarks: _lastLandmarks!,
+                                imageSize: _lastImageSize!,
+                                previewSize: _previewSize,
+                                isFrontCamera: _cameraController
+                                        ?.description.lensDirection ==
+                                    CameraLensDirection.front,
+                                showGoodForm: poseProvider.showVisualFeedback,
+                              ),
                             ),
-                            child: Container(),
                           ),
 
                         // Stats overlay
@@ -1097,30 +1217,43 @@ class _PoseCoachScreenState extends State<PoseCoachScreen>
       return Center(
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 20),
-          child: ElevatedButton(
-            onPressed: _startWorkout,
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.blue,
-              padding: const EdgeInsets.symmetric(horizontal: 48, vertical: 16),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(30),
-              ),
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: const [
-                Icon(Icons.play_arrow, color: Colors.white),
-                SizedBox(width: 8),
-                Text(
-                  'I\'m Ready - Start!',
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              ElevatedButton(
+                onPressed: _startWorkout,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.blue,
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 48, vertical: 16),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(30),
                   ),
                 ),
-              ],
-            ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: const [
+                    Icon(Icons.play_arrow, color: Colors.white),
+                    SizedBox(width: 8),
+                    Text(
+                      'I\'m Ready - Start!',
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 8),
+              TextButton.icon(
+                onPressed: _openHistory,
+                icon: const Icon(Icons.video_library_outlined),
+                label: const Text('Past videos'),
+                style: TextButton.styleFrom(foregroundColor: Colors.white),
+              ),
+            ],
           ),
         ),
       );
@@ -1130,56 +1263,231 @@ class _PoseCoachScreenState extends State<PoseCoachScreen>
     return Center(
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 20),
-        child: ElevatedButton(
-          onPressed: provider.isWorkoutActive ? _stopWorkout : _startWorkout,
-          style: ElevatedButton.styleFrom(
-            backgroundColor:
-                provider.isWorkoutActive ? Colors.red : Colors.green,
-            padding: const EdgeInsets.symmetric(horizontal: 48, vertical: 16),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(30),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ElevatedButton(
+              onPressed:
+                  provider.isWorkoutActive ? _stopWorkout : _startWorkout,
+              style: ElevatedButton.styleFrom(
+                backgroundColor:
+                    provider.isWorkoutActive ? Colors.red : Colors.green,
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 48, vertical: 16),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(30),
+                ),
+              ),
+              child: Text(
+                provider.isWorkoutActive ? 'Stop Workout' : 'Start Workout',
+                style: const TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
+                ),
+              ),
             ),
-          ),
-          child: Text(
-            provider.isWorkoutActive ? 'Stop Workout' : 'Start Workout',
-            style: const TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-              color: Colors.white,
+            const SizedBox(height: 8),
+            TextButton.icon(
+              onPressed: _openHistory,
+              icon: const Icon(Icons.video_library_outlined),
+              label: const Text('Past videos'),
+              style: TextButton.styleFrom(foregroundColor: Colors.white),
             ),
-          ),
+          ],
         ),
       ),
     );
   }
+
+  void _openHistory() {
+    if (!mounted) return;
+    context.push('/${RouteNames.poseSessionGalleryScreen}');
+  }
 }
 
-// Custom painter for pose overlay
-class PoseOverlayPainter extends CustomPainter {
+// Custom painter for pose skeleton overlay
+class PoseSkeletonPainter extends CustomPainter {
+  final List<PoseLandmark> landmarks;
+  final Size imageSize;
+  final Size? previewSize;
+  final bool isFrontCamera;
   final bool showGoodForm;
 
-  PoseOverlayPainter({required this.showGoodForm});
+  PoseSkeletonPainter({
+    required this.landmarks,
+    required this.imageSize,
+    required this.previewSize,
+    required this.isFrontCamera,
+    required this.showGoodForm,
+  });
 
-  @override
-  void paint(Canvas canvas, Size size) {
-    if (!showGoodForm) return;
+  // MLKit pose landmark indices for body connections
+  // Head
+  static const int nose = 0;
+  static const int leftEyeInner = 1;
+  static const int leftEye = 2;
+  static const int leftEyeOuter = 3;
+  static const int rightEyeInner = 4;
+  static const int rightEye = 5;
+  static const int rightEyeOuter = 6;
+  static const int leftEar = 7;
+  static const int rightEar = 8;
+  static const int mouthLeft = 9;
+  static const int mouthRight = 10;
+  // Body
+  static const int leftShoulder = 11;
+  static const int rightShoulder = 12;
+  static const int leftElbow = 13;
+  static const int rightElbow = 14;
+  static const int leftWrist = 15;
+  static const int rightWrist = 16;
+  static const int leftPinky = 17;
+  static const int rightPinky = 18;
+  static const int leftIndex = 19;
+  static const int rightIndex = 20;
+  static const int leftThumb = 21;
+  static const int rightThumb = 22;
+  static const int leftHip = 23;
+  static const int rightHip = 24;
+  static const int leftKnee = 25;
+  static const int rightKnee = 26;
+  static const int leftAnkle = 27;
+  static const int rightAnkle = 28;
+  static const int leftHeel = 29;
+  static const int rightHeel = 30;
+  static const int leftFootIndex = 31;
+  static const int rightFootIndex = 32;
 
-    final paint = Paint()
-      ..color = Colors.green.withOpacity(0.3)
-      ..strokeWidth = 8
-      ..style = PaintingStyle.stroke;
+  // Body skeleton connections (pairs of landmark indices)
+  static const List<List<int>> _bodyConnections = [
+    // Torso
+    [leftShoulder, rightShoulder],
+    [leftShoulder, leftHip],
+    [rightShoulder, rightHip],
+    [leftHip, rightHip],
+    // Left arm
+    [leftShoulder, leftElbow],
+    [leftElbow, leftWrist],
+    // Right arm
+    [rightShoulder, rightElbow],
+    [rightElbow, rightWrist],
+    // Left leg
+    [leftHip, leftKnee],
+    [leftKnee, leftAnkle],
+    [leftAnkle, leftHeel],
+    [leftAnkle, leftFootIndex],
+    // Right leg
+    [rightHip, rightKnee],
+    [rightKnee, rightAnkle],
+    [rightAnkle, rightHeel],
+    [rightAnkle, rightFootIndex],
+  ];
 
-    // Draw a checkmark overlay when form is good
-    final path = Path();
-    path.moveTo(size.width * 0.3, size.height * 0.5);
-    path.lineTo(size.width * 0.45, size.height * 0.65);
-    path.lineTo(size.width * 0.7, size.height * 0.35);
+  Offset _transform(PoseLandmark lm, Size canvasSize) {
+    // MLKit on Android returns landmarks in rotated image space
+    // Camera image is landscape (e.g., 1280x720) but displayed in portrait
+    // MLKit processes with 90° rotation, so coordinates are in portrait space
+    // where width=imageHeight, height=imageWidth
 
-    canvas.drawPath(path, paint);
+    double sourceWidth;
+    double sourceHeight;
+
+    // On Android, camera images are landscape, displayed portrait → swap dimensions
+    // On iOS, camera plugin handles rotation automatically
+    if (Platform.isAndroid) {
+      sourceWidth = imageSize.height; // After 90° rotation
+      sourceHeight = imageSize.width;
+    } else {
+      sourceWidth = imageSize.width;
+      sourceHeight = imageSize.height;
+    }
+
+    final double scaleX = canvasSize.width / sourceWidth;
+    final double scaleY = canvasSize.height / sourceHeight;
+
+    double x = lm.x * scaleX;
+    double y = lm.y * scaleY;
+
+    // Mirror for front camera to match preview
+    if (isFrontCamera) {
+      x = canvasSize.width - x;
+    }
+
+    return Offset(x, y);
   }
 
   @override
-  bool shouldRepaint(PoseOverlayPainter oldDelegate) {
-    return oldDelegate.showGoodForm != showGoodForm;
+  void paint(Canvas canvas, Size size) {
+    if (landmarks.isEmpty || landmarks.length < 33) return;
+
+    // Filter landmarks by visibility threshold
+    const double visibilityThreshold = 0.5;
+
+    final jointPaint = Paint()
+      ..color = showGoodForm
+          ? const Color(0xFF00E676).withOpacity(0.95) // Bright green
+          : const Color(0xFFFF9100).withOpacity(0.95) // Bright orange
+      ..style = PaintingStyle.fill;
+
+    final bonePaint = Paint()
+      ..color = showGoodForm
+          ? const Color(0xFF00E676).withOpacity(0.85)
+          : const Color(0xFFFF9100).withOpacity(0.85)
+      ..strokeWidth = 6
+      ..style = PaintingStyle.stroke
+      ..strokeCap = StrokeCap.round;
+
+    // Draw skeleton bones
+    for (final connection in _bodyConnections) {
+      final idx1 = connection[0];
+      final idx2 = connection[1];
+
+      if (idx1 >= landmarks.length || idx2 >= landmarks.length) continue;
+
+      final lm1 = landmarks[idx1];
+      final lm2 = landmarks[idx2];
+
+      // Only draw if both landmarks are visible enough
+      if (lm1.visibility < visibilityThreshold ||
+          lm2.visibility < visibilityThreshold) continue;
+
+      final p1 = _transform(lm1, size);
+      final p2 = _transform(lm2, size);
+
+      canvas.drawLine(p1, p2, bonePaint);
+    }
+
+    // Draw joints (only visible ones)
+    for (int i = 0; i < landmarks.length && i < 33; i++) {
+      final lm = landmarks[i];
+      if (lm.visibility < visibilityThreshold) continue;
+
+      final point = _transform(lm, size);
+
+      // Draw larger circles for key joints
+      final bool isKeyJoint = i == leftShoulder ||
+          i == rightShoulder ||
+          i == leftElbow ||
+          i == rightElbow ||
+          i == leftWrist ||
+          i == rightWrist ||
+          i == leftHip ||
+          i == rightHip ||
+          i == leftKnee ||
+          i == rightKnee ||
+          i == leftAnkle ||
+          i == rightAnkle;
+
+      canvas.drawCircle(point, isKeyJoint ? 8 : 5, jointPaint);
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant PoseSkeletonPainter oldDelegate) {
+    return oldDelegate.landmarks != landmarks ||
+        oldDelegate.imageSize != imageSize ||
+        oldDelegate.isFrontCamera != isFrontCamera ||
+        oldDelegate.showGoodForm != showGoodForm;
   }
 }

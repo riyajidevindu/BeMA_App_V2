@@ -7,6 +7,7 @@ class PoseSession {
   final DateTime timestamp;
   final int duration; // in seconds
   final List<String>? feedbackPoints;
+  final String? videoPath; // optional local video file path
 
   PoseSession({
     required this.userId,
@@ -16,6 +17,7 @@ class PoseSession {
     required this.timestamp,
     required this.duration,
     this.feedbackPoints,
+    this.videoPath,
   });
 
   Map<String, dynamic> toJson() {
@@ -27,6 +29,7 @@ class PoseSession {
       'timestamp': timestamp.toIso8601String(),
       'duration': duration,
       'feedback_points': feedbackPoints,
+      'video_path': videoPath,
     };
   }
 
@@ -41,6 +44,7 @@ class PoseSession {
       feedbackPoints: json['feedback_points'] != null
           ? List<String>.from(json['feedback_points'])
           : null,
+      videoPath: json['video_path'],
     );
   }
 }

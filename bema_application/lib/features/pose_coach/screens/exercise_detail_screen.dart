@@ -1,5 +1,6 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:bema_application/common/widgets/app_bar.dart';
 import '../models/exercise.dart';
 import '../models/exercise_step.dart';
@@ -154,6 +155,22 @@ class _ExerciseDetailScreenState extends State<ExerciseDetailScreen>
                           );
                         },
                         isHighlighted: true,
+                      ),
+                      const SizedBox(height: 15),
+
+                      // Past Exercise Analysis Option
+                      _buildOptionCard(
+                        icon: Icons.history,
+                        title: 'Past Exercise Analysis',
+                        description:
+                            'Review your recorded workout videos and performance',
+                        color: Colors.orange,
+                        onTap: () {
+                          context.pushNamed(
+                            RouteNames.poseSessionGalleryScreen,
+                            extra: widget.exercise.name,
+                          );
+                        },
                       ),
                       const SizedBox(height: 20),
                     ],

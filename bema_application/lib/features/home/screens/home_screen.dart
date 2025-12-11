@@ -205,6 +205,8 @@ class _HomeScreenState extends State<HomeScreen>
   Widget build(BuildContext context) {
     final authProvider = Provider.of<AuthenticationProvider>(context);
     final userName = authProvider.user?.name ?? 'User';
+    final bottomPadding =
+        MediaQuery.of(context).padding.bottom + kBottomNavigationBarHeight + 16;
 
     return Scaffold(
       backgroundColor: Colors.transparent,
@@ -214,287 +216,308 @@ class _HomeScreenState extends State<HomeScreen>
         title: const CustomAppBar(), // Custom AppBar from previous screen
         automaticallyImplyLeading: false, // Remove the back arrow
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Transform(
-              transform: Matrix4.identity()
-                ..setEntry(3, 2, 0.001)
-                ..rotateY(0.1),
-              alignment: FractionalOffset.center,
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(20),
-                child: BackdropFilter(
-                  filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-                  child: Container(
-                    width: double.infinity,
-                    padding:
-                        const EdgeInsets.all(16.0), // Padding inside the box
-                    margin: const EdgeInsets.only(
-                        bottom: 20.0,
-                        top: 20), // Space around the box if needed
-                    decoration: BoxDecoration(
-                      color: Colors.blue.withOpacity(0.2),
-                      borderRadius: BorderRadius.circular(20),
-                      border: Border.all(
-                        color: Colors.white.withOpacity(0.3),
-                      ),
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        AnimatedTextKit(
-                          key: ValueKey<String>(userName),
-                          animatedTexts: [
-                            TypewriterAnimatedText(
-                              "$greetingMessage, $userName!",
-                              textStyle: const TextStyle(
-                                fontSize: 22,
-                                color: Color.fromARGB(255, 3, 112, 3),
-                                fontWeight: FontWeight.bold,
-                                shadows: [
-                                  Shadow(
-                                    blurRadius: 10.0,
-                                    color: Color.fromARGB(255, 235, 226, 132),
-                                    offset: Offset(0, 0),
-                                  ),
-                                ],
+      body: SafeArea(
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            return SingleChildScrollView(
+              physics: const BouncingScrollPhysics(),
+              padding: EdgeInsets.fromLTRB(16, 16, 16, bottomPadding),
+              child: ConstrainedBox(
+                constraints: BoxConstraints(minHeight: constraints.maxHeight),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Transform(
+                      transform: Matrix4.identity()
+                        ..setEntry(3, 2, 0.001)
+                        ..rotateY(0.1),
+                      alignment: FractionalOffset.center,
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(20),
+                        child: BackdropFilter(
+                          filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+                          child: Container(
+                            width: double.infinity,
+                            padding: const EdgeInsets.all(
+                                16.0), // Padding inside the box
+                            margin: const EdgeInsets.only(
+                                bottom: 20.0,
+                                top: 20), // Space around the box if needed
+                            decoration: BoxDecoration(
+                              color: Colors.blue.withOpacity(0.2),
+                              borderRadius: BorderRadius.circular(20),
+                              border: Border.all(
+                                color: Colors.white.withOpacity(0.3),
                               ),
-                              speed: const Duration(milliseconds: 100),
-                              textAlign: TextAlign.center,
                             ),
-                          ],
-                          isRepeatingAnimation: false,
-                        ),
-                        const SizedBox(height: 5),
-                        Text(
-                          formattedDate, // Dynamically set date here
-                          style: const TextStyle(
-                            fontSize: 18,
-                            color: Color.fromARGB(179, 5, 19, 215),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-            ),
-            const SizedBox(height: 20),
-
-            // Summary Section - Tasks and Workouts
-            AnimatedBuilder(
-              animation: _animationController,
-              builder: (context, child) {
-                return FadeTransition(
-                  opacity: _fadeAnimation,
-                  child: SlideTransition(
-                    position: _slideAnimation,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        // Section Title
-                        Padding(
-                          padding: const EdgeInsets.only(left: 4, bottom: 12),
-                          child: Text(
-                            'Today\'s Overview',
-                            style: TextStyle(
-                              fontSize: 20,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.white,
-                              shadows: [
-                                Shadow(
-                                  blurRadius: 10.0,
-                                  color: primaryColor.withOpacity(0.5),
-                                  offset: const Offset(0, 2),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              children: [
+                                AnimatedTextKit(
+                                  key: ValueKey<String>(userName),
+                                  animatedTexts: [
+                                    TypewriterAnimatedText(
+                                      "$greetingMessage, $userName!",
+                                      textStyle: const TextStyle(
+                                        fontSize: 22,
+                                        color: Color.fromARGB(255, 3, 112, 3),
+                                        fontWeight: FontWeight.bold,
+                                        shadows: [
+                                          Shadow(
+                                            blurRadius: 10.0,
+                                            color: Color.fromARGB(
+                                                255, 235, 226, 132),
+                                            offset: Offset(0, 0),
+                                          ),
+                                        ],
+                                      ),
+                                      speed: const Duration(milliseconds: 100),
+                                      textAlign: TextAlign.center,
+                                    ),
+                                  ],
+                                  isRepeatingAnimation: false,
+                                ),
+                                const SizedBox(height: 5),
+                                Text(
+                                  formattedDate, // Dynamically set date here
+                                  style: const TextStyle(
+                                    fontSize: 18,
+                                    color: Color.fromARGB(179, 5, 19, 215),
+                                  ),
                                 ),
                               ],
                             ),
                           ),
                         ),
+                      ),
+                    ),
+                    const SizedBox(height: 20),
 
-                        // Summary Cards Row
-                        Row(
-                          children: [
-                            // Tasks Summary Card
-                            Expanded(
-                              child: _isLoadingTasks
-                                  ? _buildLoadingCard()
-                                  : _hasTasks
-                                      ? SummaryCard(
-                                          icon: Icons.check_circle_outline,
-                                          title: 'Daily Tasks',
-                                          mainText:
-                                              '$_completedTasks/$_totalTasks',
-                                          subText: 'Completed today',
-                                          primaryColor: const Color(0xFF4CAF50),
-                                          secondaryColor:
-                                              const Color(0xFF81C784),
-                                          onTap: () {
-                                            context.push(
-                                              '/${RouteNames.bottomNavigationBarScreen}',
-                                              extra: 1,
-                                            );
-                                          },
-                                        )
-                                      : SummaryCard(
-                                          icon: Icons.assignment_outlined,
-                                          title: 'Daily Tasks',
-                                          mainText: 'No tasks yet',
-                                          subText: '',
-                                          primaryColor: const Color(0xFF4CAF50),
-                                          secondaryColor:
-                                              const Color(0xFF81C784),
-                                          showGetButton: true,
-                                          buttonText: 'Get Tasks',
-                                          onTap: () {
-                                            context.push(
-                                              '/${RouteNames.bottomNavigationBarScreen}',
-                                              extra: 1,
-                                            );
-                                          },
+                    // Summary Section - Tasks and Workouts
+                    AnimatedBuilder(
+                      animation: _animationController,
+                      builder: (context, child) {
+                        return FadeTransition(
+                          opacity: _fadeAnimation,
+                          child: SlideTransition(
+                            position: _slideAnimation,
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                // Section Title
+                                Padding(
+                                  padding: const EdgeInsets.only(
+                                      left: 4, bottom: 12),
+                                  child: Text(
+                                    'Today\'s Overview',
+                                    style: TextStyle(
+                                      fontSize: 20,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.white,
+                                      shadows: [
+                                        Shadow(
+                                          blurRadius: 10.0,
+                                          color: primaryColor.withOpacity(0.5),
+                                          offset: const Offset(0, 2),
                                         ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+
+                                // Summary Cards Row
+                                Row(
+                                  children: [
+                                    // Tasks Summary Card
+                                    Expanded(
+                                      child: _isLoadingTasks
+                                          ? _buildLoadingCard()
+                                          : _hasTasks
+                                              ? SummaryCard(
+                                                  icon: Icons
+                                                      .check_circle_outline,
+                                                  title: 'Daily Tasks',
+                                                  mainText:
+                                                      '$_completedTasks/$_totalTasks',
+                                                  subText: 'Completed today',
+                                                  primaryColor:
+                                                      const Color(0xFF4CAF50),
+                                                  secondaryColor:
+                                                      const Color(0xFF81C784),
+                                                  onTap: () {
+                                                    context.push(
+                                                      '/${RouteNames.bottomNavigationBarScreen}',
+                                                      extra: 1,
+                                                    );
+                                                  },
+                                                )
+                                              : SummaryCard(
+                                                  icon:
+                                                      Icons.assignment_outlined,
+                                                  title: 'Daily Tasks',
+                                                  mainText: 'No tasks yet',
+                                                  subText: '',
+                                                  primaryColor:
+                                                      const Color(0xFF4CAF50),
+                                                  secondaryColor:
+                                                      const Color(0xFF81C784),
+                                                  showGetButton: true,
+                                                  buttonText: 'Get Tasks',
+                                                  onTap: () {
+                                                    context.push(
+                                                      '/${RouteNames.bottomNavigationBarScreen}',
+                                                      extra: 1,
+                                                    );
+                                                  },
+                                                ),
+                                    ),
+                                    const SizedBox(width: 12),
+
+                                    // Workouts Summary Card
+                                    Expanded(
+                                      child: _isLoadingWorkouts
+                                          ? _buildLoadingCard()
+                                          : _hasWorkouts
+                                              ? SummaryCard(
+                                                  icon: Icons.fitness_center,
+                                                  title: 'Workouts',
+                                                  mainText:
+                                                      '$_completedWorkouts/$_totalWorkouts',
+                                                  subText: 'Exercises done',
+                                                  primaryColor:
+                                                      const Color(0xFFFF9800),
+                                                  secondaryColor:
+                                                      const Color(0xFFFFB74D),
+                                                  onTap: () {
+                                                    context.push(
+                                                      '/${RouteNames.bottomNavigationBarScreen}',
+                                                      extra: 1,
+                                                    );
+                                                  },
+                                                )
+                                              : SummaryCard(
+                                                  icon: Icons.fitness_center,
+                                                  title: 'Workouts',
+                                                  mainText: 'No plan yet',
+                                                  subText: '',
+                                                  primaryColor:
+                                                      const Color(0xFFFF9800),
+                                                  secondaryColor:
+                                                      const Color(0xFFFFB74D),
+                                                  showGetButton: true,
+                                                  buttonText: 'Get Plan',
+                                                  onTap: () {
+                                                    context.push(
+                                                      '/${RouteNames.bottomNavigationBarScreen}',
+                                                      extra: 1,
+                                                    );
+                                                  },
+                                                ),
+                                    ),
+                                  ],
+                                ),
+                              ],
                             ),
-                            const SizedBox(width: 12),
+                          ),
+                        );
+                      },
+                    ),
 
-                            // Workouts Summary Card
-                            Expanded(
-                              child: _isLoadingWorkouts
-                                  ? _buildLoadingCard()
-                                  : _hasWorkouts
-                                      ? SummaryCard(
-                                          icon: Icons.fitness_center,
-                                          title: 'Workouts',
-                                          mainText:
-                                              '$_completedWorkouts/$_totalWorkouts',
-                                          subText: 'Exercises done',
-                                          primaryColor: const Color(0xFFFF9800),
-                                          secondaryColor:
-                                              const Color(0xFFFFB74D),
-                                          onTap: () {
-                                            context.push(
-                                              '/${RouteNames.bottomNavigationBarScreen}',
-                                              extra: 1,
-                                            );
-                                          },
-                                        )
-                                      : SummaryCard(
-                                          icon: Icons.fitness_center,
-                                          title: 'Workouts',
-                                          mainText: 'No plan yet',
-                                          subText: '',
-                                          primaryColor: const Color(0xFFFF9800),
-                                          secondaryColor:
-                                              const Color(0xFFFFB74D),
-                                          showGetButton: true,
-                                          buttonText: 'Get Plan',
-                                          onTap: () {
-                                            context.push(
-                                              '/${RouteNames.bottomNavigationBarScreen}',
-                                              extra: 1,
-                                            );
-                                          },
-                                        ),
+                    const SizedBox(height: 24),
+
+                    // Quick Actions Section
+                    Padding(
+                      padding: const EdgeInsets.only(left: 4, bottom: 12),
+                      child: Text(
+                        'Quick Actions',
+                        style: TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                          shadows: [
+                            Shadow(
+                              blurRadius: 10.0,
+                              color: primaryColor.withOpacity(0.5),
+                              offset: const Offset(0, 2),
                             ),
                           ],
                         ),
-                      ],
+                      ),
                     ),
-                  ),
-                );
-              },
-            ),
 
-            const SizedBox(height: 24),
-
-            // Quick Actions Section
-            Padding(
-              padding: const EdgeInsets.only(left: 4, bottom: 12),
-              child: Text(
-                'Quick Actions',
-                style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white,
-                  shadows: [
-                    Shadow(
-                      blurRadius: 10.0,
-                      color: primaryColor.withOpacity(0.5),
-                      offset: const Offset(0, 2),
+                    // Three tiles in one row
+                    AnimatedBuilder(
+                      animation: _animationController,
+                      builder: (context, child) {
+                        return FadeTransition(
+                          opacity: _fadeAnimation,
+                          child: SlideTransition(
+                            position: _slideAnimation,
+                            child: SingleChildScrollView(
+                              scrollDirection: Axis.horizontal,
+                              child: Row(
+                                children: [
+                                  _buildCompactCard(
+                                    avatar: const CircleAvatar(
+                                      radius: 22,
+                                      backgroundImage:
+                                          AssetImage('assets/tasks.png'),
+                                    ),
+                                    title: "Daily Task",
+                                    subtitle: "Health Guide",
+                                    color: Colors.lightBlueAccent,
+                                    onTap: () {
+                                      context.push(
+                                          '/${RouteNames.bottomNavigationBarScreen}',
+                                          extra: 1);
+                                    },
+                                  ),
+                                  const SizedBox(width: 12),
+                                  _buildCompactCard(
+                                    avatar: const CircleAvatar(
+                                      radius: 22,
+                                      backgroundImage:
+                                          AssetImage('assets/relax.png'),
+                                    ),
+                                    title: "Relax",
+                                    subtitle: "Mind & Body",
+                                    color: Colors.orange,
+                                    onTap: () {
+                                      context.push(
+                                          '/${RouteNames.bottomNavigationBarScreen}',
+                                          extra: 2);
+                                    },
+                                  ),
+                                  const SizedBox(width: 12),
+                                  _buildCompactCard(
+                                    avatar: const CircleAvatar(
+                                      radius: 22,
+                                      backgroundImage:
+                                          AssetImage('assets/score.png'),
+                                    ),
+                                    title: "Points",
+                                    subtitle: "Your Progress",
+                                    color: Colors.lightBlue,
+                                    onTap: () {
+                                      context.push(
+                                          '/${RouteNames.bottomNavigationBarScreen}',
+                                          extra: 3);
+                                    },
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        );
+                      },
                     ),
+
+                    const SizedBox(height: 20),
                   ],
                 ),
               ),
-            ),
-
-            // Three tiles in one row
-            AnimatedBuilder(
-              animation: _animationController,
-              builder: (context, child) {
-                return FadeTransition(
-                  opacity: _fadeAnimation,
-                  child: SlideTransition(
-                    position: _slideAnimation,
-                    child: SingleChildScrollView(
-                      scrollDirection: Axis.horizontal,
-                      child: Row(
-                        children: [
-                          _buildCompactCard(
-                            avatar: const CircleAvatar(
-                              radius: 22,
-                              backgroundImage: AssetImage('assets/tasks.png'),
-                            ),
-                            title: "Daily Task",
-                            subtitle: "Health Guide",
-                            color: Colors.lightBlueAccent,
-                            onTap: () {
-                              context.push(
-                                  '/${RouteNames.bottomNavigationBarScreen}',
-                                  extra: 1);
-                            },
-                          ),
-                          const SizedBox(width: 12),
-                          _buildCompactCard(
-                            avatar: const CircleAvatar(
-                              radius: 22,
-                              backgroundImage: AssetImage('assets/relax.png'),
-                            ),
-                            title: "Relax",
-                            subtitle: "Mind & Body",
-                            color: Colors.orange,
-                            onTap: () {
-                              context.push(
-                                  '/${RouteNames.bottomNavigationBarScreen}',
-                                  extra: 2);
-                            },
-                          ),
-                          const SizedBox(width: 12),
-                          _buildCompactCard(
-                            avatar: const CircleAvatar(
-                              radius: 22,
-                              backgroundImage: AssetImage('assets/score.png'),
-                            ),
-                            title: "Points",
-                            subtitle: "Your Progress",
-                            color: Colors.lightBlue,
-                            onTap: () {
-                              context.push(
-                                  '/${RouteNames.bottomNavigationBarScreen}',
-                                  extra: 3);
-                            },
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                );
-              },
-            ),
-
-            const SizedBox(height: 20),
-          ],
+            );
+          },
         ),
       ),
     );
@@ -515,7 +538,7 @@ class _HomeScreenState extends State<HomeScreen>
           filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
           child: Container(
             width: 105, // Slightly reduced width
-            height: 135, // Slightly increased height
+            constraints: const BoxConstraints(minHeight: 135, maxWidth: 125),
             decoration: BoxDecoration(
               gradient: LinearGradient(
                 colors: [
