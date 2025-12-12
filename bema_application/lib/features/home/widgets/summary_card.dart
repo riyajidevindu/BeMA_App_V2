@@ -27,6 +27,33 @@ class SummaryCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+
+    // Responsive calculations
+    final isSmallScreen = screenWidth < 360;
+    final isMediumScreen = screenWidth >= 360 && screenWidth < 600;
+
+    // Responsive sizes
+    final minHeight = isSmallScreen ? 130.0 : (isMediumScreen ? 150.0 : 170.0);
+    final cardPadding = isSmallScreen ? 12.0 : (isMediumScreen ? 16.0 : 20.0);
+    final iconContainerPadding =
+        isSmallScreen ? 8.0 : (isMediumScreen ? 10.0 : 12.0);
+    final iconSize = isSmallScreen ? 20.0 : (isMediumScreen ? 24.0 : 28.0);
+    final titleFontSize = isSmallScreen ? 12.0 : (isMediumScreen ? 14.0 : 16.0);
+    final mainTextFontSize =
+        isSmallScreen ? 24.0 : (isMediumScreen ? 32.0 : 38.0);
+    final subTextFontSize =
+        isSmallScreen ? 11.0 : (isMediumScreen ? 13.0 : 15.0);
+    final emptyIconSize = isSmallScreen ? 32.0 : (isMediumScreen ? 40.0 : 48.0);
+    final buttonPaddingH =
+        isSmallScreen ? 14.0 : (isMediumScreen ? 20.0 : 24.0);
+    final buttonPaddingV = isSmallScreen ? 8.0 : (isMediumScreen ? 10.0 : 12.0);
+    final buttonIconSize =
+        isSmallScreen ? 14.0 : (isMediumScreen ? 18.0 : 20.0);
+    final buttonTextSize =
+        isSmallScreen ? 11.0 : (isMediumScreen ? 13.0 : 15.0);
+    final spacing = isSmallScreen ? 8.0 : (isMediumScreen ? 12.0 : 16.0);
+
     return GestureDetector(
       onTap: onTap,
       child: ClipRRect(
@@ -34,7 +61,7 @@ class SummaryCard extends StatelessWidget {
         child: BackdropFilter(
           filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
           child: Container(
-            constraints: const BoxConstraints(minHeight: 150),
+            constraints: BoxConstraints(minHeight: minHeight),
             decoration: BoxDecoration(
               gradient: LinearGradient(
                 colors: [
@@ -59,7 +86,7 @@ class SummaryCard extends StatelessWidget {
               ],
             ),
             child: Padding(
-              padding: const EdgeInsets.all(16.0),
+              padding: EdgeInsets.all(cardPadding),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -68,7 +95,7 @@ class SummaryCard extends StatelessWidget {
                   Row(
                     children: [
                       Container(
-                        padding: const EdgeInsets.all(10),
+                        padding: EdgeInsets.all(iconContainerPadding),
                         decoration: BoxDecoration(
                           color: primaryColor.withOpacity(0.3),
                           borderRadius: BorderRadius.circular(12),
@@ -80,15 +107,15 @@ class SummaryCard extends StatelessWidget {
                         child: Icon(
                           icon,
                           color: Colors.white,
-                          size: 24,
+                          size: iconSize,
                         ),
                       ),
-                      const SizedBox(width: 12),
+                      SizedBox(width: spacing),
                       Expanded(
                         child: Text(
                           title,
-                          style: const TextStyle(
-                            fontSize: 14,
+                          style: TextStyle(
+                            fontSize: titleFontSize,
                             fontWeight: FontWeight.w600,
                             color: Colors.white70,
                             letterSpacing: 0.5,
@@ -97,14 +124,14 @@ class SummaryCard extends StatelessWidget {
                       ),
                     ],
                   ),
-                  const SizedBox(height: 16),
+                  SizedBox(height: spacing),
 
                   // Main Text
                   if (!showGetButton) ...[
                     Text(
                       mainText,
                       style: TextStyle(
-                        fontSize: 32,
+                        fontSize: mainTextFontSize,
                         fontWeight: FontWeight.bold,
                         color: Colors.white,
                         shadows: [
@@ -120,7 +147,7 @@ class SummaryCard extends StatelessWidget {
                     Text(
                       subText,
                       style: TextStyle(
-                        fontSize: 13,
+                        fontSize: subTextFontSize,
                         color: Colors.white.withOpacity(0.8),
                         fontWeight: FontWeight.w500,
                       ),
@@ -135,7 +162,7 @@ class SummaryCard extends StatelessWidget {
                         children: [
                           Icon(
                             Icons.inbox_outlined,
-                            size: 40,
+                            size: emptyIconSize,
                             color: Colors.white.withOpacity(0.6),
                           ),
                           const SizedBox(height: 8),
@@ -143,16 +170,16 @@ class SummaryCard extends StatelessWidget {
                             mainText,
                             textAlign: TextAlign.center,
                             style: TextStyle(
-                              fontSize: 13,
+                              fontSize: subTextFontSize,
                               color: Colors.white.withOpacity(0.7),
                               fontWeight: FontWeight.w500,
                             ),
                           ),
-                          const SizedBox(height: 12),
+                          SizedBox(height: spacing),
                           Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 20,
-                              vertical: 10,
+                            padding: EdgeInsets.symmetric(
+                              horizontal: buttonPaddingH,
+                              vertical: buttonPaddingV,
                             ),
                             decoration: BoxDecoration(
                               gradient: LinearGradient(
@@ -175,14 +202,14 @@ class SummaryCard extends StatelessWidget {
                               children: [
                                 Icon(
                                   Icons.add_circle_outline,
-                                  size: 18,
+                                  size: buttonIconSize,
                                   color: Colors.white,
                                 ),
                                 const SizedBox(width: 6),
                                 Text(
                                   buttonText ?? 'Get Now',
-                                  style: const TextStyle(
-                                    fontSize: 13,
+                                  style: TextStyle(
+                                    fontSize: buttonTextSize,
                                     fontWeight: FontWeight.bold,
                                     color: Colors.white,
                                     letterSpacing: 0.5,

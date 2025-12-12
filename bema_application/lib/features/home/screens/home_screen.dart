@@ -173,13 +173,13 @@ class _HomeScreenState extends State<HomeScreen>
     }
   }
 
-  Widget _buildLoadingCard() {
+  Widget _buildLoadingCard(double minHeight) {
     return ClipRRect(
       borderRadius: BorderRadius.circular(20),
       child: BackdropFilter(
         filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
         child: Container(
-          height: 160,
+          height: minHeight,
           decoration: BoxDecoration(
             color: Colors.white.withOpacity(0.1),
             borderRadius: BorderRadius.circular(20),
@@ -208,6 +208,25 @@ class _HomeScreenState extends State<HomeScreen>
     final bottomPadding =
         MediaQuery.of(context).padding.bottom + kBottomNavigationBarHeight + 16;
 
+    // Responsive calculations
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isSmallScreen = screenWidth < 360;
+    final isMediumScreen = screenWidth >= 360 && screenWidth < 600;
+
+    // Responsive sizes
+    final horizontalPadding =
+        isSmallScreen ? 12.0 : (isMediumScreen ? 16.0 : 20.0);
+    final greetingBoxPadding =
+        isSmallScreen ? 12.0 : (isMediumScreen ? 16.0 : 20.0);
+    final greetingFontSize =
+        isSmallScreen ? 18.0 : (isMediumScreen ? 22.0 : 26.0);
+    final dateFontSize = isSmallScreen ? 14.0 : (isMediumScreen ? 18.0 : 20.0);
+    final sectionTitleSize =
+        isSmallScreen ? 16.0 : (isMediumScreen ? 20.0 : 24.0);
+    final cardSpacing = isSmallScreen ? 8.0 : (isMediumScreen ? 12.0 : 16.0);
+    final loadingCardHeight =
+        isSmallScreen ? 130.0 : (isMediumScreen ? 160.0 : 180.0);
+
     return Scaffold(
       backgroundColor: Colors.transparent,
       appBar: AppBar(
@@ -221,7 +240,8 @@ class _HomeScreenState extends State<HomeScreen>
           builder: (context, constraints) {
             return SingleChildScrollView(
               physics: const BouncingScrollPhysics(),
-              padding: EdgeInsets.fromLTRB(16, 16, 16, bottomPadding),
+              padding: EdgeInsets.fromLTRB(
+                  horizontalPadding, 16, horizontalPadding, bottomPadding),
               child: ConstrainedBox(
                 constraints: BoxConstraints(minHeight: constraints.maxHeight),
                 child: Column(
@@ -238,11 +258,10 @@ class _HomeScreenState extends State<HomeScreen>
                           filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
                           child: Container(
                             width: double.infinity,
-                            padding: const EdgeInsets.all(
-                                16.0), // Padding inside the box
-                            margin: const EdgeInsets.only(
-                                bottom: 20.0,
-                                top: 20), // Space around the box if needed
+                            padding: EdgeInsets.all(greetingBoxPadding),
+                            margin: EdgeInsets.only(
+                                bottom: isSmallScreen ? 16.0 : 20.0,
+                                top: isSmallScreen ? 16.0 : 20.0),
                             decoration: BoxDecoration(
                               color: Colors.blue.withOpacity(0.2),
                               borderRadius: BorderRadius.circular(20),
@@ -258,11 +277,12 @@ class _HomeScreenState extends State<HomeScreen>
                                   animatedTexts: [
                                     TypewriterAnimatedText(
                                       "$greetingMessage, $userName!",
-                                      textStyle: const TextStyle(
-                                        fontSize: 22,
-                                        color: Color.fromARGB(255, 3, 112, 3),
+                                      textStyle: TextStyle(
+                                        fontSize: greetingFontSize,
+                                        color: const Color.fromARGB(
+                                            255, 3, 112, 3),
                                         fontWeight: FontWeight.bold,
-                                        shadows: [
+                                        shadows: const [
                                           Shadow(
                                             blurRadius: 10.0,
                                             color: Color.fromARGB(
@@ -277,12 +297,13 @@ class _HomeScreenState extends State<HomeScreen>
                                   ],
                                   isRepeatingAnimation: false,
                                 ),
-                                const SizedBox(height: 5),
+                                SizedBox(height: isSmallScreen ? 4 : 5),
                                 Text(
                                   formattedDate, // Dynamically set date here
-                                  style: const TextStyle(
-                                    fontSize: 18,
-                                    color: Color.fromARGB(179, 5, 19, 215),
+                                  style: TextStyle(
+                                    fontSize: dateFontSize,
+                                    color:
+                                        const Color.fromARGB(179, 5, 19, 215),
                                   ),
                                 ),
                               ],
@@ -291,7 +312,7 @@ class _HomeScreenState extends State<HomeScreen>
                         ),
                       ),
                     ),
-                    const SizedBox(height: 20),
+                    SizedBox(height: isSmallScreen ? 16 : 20),
 
                     // Summary Section - Tasks and Workouts
                     AnimatedBuilder(
@@ -306,12 +327,12 @@ class _HomeScreenState extends State<HomeScreen>
                               children: [
                                 // Section Title
                                 Padding(
-                                  padding: const EdgeInsets.only(
-                                      left: 4, bottom: 12),
+                                  padding: EdgeInsets.only(
+                                      left: 4, bottom: isSmallScreen ? 8 : 12),
                                   child: Text(
                                     'Today\'s Overview',
                                     style: TextStyle(
-                                      fontSize: 20,
+                                      fontSize: sectionTitleSize,
                                       fontWeight: FontWeight.bold,
                                       color: Colors.white,
                                       shadows: [
@@ -331,7 +352,7 @@ class _HomeScreenState extends State<HomeScreen>
                                     // Tasks Summary Card
                                     Expanded(
                                       child: _isLoadingTasks
-                                          ? _buildLoadingCard()
+                                          ? _buildLoadingCard(loadingCardHeight)
                                           : _hasTasks
                                               ? SummaryCard(
                                                   icon: Icons
@@ -371,12 +392,12 @@ class _HomeScreenState extends State<HomeScreen>
                                                   },
                                                 ),
                                     ),
-                                    const SizedBox(width: 12),
+                                    SizedBox(width: cardSpacing),
 
                                     // Workouts Summary Card
                                     Expanded(
                                       child: _isLoadingWorkouts
-                                          ? _buildLoadingCard()
+                                          ? _buildLoadingCard(loadingCardHeight)
                                           : _hasWorkouts
                                               ? SummaryCard(
                                                   icon: Icons.fitness_center,
@@ -423,15 +444,16 @@ class _HomeScreenState extends State<HomeScreen>
                       },
                     ),
 
-                    const SizedBox(height: 24),
+                    SizedBox(height: isSmallScreen ? 18 : 24),
 
                     // Quick Actions Section
                     Padding(
-                      padding: const EdgeInsets.only(left: 4, bottom: 12),
+                      padding: EdgeInsets.only(
+                          left: 4, bottom: isSmallScreen ? 8 : 12),
                       child: Text(
                         'Quick Actions',
                         style: TextStyle(
-                          fontSize: 20,
+                          fontSize: sectionTitleSize,
                           fontWeight: FontWeight.bold,
                           color: Colors.white,
                           shadows: [
@@ -445,7 +467,7 @@ class _HomeScreenState extends State<HomeScreen>
                       ),
                     ),
 
-                    // Three tiles in one row
+                    // Three tiles in one row - distributed across full width
                     AnimatedBuilder(
                       animation: _animationController,
                       builder: (context, child) {
@@ -453,66 +475,60 @@ class _HomeScreenState extends State<HomeScreen>
                           opacity: _fadeAnimation,
                           child: SlideTransition(
                             position: _slideAnimation,
-                            child: SingleChildScrollView(
-                              scrollDirection: Axis.horizontal,
-                              child: Row(
-                                children: [
-                                  _buildCompactCard(
-                                    avatar: const CircleAvatar(
-                                      radius: 22,
-                                      backgroundImage:
-                                          AssetImage('assets/tasks.png'),
-                                    ),
+                            child: Row(
+                              children: [
+                                Expanded(
+                                  child: _buildCompactCard(
+                                    avatarImage: 'assets/tasks.png',
                                     title: "Daily Task",
                                     subtitle: "Health Guide",
                                     color: Colors.lightBlueAccent,
+                                    screenWidth: screenWidth,
                                     onTap: () {
                                       context.push(
                                           '/${RouteNames.bottomNavigationBarScreen}',
                                           extra: 1);
                                     },
                                   ),
-                                  const SizedBox(width: 12),
-                                  _buildCompactCard(
-                                    avatar: const CircleAvatar(
-                                      radius: 22,
-                                      backgroundImage:
-                                          AssetImage('assets/relax.png'),
-                                    ),
+                                ),
+                                SizedBox(width: cardSpacing),
+                                Expanded(
+                                  child: _buildCompactCard(
+                                    avatarImage: 'assets/relax.png',
                                     title: "Relax",
                                     subtitle: "Mind & Body",
                                     color: Colors.orange,
+                                    screenWidth: screenWidth,
                                     onTap: () {
                                       context.push(
                                           '/${RouteNames.bottomNavigationBarScreen}',
                                           extra: 2);
                                     },
                                   ),
-                                  const SizedBox(width: 12),
-                                  _buildCompactCard(
-                                    avatar: const CircleAvatar(
-                                      radius: 22,
-                                      backgroundImage:
-                                          AssetImage('assets/score.png'),
-                                    ),
+                                ),
+                                SizedBox(width: cardSpacing),
+                                Expanded(
+                                  child: _buildCompactCard(
+                                    avatarImage: 'assets/score.png',
                                     title: "Points",
                                     subtitle: "Your Progress",
                                     color: Colors.lightBlue,
+                                    screenWidth: screenWidth,
                                     onTap: () {
                                       context.push(
                                           '/${RouteNames.bottomNavigationBarScreen}',
                                           extra: 3);
                                     },
                                   ),
-                                ],
-                              ),
+                                ),
+                              ],
                             ),
                           ),
                         );
                       },
                     ),
 
-                    const SizedBox(height: 20),
+                    SizedBox(height: isSmallScreen ? 16 : 20),
                   ],
                 ),
               ),
@@ -524,12 +540,31 @@ class _HomeScreenState extends State<HomeScreen>
   }
 
   Widget _buildCompactCard({
-    required Widget avatar,
+    required String avatarImage,
     required String title,
     required String subtitle,
     required Color color,
+    required double screenWidth,
     VoidCallback? onTap,
   }) {
+    // Responsive sizing based on screen width
+    final cardMinHeight = (screenWidth * 0.38).clamp(120.0, 180.0);
+
+    // Avatar sizing - proportional to screen
+    final avatarPadding = (screenWidth * 0.02).clamp(4.0, 12.0);
+    final responsiveAvatarRadius = (screenWidth * 0.07).clamp(20.0, 36.0);
+
+    // Content padding
+    final contentPaddingV = (screenWidth * 0.03).clamp(10.0, 18.0);
+    final contentPaddingH = (screenWidth * 0.02).clamp(6.0, 12.0);
+
+    // Text sizes - proportional to screen
+    final titleFontSize = (screenWidth * 0.038).clamp(12.0, 18.0);
+    final subtitleFontSize = (screenWidth * 0.028).clamp(9.0, 13.0);
+
+    // Spacing
+    final spacing = (screenWidth * 0.02).clamp(6.0, 12.0);
+
     return GestureDetector(
       onTap: onTap,
       child: ClipRRect(
@@ -537,8 +572,7 @@ class _HomeScreenState extends State<HomeScreen>
         child: BackdropFilter(
           filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
           child: Container(
-            width: 105, // Slightly reduced width
-            constraints: const BoxConstraints(minHeight: 135, maxWidth: 125),
+            constraints: BoxConstraints(minHeight: cardMinHeight),
             decoration: BoxDecoration(
               gradient: LinearGradient(
                 colors: [
@@ -563,14 +597,15 @@ class _HomeScreenState extends State<HomeScreen>
               ],
             ),
             child: Padding(
-              padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 6),
+              padding: EdgeInsets.symmetric(
+                  vertical: contentPaddingV, horizontal: contentPaddingH),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   // Avatar with background
                   Container(
-                    padding: const EdgeInsets.all(6),
+                    padding: EdgeInsets.all(avatarPadding),
                     decoration: BoxDecoration(
                       color: Colors.white.withOpacity(0.2),
                       shape: BoxShape.circle,
@@ -579,45 +614,44 @@ class _HomeScreenState extends State<HomeScreen>
                         width: 1,
                       ),
                     ),
-                    child: avatar,
-                  ),
-                  const SizedBox(height: 6),
-                  // Title - with proper constraints
-                  Flexible(
-                    child: Text(
-                      title,
-                      textAlign: TextAlign.center,
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
-                        fontSize: 13,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
-                        height: 1.1,
-                        shadows: [
-                          Shadow(
-                            blurRadius: 4.0,
-                            color: Colors.black45,
-                            offset: Offset(0, 1),
-                          ),
-                        ],
-                      ),
+                    child: CircleAvatar(
+                      radius: responsiveAvatarRadius,
+                      backgroundImage: AssetImage(avatarImage),
                     ),
                   ),
-                  const SizedBox(height: 2),
-                  // Subtitle - with proper constraints
-                  Flexible(
-                    child: Text(
-                      subtitle,
-                      textAlign: TextAlign.center,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: TextStyle(
-                        fontSize: 9,
-                        color: Colors.white.withOpacity(0.8),
-                        fontWeight: FontWeight.w500,
-                        height: 1.1,
-                      ),
+                  SizedBox(height: spacing),
+                  // Title - with proper constraints
+                  Text(
+                    title,
+                    textAlign: TextAlign.center,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      fontSize: titleFontSize,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                      height: 1.1,
+                      shadows: const [
+                        Shadow(
+                          blurRadius: 4.0,
+                          color: Colors.black45,
+                          offset: Offset(0, 1),
+                        ),
+                      ],
+                    ),
+                  ),
+                  SizedBox(height: spacing * 0.4),
+                  // Subtitle
+                  Text(
+                    subtitle,
+                    textAlign: TextAlign.center,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      fontSize: subtitleFontSize,
+                      color: Colors.white.withOpacity(0.8),
+                      fontWeight: FontWeight.w500,
+                      height: 1.1,
                     ),
                   ),
                 ],
