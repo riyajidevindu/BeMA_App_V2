@@ -14,6 +14,10 @@ class SquatsLogic extends ExerciseLogic {
   bool _wasStanding = true;
   List<double> _accuracyScores = [];
 
+  // Track the best squat depth accuracy during each rep
+  double _currentRepBestAccuracy = 0.0;
+  double _currentRepLowestKneeAngle = 180.0;
+
   @override
   int get repCount => _repCount;
 
@@ -35,6 +39,8 @@ class SquatsLogic extends ExerciseLogic {
     _isSquatting = false;
     _wasStanding = true;
     _accuracyScores.clear();
+    _currentRepBestAccuracy = 0.0;
+    _currentRepLowestKneeAngle = 180.0;
   }
 
   @override
@@ -101,48 +107,86 @@ class SquatsLogic extends ExerciseLogic {
 
     // Check form quality during squat
     if (isInSquatPosition) {
-      // First priority: Good depth (STRICTER requirements)
-      if (avgKneeAngle >= 70 && avgKneeAngle <= 105) {
-        // Proper squat depth - thighs parallel or just below
+      // Calculate depth score based on knee angle
+      // Perfect depth: 70-95 degrees (thighs parallel or slightly below)
+      // Good depth: 95-105 degrees
+      // Partial squat: 105-110 degrees
+      // Too deep: < 70 degrees
+
+      double depthScore = 0.0;
+
+      if (avgKneeAngle >= 70 && avgKneeAngle <= 95) {
+        // Perfect squat depth - thighs parallel or slightly below
+        depthScore = 100.0;
         feedback = 'Perfect squat depth!';
         feedbackLevel = FeedbackLevel.excellent;
-        accuracy = 95.0;
-      } else if (avgKneeAngle < 70) {
-        feedback = 'Too deep. Knees at 90 degrees.';
-        feedbackLevel = FeedbackLevel.needsImprovement;
-        accuracy = 75.0;
-        hasFormIssue = true;
-      } else if (avgKneeAngle < 110) {
-        // Partial squat - still counts but not perfect
-        feedback = 'Go lower for full squat.';
+      } else if (avgKneeAngle > 95 && avgKneeAngle <= 105) {
+        // Good depth but could go slightly lower
+        depthScore = 85.0;
+        feedback = 'Good depth!';
         feedbackLevel = FeedbackLevel.good;
-        accuracy = 75.0; // Reduced accuracy for partial squats
-      }
-
-      // Second priority: Check back alignment (STRICTER)
-      if (backAlignment < 0.65 && !hasFormIssue) {
-        feedback = 'Keep your back straight!';
+      } else if (avgKneeAngle > 105 && avgKneeAngle < 110) {
+        // Partial squat - still counts but not ideal
+        depthScore = 70.0;
+        feedback = 'Go a bit lower for full squat.';
+        feedbackLevel = FeedbackLevel.good;
+      } else if (avgKneeAngle < 70) {
+        // Too deep - risk of knee strain
+        depthScore = 75.0;
+        feedback = 'Slightly too deep. Aim for 90 degrees.';
         feedbackLevel = FeedbackLevel.needsImprovement;
-        accuracy = accuracy * 0.80; // More penalty for bad back form
         hasFormIssue = true;
       }
 
-      // Third priority: Check hip position (STRICTER)
-      if (avgHipAngle < 50 && !hasFormIssue) {
-        feedback = 'Push hips back more!';
+      // Start with depth score as base accuracy
+      accuracy = depthScore;
+
+      // Apply penalties for form issues (multiplicative)
+
+      // Back alignment penalty (leaning too far forward)
+      if (backAlignment < 0.60) {
+        feedback = 'Keep your back straighter!';
+        feedbackLevel = FeedbackLevel.needsImprovement;
+        accuracy = accuracy * 0.75; // 25% penalty for poor back
+        hasFormIssue = true;
+      } else if (backAlignment < 0.70) {
+        if (!hasFormIssue) {
+          feedback = 'Try to keep chest up more.';
+        }
+        accuracy = accuracy * 0.90; // 10% penalty for slight lean
+      }
+
+      // Hip hinge check - proper squat requires hip angle around 80-120 degrees
+      // Too upright (>130) means not pushing hips back
+      // Too bent (<70) means excessive forward lean
+      if (avgHipAngle > 130 && !hasFormIssue) {
+        feedback = 'Push your hips back more!';
+        feedbackLevel = FeedbackLevel.needsImprovement;
+        accuracy = accuracy * 0.85; // 15% penalty
+        hasFormIssue = true;
+      } else if (avgHipAngle < 60 && !hasFormIssue) {
+        feedback = 'Keep your torso more upright!';
         feedbackLevel = FeedbackLevel.needsImprovement;
         accuracy = accuracy * 0.85;
         hasFormIssue = true;
       }
+
+      // Track the best accuracy during this squat (lowest point)
+      // We want to record the form quality at the deepest point
+      if (avgKneeAngle < _currentRepLowestKneeAngle) {
+        _currentRepLowestKneeAngle = avgKneeAngle;
+        _currentRepBestAccuracy = accuracy;
+      }
     } else if (isStanding) {
       feedback = 'Stand tall, ready for next rep';
       feedbackLevel = FeedbackLevel.good;
-      accuracy = 90.0;
+      // Don't assign accuracy for standing - we use the squat phase accuracy
+      accuracy = _currentRepBestAccuracy > 0 ? _currentRepBestAccuracy : 0.0;
     } else {
       // Transitioning
       feedback = 'Keep going...';
       feedbackLevel = FeedbackLevel.good;
-      accuracy = 80.0;
+      accuracy = _currentRepBestAccuracy > 0 ? _currentRepBestAccuracy : 0.0;
     }
 
     // Count reps - simplified logic
@@ -154,12 +198,16 @@ class SquatsLogic extends ExerciseLogic {
         'rightKnee=${rightKneeAngle.toStringAsFixed(1)}°, '
         'isStanding=$isStanding (>160°), '
         'isSquatting=$isInSquatPosition (<110°), '
-        '_wasStanding=$_wasStanding, _isSquatting=$_isSquatting');
+        '_wasStanding=$_wasStanding, _isSquatting=$_isSquatting, '
+        'repAccuracy=${_currentRepBestAccuracy.toStringAsFixed(1)}%');
 
-    // Going down
+    // Going down - start tracking this rep
     if (_wasStanding && isInSquatPosition && !_isSquatting) {
       _isSquatting = true;
       _wasStanding = false;
+      // Reset tracking for new rep
+      _currentRepBestAccuracy = accuracy;
+      _currentRepLowestKneeAngle = avgKneeAngle;
       print(
           'DEBUG SQUAT: ✓ Detected squat going DOWN (angle: ${avgKneeAngle.toStringAsFixed(1)}°)');
     }
@@ -168,12 +216,27 @@ class SquatsLogic extends ExerciseLogic {
       _isSquatting = false;
       _wasStanding = true;
       _repCount++;
-      _accuracyScores.add(accuracy);
+
+      // Store the best accuracy from the squat phase (at lowest point)
+      final repAccuracy =
+          _currentRepBestAccuracy > 0 ? _currentRepBestAccuracy : 70.0;
+      _accuracyScores.add(repAccuracy);
+
       isRepCompleted = true;
-      feedback = 'Rep $_repCount completed! Excellent!';
-      feedbackLevel = FeedbackLevel.excellent;
+      feedback =
+          'Rep $_repCount done! ${repAccuracy >= 85 ? "Great form!" : repAccuracy >= 70 ? "Good!" : "Keep practicing!"}';
+      feedbackLevel = repAccuracy >= 85
+          ? FeedbackLevel.excellent
+          : repAccuracy >= 70
+              ? FeedbackLevel.good
+              : FeedbackLevel.needsImprovement;
+
       print(
-          'DEBUG SQUAT: ✓✓ Rep completed! Total count: $_repCount (angle: ${avgKneeAngle.toStringAsFixed(1)}°)');
+          'DEBUG SQUAT: ✓✓ Rep completed! Total: $_repCount, Accuracy: ${repAccuracy.toStringAsFixed(1)}%');
+
+      // Reset for next rep
+      _currentRepBestAccuracy = 0.0;
+      _currentRepLowestKneeAngle = 180.0;
     }
 
     return ExerciseAnalysisResult(

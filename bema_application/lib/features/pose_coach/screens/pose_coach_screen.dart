@@ -100,6 +100,10 @@ class _PoseCoachScreenState extends State<PoseCoachScreen>
   String _videoGenerationStatus = '';
   double _videoGenerationProgress = 0.0;
 
+  // Countdown timer state
+  bool _isCountingDown = false;
+  int _countdownSeconds = 5;
+
   @override
   void initState() {
     super.initState();
@@ -709,6 +713,41 @@ class _PoseCoachScreenState extends State<PoseCoachScreen>
   }
 
   void _startWorkout() async {
+    // Start countdown first
+    setState(() {
+      _isCountingDown = true;
+      _countdownSeconds = 5;
+    });
+
+    _speak('Get ready! Starting in 5 seconds.');
+
+    // Countdown from 5 to 1
+    for (int i = 5; i >= 1; i--) {
+      if (!mounted || !_isCountingDown)
+        return; // Exit if cancelled or unmounted
+
+      setState(() {
+        _countdownSeconds = i;
+      });
+
+      if (i <= 3) {
+        _speak('$i');
+      }
+
+      await Future.delayed(const Duration(seconds: 1));
+    }
+
+    if (!mounted || !_isCountingDown) return;
+
+    setState(() {
+      _isCountingDown = false;
+    });
+
+    // Now actually start the workout
+    _actuallyStartWorkout();
+  }
+
+  void _actuallyStartWorkout() async {
     final poseProvider = Provider.of<PoseCoachProvider>(context, listen: false);
 
     // Clear any pending speech from positioning mode
@@ -746,7 +785,7 @@ class _PoseCoachScreenState extends State<PoseCoachScreen>
     // Start workout report tracking
     _workoutReportService.startWorkout(_currentExercise?.name ?? 'Squats');
 
-    _speak('Exercise started. Begin when ready!');
+    _speak('Go! Start your exercise.');
   }
 
   void _endWorkout() {
@@ -1466,6 +1505,71 @@ class _PoseCoachScreenState extends State<PoseCoachScreen>
                             ),
                           ),
 
+                        // Countdown Overlay
+                        if (_isCountingDown)
+                          Positioned.fill(
+                            child: Container(
+                              color: Colors.black.withOpacity(0.7),
+                              child: Center(
+                                child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    const Text(
+                                      'GET READY!',
+                                      style: TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 28,
+                                        fontWeight: FontWeight.bold,
+                                        letterSpacing: 2,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 30),
+                                    Container(
+                                      width: 150,
+                                      height: 150,
+                                      decoration: BoxDecoration(
+                                        shape: BoxShape.circle,
+                                        gradient: LinearGradient(
+                                          colors: [
+                                            Colors.blue.shade400,
+                                            Colors.purple.shade400,
+                                          ],
+                                          begin: Alignment.topLeft,
+                                          end: Alignment.bottomRight,
+                                        ),
+                                        boxShadow: [
+                                          BoxShadow(
+                                            color: Colors.blue.withOpacity(0.5),
+                                            blurRadius: 30,
+                                            spreadRadius: 5,
+                                          ),
+                                        ],
+                                      ),
+                                      child: Center(
+                                        child: Text(
+                                          '$_countdownSeconds',
+                                          style: const TextStyle(
+                                            color: Colors.white,
+                                            fontSize: 80,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                    const SizedBox(height: 30),
+                                    const Text(
+                                      'Get into position',
+                                      style: TextStyle(
+                                        color: Colors.white70,
+                                        fontSize: 18,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ),
+
                         // Feedback overlay - responsive positioning
                         Positioned(
                           bottom: screenHeight * 0.2 + bottomPadding,
@@ -1578,9 +1682,9 @@ class _PoseCoachScreenState extends State<PoseCoachScreen>
             mainAxisSize: MainAxisSize.min,
             children: [
               ElevatedButton(
-                onPressed: _startWorkout,
+                onPressed: _isCountingDown ? null : _startWorkout,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.blue,
+                  backgroundColor: _isCountingDown ? Colors.grey : Colors.blue,
                   padding:
                       const EdgeInsets.symmetric(horizontal: 48, vertical: 16),
                   shape: RoundedRectangleBorder(
@@ -1589,12 +1693,15 @@ class _PoseCoachScreenState extends State<PoseCoachScreen>
                 ),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
-                  children: const [
-                    Icon(Icons.play_arrow, color: Colors.white),
-                    SizedBox(width: 8),
+                  children: [
+                    Icon(
+                      _isCountingDown ? Icons.hourglass_top : Icons.play_arrow,
+                      color: Colors.white,
+                    ),
+                    const SizedBox(width: 8),
                     Text(
-                      'I\'m Ready - Start!',
-                      style: TextStyle(
+                      _isCountingDown ? 'Starting...' : 'I\'m Ready - Start!',
+                      style: const TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
                         color: Colors.white,
