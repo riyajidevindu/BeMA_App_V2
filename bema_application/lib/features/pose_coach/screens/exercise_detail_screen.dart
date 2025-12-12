@@ -148,10 +148,9 @@ class _ExerciseDetailScreenState extends State<ExerciseDetailScreen>
                             'Get real-time feedback with AI-powered pose detection',
                         color: Colors.green,
                         onTap: () {
-                          Navigator.pushNamed(
-                            context,
-                            RouteNames.poseCoachScreen,
-                            arguments: widget.exercise,
+                          context.push(
+                            '/${RouteNames.poseCoachScreen}',
+                            extra: widget.exercise,
                           );
                         },
                         isHighlighted: true,

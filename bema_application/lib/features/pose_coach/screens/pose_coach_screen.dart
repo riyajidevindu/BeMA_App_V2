@@ -53,7 +53,8 @@ class _PoseCoachScreenState extends State<PoseCoachScreen>
 
   // Camera switching
   List<CameraDescription> _availableCameras = [];
-  int _currentCameraIndex = 0;
+  int _currentCameraIndex =
+      -1; // -1 means not initialized, will select front camera first
   bool _isSwitchingCamera = false;
 
   // Positioning and voice control
@@ -203,10 +204,18 @@ class _PoseCoachScreenState extends State<PoseCoachScreen>
       // Store available cameras
       _availableCameras = cameras;
 
-      // If first initialization, use front camera (index 0)
-      // Otherwise use the current index
-      if (_currentCameraIndex >= _availableCameras.length) {
-        _currentCameraIndex = 0;
+      // If first initialization (-1) or invalid index, find and use front camera
+      // Otherwise use the current index (e.g., after camera switch)
+      if (_currentCameraIndex < 0 ||
+          _currentCameraIndex >= _availableCameras.length) {
+        // Find front camera index
+        _currentCameraIndex = _availableCameras.indexWhere(
+          (camera) => camera.lensDirection == CameraLensDirection.front,
+        );
+        // Fallback to first camera if no front camera found
+        if (_currentCameraIndex < 0) {
+          _currentCameraIndex = 0;
+        }
       }
 
       _cameraController = CameraController(
@@ -1494,8 +1503,6 @@ class _PoseCoachScreenState extends State<PoseCoachScreen>
             '${(provider.accuracy * 100).toStringAsFixed(0)}%',
             Icons.check_circle,
           ),
-          _buildStatItem('Streak', provider.consecutiveGoodReps.toString(),
-              Icons.local_fire_department),
         ],
       ),
     );
@@ -1596,13 +1603,6 @@ class _PoseCoachScreenState extends State<PoseCoachScreen>
                   ],
                 ),
               ),
-              const SizedBox(height: 8),
-              TextButton.icon(
-                onPressed: _openHistory,
-                icon: const Icon(Icons.video_library_outlined),
-                label: const Text('Past videos'),
-                style: TextButton.styleFrom(foregroundColor: Colors.white),
-              ),
             ],
           ),
         ),
@@ -1636,13 +1636,6 @@ class _PoseCoachScreenState extends State<PoseCoachScreen>
                   color: Colors.white,
                 ),
               ),
-            ),
-            const SizedBox(height: 8),
-            TextButton.icon(
-              onPressed: _openHistory,
-              icon: const Icon(Icons.video_library_outlined),
-              label: const Text('Past videos'),
-              style: TextButton.styleFrom(foregroundColor: Colors.white),
             ),
           ],
         ),
@@ -1924,31 +1917,37 @@ class PoseSkeletonPainter extends CustomPainter {
   ];
 
   Offset _transform(PoseLandmark lm, Size canvasSize) {
-    // MLKit on Android returns landmarks in rotated image space
-    // Camera image is landscape (e.g., 1280x720) but displayed in portrait
-    // MLKit processes with 90° rotation, so coordinates are in portrait space
-    // where width=imageHeight, height=imageWidth
+    // MLKit returns landmarks in the coordinate space of the processed image
+    // The coordinate system depends on the rotation applied during image processing
+
+    double x = lm.x;
+    double y = lm.y;
 
     double sourceWidth;
     double sourceHeight;
 
-    // On Android, camera images are landscape, displayed portrait → swap dimensions
-    // On iOS, camera plugin handles rotation automatically
     if (Platform.isAndroid) {
-      sourceWidth = imageSize.height; // After 90° rotation
+      // On Android, camera gives landscape image (e.g. 1280x720)
+      // MLKit rotates it based on sensor orientation for processing
+      // After rotation, the image becomes portrait, so dimensions are swapped
+      sourceWidth = imageSize.height;
       sourceHeight = imageSize.width;
     } else {
+      // iOS handles this differently
       sourceWidth = imageSize.width;
       sourceHeight = imageSize.height;
     }
 
+    // Scale to canvas size
     final double scaleX = canvasSize.width / sourceWidth;
     final double scaleY = canvasSize.height / sourceHeight;
 
-    double x = lm.x * scaleX;
-    double y = lm.y * scaleY;
+    x = x * scaleX;
+    y = y * scaleY;
 
-    // Mirror for front camera to match preview
+    // For front camera: The camera preview widget displays a mirrored (selfie) view
+    // But MLKit processes the raw un-mirrored image from the camera sensor
+    // We need to mirror the skeleton X-coordinates to match the mirrored preview
     if (isFrontCamera) {
       x = canvasSize.width - x;
     }

@@ -125,13 +125,13 @@ class PoseDetectionService {
     }
 
     // Android: Calculate rotation based on sensor orientation
-    // Front camera needs to handle mirroring
+    // Most Android devices have sensor orientation of 90° (portrait mode)
+    // For both front and back cameras, we use the same rotation since
+    // the physical sensor orientation is what matters for MLKit
     int rotationCompensation = _sensorOrientation;
 
-    // For front camera on Android, we need to adjust the rotation
-    if (_lensDirection == CameraLensDirection.front) {
-      rotationCompensation = (360 - _sensorOrientation) % 360;
-    }
+    debugPrint(
+        'MLKit rotation: sensor=$_sensorOrientation, lens=$_lensDirection, rotation=$rotationCompensation');
 
     switch (rotationCompensation) {
       case 0:

@@ -206,13 +206,16 @@ class SummaryCard extends StatelessWidget {
                                   color: Colors.white,
                                 ),
                                 const SizedBox(width: 6),
-                                Text(
-                                  buttonText ?? 'Get Now',
-                                  style: TextStyle(
-                                    fontSize: buttonTextSize,
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.white,
-                                    letterSpacing: 0.5,
+                                Flexible(
+                                  child: Text(
+                                    buttonText ?? 'Get Now',
+                                    overflow: TextOverflow.ellipsis,
+                                    style: TextStyle(
+                                      fontSize: buttonTextSize,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.white,
+                                      letterSpacing: 0.5,
+                                    ),
                                   ),
                                 ),
                               ],

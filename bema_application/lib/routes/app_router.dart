@@ -33,6 +33,7 @@ import 'package:bema_application/features/pose_coach/screens/pose_coach_screen.d
 import 'package:bema_application/features/pose_coach/screens/pose_session_gallery_screen.dart';
 import 'package:bema_application/features/pose_coach/screens/workout_report_screen.dart';
 import 'package:bema_application/features/pose_coach/models/workout_report.dart';
+import 'package:bema_application/features/pose_coach/models/exercise.dart';
 import 'package:bema_application/routes/authendication_wrapper.dart';
 import 'package:bema_application/features/authentication/screens/mood_screen/mood_friend.dart';
 import 'package:bema_application/routes/route_names.dart';
@@ -277,9 +278,13 @@ final goRouter = GoRouter(initialLocation: '/${RouteNames.wrapper}', routes: [
   GoRoute(
     path: '/${RouteNames.poseCoachScreen}',
     name: RouteNames.poseCoachScreen,
-    pageBuilder: (context, state) => const MaterialPage(
-      child: PoseCoachScreen(),
-    ),
+    pageBuilder: (context, state) {
+      // Get optional exercise from extra
+      final exercise = state.extra as Exercise?;
+      return MaterialPage(
+        child: PoseCoachScreen(exercise: exercise),
+      );
+    },
   ),
   GoRoute(
     path: '/${RouteNames.poseSessionGalleryScreen}',

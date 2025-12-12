@@ -1,5 +1,6 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:video_player/video_player.dart';
 import 'package:bema_application/common/widgets/app_bar.dart';
 import '../models/exercise.dart';
@@ -452,10 +453,9 @@ class _VideoGuideScreenState extends State<VideoGuideScreen> {
       ),
       child: ElevatedButton(
         onPressed: () {
-          Navigator.pushReplacementNamed(
-            context,
-            RouteNames.poseCoachScreen,
-            arguments: widget.exercise,
+          context.push(
+            '/${RouteNames.poseCoachScreen}',
+            extra: widget.exercise,
           );
         },
         style: ElevatedButton.styleFrom(

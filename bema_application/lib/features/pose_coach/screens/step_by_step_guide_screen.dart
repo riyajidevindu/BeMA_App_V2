@@ -1,5 +1,6 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:bema_application/common/widgets/app_bar.dart';
 import '../models/exercise_step.dart';
 import '../models/exercise.dart';
@@ -224,10 +225,9 @@ class _StepByStepGuideScreenState extends State<StepByStepGuideScreen>
               Expanded(
                 child: ElevatedButton.icon(
                   onPressed: () {
-                    Navigator.pushNamed(
-                      context,
-                      RouteNames.poseCoachScreen,
-                      arguments: widget.exercise,
+                    context.push(
+                      '/${RouteNames.poseCoachScreen}',
+                      extra: widget.exercise,
                     );
                   },
                   icon: const Icon(Icons.camera_alt, size: 24),
@@ -340,10 +340,9 @@ class _StepByStepGuideScreenState extends State<StepByStepGuideScreen>
                   onPressed: _currentStep < widget.guide.steps.length - 1
                       ? _nextStep
                       : () {
-                          Navigator.pushNamed(
-                            context,
-                            RouteNames.poseCoachScreen,
-                            arguments: widget.exercise,
+                          context.push(
+                            '/${RouteNames.poseCoachScreen}',
+                            extra: widget.exercise,
                           );
                         },
                   icon: Icon(

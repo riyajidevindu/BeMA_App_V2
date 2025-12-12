@@ -71,7 +71,19 @@ class _RelaxSectionHomeState extends State<RelaxSectionHome>
   @override
   Widget build(BuildContext context) {
     final double screenWidth = MediaQuery.of(context).size.width;
-    final double screenHeight = MediaQuery.of(context).size.height;
+
+    // Responsive calculations
+    final isSmallScreen = screenWidth < 360;
+    final isMediumScreen = screenWidth >= 360 && screenWidth < 600;
+
+    // Responsive sizes
+    final horizontalPadding = (screenWidth * 0.04).clamp(12.0, 20.0);
+    final headerPadding = (screenWidth * 0.04).clamp(12.0, 20.0);
+    final headerTitleSize = (screenWidth * 0.055).clamp(18.0, 26.0);
+    final headerSubtitleSize = (screenWidth * 0.042).clamp(14.0, 20.0);
+    final gridSpacing = (screenWidth * 0.04).clamp(12.0, 20.0);
+    final avatarRadius = (screenWidth * 0.09).clamp(28.0, 45.0);
+    final cardSpacing = (screenWidth * 0.012).clamp(4.0, 8.0);
 
     return Scaffold(
       backgroundColor: Colors.transparent,
@@ -82,14 +94,14 @@ class _RelaxSectionHomeState extends State<RelaxSectionHome>
         elevation: 0,
       ),
       body: Padding(
-        padding: const EdgeInsets.all(16.0),
+        padding: EdgeInsets.all(horizontalPadding),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Container(
               width: double.infinity,
-              padding: const EdgeInsets.all(16.0),
-              margin: const EdgeInsets.only(bottom: 20.0, top: 20),
+              padding: EdgeInsets.all(headerPadding),
+              margin: EdgeInsets.only(bottom: gridSpacing, top: gridSpacing),
               decoration: BoxDecoration(
                 color: Colors.blue.withOpacity(0.2),
                 borderRadius: BorderRadius.circular(20),
@@ -102,20 +114,20 @@ class _RelaxSectionHomeState extends State<RelaxSectionHome>
                 children: [
                   _buildStrokedText(
                     "Relax Section",
-                    22,
+                    headerTitleSize,
                   ),
-                  const SizedBox(height: 5),
-                  const Text(
+                  SizedBox(height: cardSpacing),
+                  Text(
                     "Choose an option to relax",
                     style: TextStyle(
-                      fontSize: 18,
-                      color: Color.fromARGB(179, 6, 42, 141),
+                      fontSize: headerSubtitleSize,
+                      color: const Color.fromARGB(179, 6, 42, 141),
                     ),
                   ),
                 ],
               ),
             ),
-            const SizedBox(height: 20),
+            SizedBox(height: gridSpacing),
             Expanded(
               child: AnimatedBuilder(
                 animation: _animationController,
@@ -126,60 +138,54 @@ class _RelaxSectionHomeState extends State<RelaxSectionHome>
                       position: _slideAnimation,
                       child: GridView.count(
                         crossAxisCount: 2,
-                        crossAxisSpacing: 16.0,
-                        mainAxisSpacing: 16.0,
+                        crossAxisSpacing: gridSpacing,
+                        mainAxisSpacing: gridSpacing,
+                        childAspectRatio:
+                            isSmallScreen ? 0.85 : (isMediumScreen ? 0.9 : 1.0),
                         children: [
                           _buildCard(
-                            avatar: const CircleAvatar(
-                              radius: 35,
-                              backgroundImage:
-                                  AssetImage('assets/relax.png'),
-                            ),
+                            avatarRadius: avatarRadius,
+                            avatarImage: 'assets/relax.png',
                             title: "Breath Relaxer",
                             subtitle: "Relax Your Mind",
                             color: Colors.orange,
+                            screenWidth: screenWidth,
                             onTap: () {
                               Navigator.pushNamed(
                                   context, RouteNames.stressReleaseScreen);
                             },
                           ),
                           _buildCard(
-                            avatar: const CircleAvatar(
-                              radius: 35,
-                              backgroundImage:
-                                  AssetImage('assets/meditation.png'),
-                            ),
+                            avatarRadius: avatarRadius,
+                            avatarImage: 'assets/meditation.png',
                             title: "Dive Reflex",
                             subtitle: "Relax Your Heart",
                             color: Colors.lightBlue,
+                            screenWidth: screenWidth,
                             onTap: () {
                               Navigator.pushNamed(
                                   context, RouteNames.diveReflexScreen);
                             },
                           ),
                           _buildCard(
-                            avatar: const CircleAvatar(
-                              radius: 35,
-                              backgroundImage:
-                                  AssetImage('assets/chat.png'),
-                            ),
+                            avatarRadius: avatarRadius,
+                            avatarImage: 'assets/chat.png',
                             title: "Chat with Me",
                             subtitle: "Ask Your Problem",
                             color: Colors.lightBlueAccent,
+                            screenWidth: screenWidth,
                             onTap: () {
                               Navigator.pushNamed(
                                   context, RouteNames.chatScreen);
                             },
                           ),
                           _buildCard(
-                            avatar: const CircleAvatar(
-                              radius: 35,
-                              backgroundImage:
-                                  AssetImage('assets/mood.png'),
-                            ),
+                            avatarRadius: avatarRadius,
+                            avatarImage: 'assets/mood.png',
                             title: "Mood Friend",
                             subtitle: "Fix You Mood",
                             color: Colors.orangeAccent,
+                            screenWidth: screenWidth,
                             onTap: () {
                               Navigator.pushNamed(
                                   context, RouteNames.moodFriendScreen);
@@ -199,12 +205,20 @@ class _RelaxSectionHomeState extends State<RelaxSectionHome>
   }
 
   Widget _buildCard({
-    required Widget avatar,
+    required double avatarRadius,
+    required String avatarImage,
     required String title,
     required String subtitle,
     required Color color,
+    required double screenWidth,
     VoidCallback? onTap,
   }) {
+    // Responsive sizes based on screen width
+    final titleSize = (screenWidth * 0.045).clamp(14.0, 20.0);
+    final subtitleSize = (screenWidth * 0.035).clamp(11.0, 16.0);
+    final cardPadding = (screenWidth * 0.02).clamp(6.0, 12.0);
+    final spacing = (screenWidth * 0.012).clamp(4.0, 8.0);
+
     return MouseRegion(
       onEnter: (event) {},
       onExit: (event) {},
@@ -237,22 +251,25 @@ class _RelaxSectionHomeState extends State<RelaxSectionHome>
                   ],
                 ),
                 child: Padding(
-                  padding: const EdgeInsets.all(8.0),
+                  padding: EdgeInsets.all(cardPadding),
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      avatar,
-                      const SizedBox(height: 5),
+                      CircleAvatar(
+                        radius: avatarRadius,
+                        backgroundImage: AssetImage(avatarImage),
+                      ),
+                      SizedBox(height: spacing),
                       _buildStrokedText(
                         title,
-                        18,
+                        titleSize,
                       ),
-                      const SizedBox(height: 8),
+                      SizedBox(height: spacing * 1.5),
                       Text(
                         subtitle,
                         textAlign: TextAlign.center,
-                        style: const TextStyle(
-                          fontSize: 14,
+                        style: TextStyle(
+                          fontSize: subtitleSize,
                           color: Colors.white70,
                         ),
                       ),
