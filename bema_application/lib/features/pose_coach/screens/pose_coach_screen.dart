@@ -1,19 +1,22 @@
 import 'dart:io' show Platform;
+import 'dart:math' show sqrt, acos, pi;
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:camera/camera.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 import 'package:speech_to_text/speech_to_text.dart' as stt;
 import 'package:permission_handler/permission_handler.dart';
-import 'package:path_provider/path_provider.dart';
 import 'package:bema_application/features/authentication/providers/authentication_provider.dart';
+import 'package:bema_application/common/config/colors.dart';
 import '../providers/pose_coach_provider.dart';
 import '../services/pose_detection_service.dart';
 import '../services/pose_firebase_service.dart';
 import '../services/pose_local_storage_service.dart';
+import '../services/workout_report_service.dart';
 import '../services/exercise_logic.dart';
 import '../services/exercise_logic_factory.dart';
 import '../models/pose_session.dart';
+import '../models/workout_report.dart';
 import 'package:go_router/go_router.dart';
 import 'package:bema_application/routes/route_names.dart';
 import '../models/exercise.dart';
@@ -68,11 +71,6 @@ class _PoseCoachScreenState extends State<PoseCoachScreen>
   bool _wasFullyVisible = false; // Was user fully visible in previous frame?
   bool _hasConfirmedVisibility = false; // Have we already said "I can see you"?
 
-  // Track ready state to tell user when to start
-  bool _isUserReady =
-      false; // Is user in frame, full body visible, and good orientation?
-  bool _hasAnnouncedReady = false; // Have we told user they're ready to start?
-
   // Pose overlay state
   List<PoseLandmark>? _lastLandmarks;
   Size? _lastImageSize;
@@ -84,14 +82,22 @@ class _PoseCoachScreenState extends State<PoseCoachScreen>
   DateTime? _lastOrientationWarning;
   String _lastFormFeedback = '';
   DateTime? _lastFormFeedbackTime;
+  // ignore: unused_field - kept for backward compatibility with feedback debouncing
   String _lastSpokenFeedback = '';
+  // ignore: unused_field - kept for backward compatibility with feedback debouncing
   DateTime? _lastFeedbackTime;
 
-  // Video recording
+  // Workout saving state
   bool _isRecordingVideo = false;
-  String? _recordedVideoPath;
   final PoseLocalStorageService _localStorageService =
       PoseLocalStorageService();
+
+  // Workout report service for detailed feedback
+  final WorkoutReportService _workoutReportService = WorkoutReportService();
+
+  bool _isGeneratingVideo = false;
+  String _videoGenerationStatus = '';
+  double _videoGenerationProgress = 0.0;
 
   @override
   void initState() {
@@ -310,13 +316,8 @@ class _PoseCoachScreenState extends State<PoseCoachScreen>
     final poseProvider = Provider.of<PoseCoachProvider>(context, listen: false);
 
     if (command.contains('start') || command.contains('begin')) {
-      if (_isPositioningMode) {
-        // Skip positioning mode if user is ready
-        setState(() {
-          _isPositioningMode = false;
-        });
-        _speak('Starting workout now!');
-      } else if (!poseProvider.isWorkoutActive) {
+      if (!poseProvider.isWorkoutActive) {
+        // Start workout (this handles both positioning mode and not-started state)
         _startWorkout();
       }
     } else if (command.contains('stop') ||
@@ -377,13 +378,14 @@ class _PoseCoachScreenState extends State<PoseCoachScreen>
       // Detect pose landmarks
       final rawLandmarks = await _poseDetectionService!.detectPose(image);
 
-      // Persist landmarks for overlay
+      // Persist landmarks for overlay - update skeleton position in real-time
       if (rawLandmarks != null && rawLandmarks.isNotEmpty) {
         _lastLandmarks = rawLandmarks.cast<PoseLandmark>();
         _lastImageSize = Size(image.width.toDouble(), image.height.toDouble());
         final now = DateTime.now();
+        // Update UI at ~20 FPS (50ms) for smooth skeleton movement
         if (_lastOverlayUpdate == null ||
-            now.difference(_lastOverlayUpdate!).inMilliseconds >= 80) {
+            now.difference(_lastOverlayUpdate!).inMilliseconds >= 50) {
           _lastOverlayUpdate = now;
           if (mounted) setState(() {});
         }
@@ -434,19 +436,19 @@ class _PoseCoachScreenState extends State<PoseCoachScreen>
             if (shouldConfirmVisibility) {
               setState(() {
                 _positioningStatus =
-                    'Perfect! I can see you clearly. Say "Start" to begin!';
+                    'Perfect! I can see you clearly. Press start when ready!';
                 _wasFullyVisible = true;
                 _hasConfirmedVisibility = true;
               });
               _speak(
-                  'Perfect! I can see you clearly. Say Start when you are ready, or tap the start button.');
+                  'Perfect! I can see you clearly. Press the start button when you are ready.');
               _lastPositionCheck = now;
               _hasSpokenPositionInstructions = true;
             } else {
               // User is still visible, just update status text silently
               setState(() {
                 _positioningStatus =
-                    'Perfect! I can see you clearly. Say "Start" to begin!';
+                    'Perfect! I can see you clearly. Press start when ready!';
                 _wasFullyVisible = true;
               });
             }
@@ -512,6 +514,11 @@ class _PoseCoachScreenState extends State<PoseCoachScreen>
           final landmarks = rawLandmarks.cast<PoseLandmark>();
           final result = _exerciseLogic!.analyzePose(landmarks);
 
+          // Track analysis for workout report
+          if (poseProvider.isWorkoutActive) {
+            _workoutReportService.processAnalysisResult(result);
+          }
+
           final now = DateTime.now();
 
           // Get orientation data (non-blocking)
@@ -521,24 +528,6 @@ class _PoseCoachScreenState extends State<PoseCoachScreen>
               result.additionalData?['orientationHint'] ?? '';
           final currentOrientation =
               result.additionalData?['orientation'] ?? 'sideways';
-
-          // Check if user is in standing position and ready to start
-          final avgKneeAngle = result.additionalData?['avgKneeAngle'] ?? 0.0;
-          final isStanding = avgKneeAngle > 160;
-          final isInGoodPosition = isIdealOrientation && isStanding;
-
-          // Announce when user is ready to start (once per session or when they return)
-          if (isInGoodPosition && !_isUserReady) {
-            _isUserReady = true;
-            if (!_hasAnnouncedReady) {
-              _speak(
-                  'Perfect! You are in position and ready. You can start your ${_currentExercise?.name ?? 'exercise'} now!');
-              _hasAnnouncedReady = true;
-            }
-          } else if (!isInGoodPosition && _isUserReady) {
-            // Reset ready state if user moves out of position
-            _isUserReady = false;
-          }
 
           // Update provider with exercise-specific feedback
           poseProvider.updateExerciseFeedback(
@@ -556,11 +545,16 @@ class _PoseCoachScreenState extends State<PoseCoachScreen>
           // Voice feedback for form corrections
           final currentFeedback = poseProvider.currentFeedback;
 
+          // Get improved voice feedback from report service for real-time coaching
+          final improvedFeedback = poseProvider.isWorkoutActive
+              ? _workoutReportService.getVoiceFeedback(result)
+              : currentFeedback;
+
           // Speak if:
           // 1. Feedback text changed OR
           // 2. Same form issue for 5+ seconds and haven't warned in last 8 seconds
           //    (for form corrections like "Keep your back straight")
-          final feedbackChanged = currentFeedback != _lastFormFeedback;
+          final feedbackChanged = improvedFeedback != _lastFormFeedback;
           final timeSinceLastFormWarning = _lastFormFeedbackTime != null
               ? now.difference(_lastFormFeedbackTime!).inSeconds
               : 999;
@@ -573,8 +567,8 @@ class _PoseCoachScreenState extends State<PoseCoachScreen>
                   (isFormIssue && timeSinceLastFormWarning >= 8));
 
           if (shouldSpeak) {
-            _speak(currentFeedback);
-            _lastFormFeedback = currentFeedback;
+            _speak(improvedFeedback);
+            _lastFormFeedback = improvedFeedback;
             _lastFormFeedbackTime = now;
           }
 
@@ -609,30 +603,51 @@ class _PoseCoachScreenState extends State<PoseCoachScreen>
     }
   }
 
+  /// Calculate knee angle from hip, knee, and ankle landmarks
+  double _calculateKneeAngle(
+      PoseLandmark hip, PoseLandmark knee, PoseLandmark ankle) {
+    // Create vectors from knee (vertex) to hip and ankle
+    final vector1X = hip.x - knee.x;
+    final vector1Y = hip.y - knee.y;
+    final vector2X = ankle.x - knee.x;
+    final vector2Y = ankle.y - knee.y;
+
+    // Calculate dot product
+    final dotProduct = vector1X * vector2X + vector1Y * vector2Y;
+
+    // Calculate magnitudes
+    final magnitude1 = (vector1X * vector1X + vector1Y * vector1Y);
+    final magnitude2 = (vector2X * vector2X + vector2Y * vector2Y);
+
+    if (magnitude1 == 0 || magnitude2 == 0) return 180.0;
+
+    // Calculate cosine of angle
+    final cosAngle = dotProduct / sqrt(magnitude1 * magnitude2);
+    final clampedCos = cosAngle.clamp(-1.0, 1.0);
+
+    // Calculate angle in degrees
+    final angleDeg = acos(clampedCos) * 180.0 / pi;
+    return angleDeg;
+  }
+
   Future<void> _speak(String text) async {
     if (text.isEmpty || _flutterTts == null) return;
 
     // Don't allow the same text to be spoken multiple times in rapid succession
     final now = DateTime.now();
     if (_lastSpeechTime != null &&
-        now.difference(_lastSpeechTime!).inMilliseconds < 500 &&
+        now.difference(_lastSpeechTime!).inMilliseconds < 1000 &&
         _speechQueue.isNotEmpty &&
         _speechQueue.last == text) {
-      debugPrint('TTS: Skipping duplicate message within 500ms: $text');
+      debugPrint('TTS: Skipping duplicate message within 1000ms: $text');
       return;
     }
 
-    // If already speaking, add to queue but limit queue size
+    // Stop any current speech to prevent overlap
     if (_isSpeaking) {
-      if (_speechQueue.length < 2) {
-        // Only queue up to 2 messages
-        _speechQueue.add(text);
-        debugPrint(
-            'TTS: Queued message (queue size: ${_speechQueue.length}): $text');
-      } else {
-        debugPrint('TTS: Queue full, skipping message: $text');
-      }
-      return;
+      await _flutterTts?.stop();
+      _speechQueue.clear(); // Clear queue to prevent old messages
+      debugPrint('TTS: Stopped current speech for new message: $text');
     }
 
     // Speak immediately
@@ -649,21 +664,19 @@ class _PoseCoachScreenState extends State<PoseCoachScreen>
       final estimatedDuration =
           ((wordCount / 2.5) * 1000).toInt(); // milliseconds
       await Future.delayed(
-          Duration(milliseconds: estimatedDuration + 500)); // Add buffer
+          Duration(milliseconds: estimatedDuration + 300)); // Add buffer
     } catch (e) {
       debugPrint('TTS error: $e');
     } finally {
       _isSpeaking = false;
-
-      // Process next item in queue if any
-      if (_speechQueue.isNotEmpty) {
-        final nextMessage = _speechQueue.removeAt(0);
-        debugPrint('TTS: Processing queued message: $nextMessage');
-        _speak(nextMessage); // Recursive call for next message
-      }
     }
   }
 
+  /// Video recording - currently disabled during workout because the camera
+  /// package on Android cannot run image stream and video recording simultaneously.
+  /// The image stream is required for real-time pose detection and skeleton overlay.
+  /// This method is kept for potential future use with a different recording approach.
+  // ignore: unused_element
   Future<void> _startVideoRecording() async {
     if (_cameraController == null ||
         !_cameraController!.value.isInitialized ||
@@ -686,30 +699,17 @@ class _PoseCoachScreenState extends State<PoseCoachScreen>
     }
   }
 
-  Future<String?> _stopVideoRecording() async {
-    if (_cameraController == null || !_isRecordingVideo) {
-      return null;
-    }
-
-    try {
-      final videoFile = await _cameraController!.stopVideoRecording();
-      setState(() {
-        _isRecordingVideo = false;
-        _recordedVideoPath = videoFile.path;
-      });
-      debugPrint('Video recording stopped: ${videoFile.path}');
-      return videoFile.path;
-    } catch (e) {
-      debugPrint('Error stopping video recording: $e');
-      setState(() {
-        _isRecordingVideo = false;
-      });
-      return null;
-    }
-  }
-
   void _startWorkout() async {
     final poseProvider = Provider.of<PoseCoachProvider>(context, listen: false);
+
+    // Clear any pending speech from positioning mode
+    _speechQueue.clear();
+    _isSpeaking = false;
+    await _flutterTts?.stop();
+
+    setState(() {
+      _isRecordingVideo = true;
+    });
 
     // Exit positioning mode
     setState(() {
@@ -717,18 +717,27 @@ class _PoseCoachScreenState extends State<PoseCoachScreen>
       // Initialize tracking timestamps
       _lastSeenInFrame = DateTime.now();
       _lastOutOfFrameWarning = null;
-      // Reset ready state for new workout session
-      _isUserReady = false;
-      _hasAnnouncedReady = false;
+      // Reset positioning mode state (no longer needed in workout)
+      _wasFullyVisible = false;
+      _hasConfirmedVisibility = false;
+      _hasSpokenPositionInstructions = false;
+      _lastPositionCheck = null;
+      // Reset workout feedback state for fresh start
+      _lastFormFeedback = '';
+      _lastFormFeedbackTime = null;
+      _lastOrientation = '';
+      _lastOrientationWarning = null;
+      _lastSpokenFeedback = '';
+      _lastFeedbackTime = null;
     });
 
     _exerciseLogic?.reset();
     poseProvider.startWorkout(_currentExercise?.id ?? 'squats');
 
-    // Start video recording
-    await _startVideoRecording();
+    // Start workout report tracking
+    _workoutReportService.startWorkout(_currentExercise?.name ?? 'Squats');
 
-    _speak('Starting ${_currentExercise?.name ?? "squat"} workout. Get ready!');
+    _speak('Exercise started. Begin when ready!');
   }
 
   void _endWorkout() {
@@ -740,8 +749,14 @@ class _PoseCoachScreenState extends State<PoseCoachScreen>
     final authProvider =
         Provider.of<AuthenticationProvider>(context, listen: false);
 
-    // Stop video recording first
-    final videoPath = await _stopVideoRecording();
+    setState(() {
+      _isRecordingVideo = false;
+    });
+
+    // Generate workout report
+    final workoutReport = _workoutReportService.generateReport();
+    debugPrint(
+        'WorkoutReport: Generated report with ${workoutReport.totalReps} reps, ${workoutReport.averageAccuracy.toStringAsFixed(1)}% accuracy');
 
     // Get Firebase user ID (consistent with the rest of your app)
     final userId = authProvider.firebaseUser?.uid ?? '';
@@ -749,100 +764,376 @@ class _PoseCoachScreenState extends State<PoseCoachScreen>
     if (userId.isEmpty) {
       debugPrint('Error: No user ID found');
       _speak('Error: Please log in to save workout');
+      _workoutReportService.reset();
       return;
     }
 
     final session = poseProvider.stopWorkout(userId);
 
-    _speak('Workout completed. Great job!');
+    // Save workout report and get path
+    final reportPath = await _workoutReportService.saveReport(workoutReport);
+    debugPrint('WorkoutReport: Saved to $reportPath');
 
-    // Save to both Firebase and backend
-    try {
-      // 1. Save video locally with session metadata
-      if (videoPath != null) {
-        final savedSession =
-            await _localStorageService.saveSession(session, videoPath);
-        if (savedSession != null) {
-          debugPrint('Workout video saved locally: ${savedSession.videoPath}');
-        } else {
-          debugPrint('Failed to save video locally');
-        }
-      }
+    // Create session with report path
+    final sessionWithReport = PoseSession(
+      userId: session.userId,
+      exercise: session.exercise,
+      reps: session.reps,
+      accuracy: session.accuracy,
+      timestamp: session.timestamp,
+      duration: session.duration,
+      feedbackPoints: session.feedbackPoints,
+      videoPath: session.videoPath,
+      reportPath: reportPath,
+    );
 
-      // 2. Save to Firebase Firestore (primary storage)
-      final firebaseSessionId = await _firebaseService.saveWorkoutSession(
-        userId: userId,
-        session: session,
-      );
+    _speak('Exercise completed. Great job!');
 
-      if (firebaseSessionId != null) {
-        debugPrint('Workout session saved to Firebase: $firebaseSessionId');
-      } else {
-        debugPrint('Failed to save to Firebase');
-      }
-
-      // 3. Send session data to backend (for AI analysis and additional features)
-      final response = await _apiService.sendWorkoutSummary(session.toJson());
-
-      if (response != null && mounted) {
-        // Show motivational feedback from AI
-        _showWorkoutSummary(session, response['motivation'] ?? 'Great work!',
-            hasVideo: videoPath != null);
-      } else if (mounted) {
-        _showWorkoutSummary(session, 'Excellent workout!',
-            hasVideo: videoPath != null);
-      }
-    } catch (e) {
-      debugPrint('Error saving workout: $e');
-      if (mounted) {
-        _showWorkoutSummary(session, 'Excellent workout!',
-            hasVideo: videoPath != null);
-      }
+    // Show report processing dialog
+    if (mounted) {
+      _showReportProcessingDialog(sessionWithReport, workoutReport, userId);
     }
   }
 
-  void _showWorkoutSummary(PoseSession session, String motivation,
-      {bool hasVideo = false}) {
+  /// Show dialog while generating workout report
+  void _showReportProcessingDialog(
+    PoseSession session,
+    WorkoutReport report,
+    String userId,
+  ) {
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Workout Complete! 🎉'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
+      barrierDismissible: false,
+      builder: (dialogContext) => StatefulBuilder(
+        builder: (context, setDialogState) {
+          // Start report saving process
+          if (!_isGeneratingVideo) {
+            _isGeneratingVideo = true;
+            _saveWorkoutWithReport(
+              session: session,
+              report: report,
+              userId: userId,
+              onProgress: (progress, status) {
+                if (mounted) {
+                  setDialogState(() {
+                    _videoGenerationProgress = progress;
+                    _videoGenerationStatus = status;
+                  });
+                }
+              },
+              onComplete: (savedSession) {
+                Navigator.pop(dialogContext);
+                _isGeneratingVideo = false;
+                if (mounted) {
+                  _showWorkoutReportSummary(savedSession ?? session, report);
+                }
+              },
+            );
+          }
+
+          return AlertDialog(
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+            backgroundColor: Colors.white,
+            title: Row(
+              children: [
+                SizedBox(
+                  width: 24,
+                  height: 24,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    color: primaryColor,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                const Text(
+                  'Saving Workout',
+                  style: TextStyle(fontSize: 18),
+                ),
+              ],
+            ),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  _videoGenerationStatus.isEmpty
+                      ? 'Analyzing your workout...'
+                      : _videoGenerationStatus,
+                  style: const TextStyle(fontSize: 14),
+                ),
+                const SizedBox(height: 16),
+                LinearProgressIndicator(
+                  value: _videoGenerationProgress,
+                  backgroundColor: primaryColor.withOpacity(0.2),
+                  valueColor: AlwaysStoppedAnimation<Color>(primaryColor),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  '${(_videoGenerationProgress * 100).toInt()}%',
+                  style: const TextStyle(fontSize: 12, color: Colors.grey),
+                ),
+                const SizedBox(height: 12),
+                Container(
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    color: primaryColor.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Text(
+                    'Your report will include:\n• Rep-by-rep analysis\n• Form feedback & corrections\n• Personalized coaching tips',
+                    style: TextStyle(fontSize: 12, color: primaryColor),
+                  ),
+                ),
+              ],
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  /// Save workout with report
+  Future<void> _saveWorkoutWithReport({
+    required PoseSession session,
+    required WorkoutReport report,
+    required String userId,
+    required Function(double progress, String status) onProgress,
+    required Function(PoseSession? savedSession) onComplete,
+  }) async {
+    try {
+      onProgress(0.2, 'Saving workout report...');
+
+      // Save session with report (no video/frames, just metadata)
+      final savedSession =
+          await _localStorageService.saveSessionWithReport(session);
+
+      onProgress(0.5, 'Uploading to cloud...');
+
+      // Save to Firebase
+      final firebaseSessionId = await _firebaseService.saveWorkoutSession(
+        userId: userId,
+        session: savedSession ?? session,
+      );
+      debugPrint('Workout session saved to Firebase: $firebaseSessionId');
+
+      onProgress(0.7, 'Sending for analysis...');
+
+      // Send to backend for AI analysis
+      await _apiService.sendWorkoutSummary((savedSession ?? session).toJson());
+
+      onProgress(0.9, 'Finalizing...');
+
+      // Reset report service
+      _workoutReportService.reset();
+
+      onProgress(1.0, 'Complete!');
+      onComplete(savedSession ?? session);
+    } catch (e) {
+      debugPrint('Error saving workout with report: $e');
+      _workoutReportService.reset();
+      onComplete(null);
+    }
+  }
+
+  /// Show workout report summary dialog
+  void _showWorkoutReportSummary(PoseSession session, WorkoutReport report) {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        backgroundColor: Colors.white,
+        title: Row(
           children: [
-            Text('Reps: ${session.reps}'),
-            Text('Accuracy: ${(session.accuracy * 100).toStringAsFixed(1)}%'),
-            Text('Duration: ${session.duration}s'),
-            if (hasVideo) ...[
-              const SizedBox(height: 8),
-              Row(
-                children: [
-                  Icon(Icons.videocam, size: 16, color: Colors.green),
-                  const SizedBox(width: 4),
-                  Text('Video saved for review',
-                      style: TextStyle(color: Colors.green, fontSize: 12)),
-                ],
+            Container(
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                color: _getGradeColor(report.overallGrade).withOpacity(0.15),
+                shape: BoxShape.circle,
+                border: Border.all(
+                  color: _getGradeColor(report.overallGrade).withOpacity(0.3),
+                  width: 2,
+                ),
               ),
-            ],
-            const SizedBox(height: 16),
-            Text(
-              motivation,
-              style: const TextStyle(
-                fontStyle: FontStyle.italic,
-                color: Colors.blue,
+              child: Text(
+                report.overallGrade,
+                style: TextStyle(
+                  fontSize: 26,
+                  fontWeight: FontWeight.bold,
+                  color: _getGradeColor(report.overallGrade),
+                ),
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'Workout Complete! 🎉',
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    report.performanceLevel,
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w500,
+                      color: _getGradeColor(report.overallGrade),
+                    ),
+                  ),
+                ],
               ),
             ),
           ],
         ),
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const SizedBox(height: 8),
+              _buildReportStatRow(
+                  'Total Reps', '${report.totalReps}', Icons.repeat),
+              _buildReportStatRow(
+                'Accuracy',
+                '${report.averageAccuracy.toStringAsFixed(0)}%',
+                Icons.speed,
+              ),
+              _buildReportStatRow(
+                'Perfect Reps',
+                '${report.perfectReps}',
+                Icons.star,
+              ),
+              _buildReportStatRow(
+                'Duration',
+                '${report.durationSeconds}s',
+                Icons.timer,
+              ),
+              const Divider(height: 24),
+              if (report.areasToImprove.isNotEmpty) ...[
+                const Text(
+                  '🎯 Key Focus Area:',
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 14,
+                  ),
+                ),
+                const SizedBox(height: 6),
+                Container(
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    color: Colors.orange.shade50,
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(color: Colors.orange.shade200),
+                  ),
+                  child: Text(
+                    report.areasToImprove.first,
+                    style: TextStyle(
+                      fontSize: 13,
+                      color: Colors.orange.shade800,
+                    ),
+                  ),
+                ),
+              ],
+            ],
+          ),
+        ),
+        actionsAlignment: MainAxisAlignment.spaceEvenly,
+        actionsPadding:
+            const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Close'),
+            onPressed: () {
+              Navigator.pop(ctx);
+              context.push(
+                '/workoutReport',
+                extra: report,
+              );
+            },
+            style: TextButton.styleFrom(
+              foregroundColor: primaryColor,
+            ),
+            child: const Text(
+              'View Full Report',
+              style: TextStyle(fontWeight: FontWeight.w600),
+            ),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.pop(ctx);
+              context
+                  .pushReplacement('/${RouteNames.poseSessionGalleryScreen}');
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: primaryColor,
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10),
+              ),
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+            ),
+            child: const Text(
+              'View History',
+              style: TextStyle(fontWeight: FontWeight.w600),
+            ),
           ),
         ],
       ),
     );
+  }
+
+  Widget _buildReportStatRow(String label, String value, IconData icon) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 6),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(6),
+            decoration: BoxDecoration(
+              color: primaryColor.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(6),
+            ),
+            child: Icon(icon, size: 18, color: primaryColor),
+          ),
+          const SizedBox(width: 12),
+          Text(
+            label,
+            style: const TextStyle(
+              fontSize: 14,
+              color: Colors.black87,
+            ),
+          ),
+          const Spacer(),
+          Text(
+            value,
+            style: const TextStyle(
+              fontWeight: FontWeight.bold,
+              fontSize: 16,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Color _getGradeColor(String grade) {
+    switch (grade) {
+      case 'A':
+        return Colors.green;
+      case 'B':
+        return Colors.lightGreen;
+      case 'C':
+        return Colors.orange;
+      case 'D':
+        return Colors.deepOrange;
+      default:
+        return Colors.red;
+    }
   }
 
   @override
@@ -965,30 +1256,89 @@ class _PoseCoachScreenState extends State<PoseCoachScreen>
                     )
                   : Stack(
                       children: [
-                        // Camera preview
+                        // Camera preview with properly aligned skeleton overlay
                         Positioned.fill(
-                          child: _cameraController != null &&
-                                  _cameraController!.value.isInitialized
-                              ? CameraPreview(_cameraController!)
-                              : const Center(
-                                  child: CircularProgressIndicator()),
-                        ),
+                          child: LayoutBuilder(
+                            builder: (context, constraints) {
+                              if (_cameraController == null ||
+                                  !_cameraController!.value.isInitialized) {
+                                return const Center(
+                                    child: CircularProgressIndicator());
+                              }
 
-                        // Pose detection overlay
-                        if (_lastLandmarks != null && _lastImageSize != null)
-                          Positioned.fill(
-                            child: CustomPaint(
-                              painter: PoseSkeletonPainter(
-                                landmarks: _lastLandmarks!,
-                                imageSize: _lastImageSize!,
-                                previewSize: _previewSize,
-                                isFrontCamera: _cameraController
-                                        ?.description.lensDirection ==
-                                    CameraLensDirection.front,
-                                showGoodForm: poseProvider.showVisualFeedback,
-                              ),
-                            ),
+                              // Get camera preview aspect ratio
+                              // On Android, previewSize is in landscape (e.g., 1920x1080)
+                              // We need to swap for portrait display
+                              final previewSize =
+                                  _cameraController!.value.previewSize!;
+                              final double cameraAspectRatio =
+                                  Platform.isAndroid
+                                      ? previewSize.height / previewSize.width
+                                      : previewSize.width / previewSize.height;
+
+                              // Calculate how the camera preview fits within constraints
+                              final double containerWidth =
+                                  constraints.maxWidth;
+                              final double containerHeight =
+                                  constraints.maxHeight;
+                              final double containerAspectRatio =
+                                  containerWidth / containerHeight;
+
+                              double previewWidth;
+                              double previewHeight;
+                              double offsetX = 0;
+                              double offsetY = 0;
+
+                              if (cameraAspectRatio > containerAspectRatio) {
+                                // Camera is wider - fit by width, letterbox top/bottom
+                                previewWidth = containerWidth;
+                                previewHeight =
+                                    containerWidth / cameraAspectRatio;
+                                offsetY = (containerHeight - previewHeight) / 2;
+                              } else {
+                                // Camera is taller - fit by height, pillarbox left/right
+                                previewHeight = containerHeight;
+                                previewWidth =
+                                    containerHeight * cameraAspectRatio;
+                                offsetX = (containerWidth - previewWidth) / 2;
+                              }
+
+                              return Stack(
+                                children: [
+                                  // Camera preview centered and maintaining aspect ratio
+                                  Center(
+                                    child: SizedBox(
+                                      width: previewWidth,
+                                      height: previewHeight,
+                                      child: CameraPreview(_cameraController!),
+                                    ),
+                                  ),
+                                  // Skeleton overlay positioned to match actual preview area
+                                  if (_lastLandmarks != null &&
+                                      _lastImageSize != null)
+                                    Positioned(
+                                      left: offsetX,
+                                      top: offsetY,
+                                      width: previewWidth,
+                                      height: previewHeight,
+                                      child: CustomPaint(
+                                        painter: PoseSkeletonPainter(
+                                          landmarks: _lastLandmarks!,
+                                          imageSize: _lastImageSize!,
+                                          previewSize: _previewSize,
+                                          isFrontCamera: _cameraController
+                                                  ?.description.lensDirection ==
+                                              CameraLensDirection.front,
+                                          showGoodForm:
+                                              poseProvider.showVisualFeedback,
+                                        ),
+                                      ),
+                                    ),
+                                ],
+                              );
+                            },
                           ),
+                        ),
 
                         // Stats overlay
                         Positioned(
@@ -1303,6 +1653,195 @@ class _PoseCoachScreenState extends State<PoseCoachScreen>
   void _openHistory() {
     if (!mounted) return;
     context.push('/${RouteNames.poseSessionGalleryScreen}');
+  }
+}
+
+/// Dialog widget for recording a video after workout
+class _RecordingDialog extends StatefulWidget {
+  final CameraController cameraController;
+  final Function(String path) onVideoSaved;
+  final VoidCallback onCancel;
+
+  const _RecordingDialog({
+    required this.cameraController,
+    required this.onVideoSaved,
+    required this.onCancel,
+  });
+
+  @override
+  State<_RecordingDialog> createState() => _RecordingDialogState();
+}
+
+class _RecordingDialogState extends State<_RecordingDialog> {
+  bool _isRecording = false;
+  int _recordingSeconds = 0;
+  bool _isSaving = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _startRecording();
+  }
+
+  Future<void> _startRecording() async {
+    try {
+      // Stop image stream if running
+      if (widget.cameraController.value.isStreamingImages) {
+        await widget.cameraController.stopImageStream();
+      }
+
+      // Start recording
+      await widget.cameraController.startVideoRecording();
+      setState(() {
+        _isRecording = true;
+      });
+
+      // Start timer
+      _startTimer();
+    } catch (e) {
+      debugPrint('Error starting recording: $e');
+      if (mounted) {
+        widget.onCancel();
+      }
+    }
+  }
+
+  void _startTimer() {
+    Future.doWhile(() async {
+      await Future.delayed(const Duration(seconds: 1));
+      if (!mounted || !_isRecording) return false;
+      setState(() {
+        _recordingSeconds++;
+      });
+      return true;
+    });
+  }
+
+  Future<void> _stopRecording() async {
+    if (!_isRecording) return;
+
+    setState(() {
+      _isRecording = false;
+      _isSaving = true;
+    });
+
+    try {
+      final videoFile = await widget.cameraController.stopVideoRecording();
+      debugPrint('Video recorded: ${videoFile.path}');
+      widget.onVideoSaved(videoFile.path);
+    } catch (e) {
+      debugPrint('Error stopping recording: $e');
+      widget.onCancel();
+    }
+  }
+
+  String _formatDuration(int seconds) {
+    final minutes = seconds ~/ 60;
+    final secs = seconds % 60;
+    return '${minutes.toString().padLeft(2, '0')}:${secs.toString().padLeft(2, '0')}';
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Dialog(
+      backgroundColor: Colors.black87,
+      child: Padding(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Text(
+              '🎬 Recording Your Victory!',
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(height: 16),
+            Container(
+              width: 200,
+              height: 280,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(
+                  color: _isRecording ? Colors.red : Colors.grey,
+                  width: 3,
+                ),
+              ),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(9),
+                child: CameraPreview(widget.cameraController),
+              ),
+            ),
+            const SizedBox(height: 16),
+            if (_isRecording) ...[
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Container(
+                    width: 12,
+                    height: 12,
+                    decoration: const BoxDecoration(
+                      color: Colors.red,
+                      shape: BoxShape.circle,
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Text(
+                    'REC ${_formatDuration(_recordingSeconds)}',
+                    style: const TextStyle(
+                      color: Colors.red,
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 8),
+              const Text(
+                'Show off your moves!',
+                style: TextStyle(color: Colors.white70, fontSize: 14),
+              ),
+            ],
+            if (_isSaving) ...[
+              const CircularProgressIndicator(color: Colors.white),
+              const SizedBox(height: 8),
+              const Text(
+                'Saving to gallery...',
+                style: TextStyle(color: Colors.white70, fontSize: 14),
+              ),
+            ],
+            const SizedBox(height: 20),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                TextButton(
+                  onPressed: _isSaving ? null : widget.onCancel,
+                  child: const Text(
+                    'Cancel',
+                    style: TextStyle(color: Colors.white70),
+                  ),
+                ),
+                ElevatedButton.icon(
+                  onPressed: _isSaving || !_isRecording ? null : _stopRecording,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.red,
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 24, vertical: 12),
+                  ),
+                  icon: const Icon(Icons.stop, color: Colors.white),
+                  label: const Text(
+                    'Stop & Save',
+                    style: TextStyle(color: Colors.white),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
   }
 }
 

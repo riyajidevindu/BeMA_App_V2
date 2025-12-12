@@ -7,7 +7,7 @@ class ApiService {
   //final String baseUrl = "http://192.168.37.242:8000"; // For Emulator
   //final String baseUrl = 'https://d843-175-157-137-228.ngrok-free.app'; // Old ngrok URL
   final String baseUrl =
-      'https://e7f3f2c42822.ngrok-free.app'; // Local backend for testing
+      'https://dfe5159a39e5.ngrok-free.app'; // Local backend for testing
   // TODO: Update with ngrok URL when deploying: https://c9e65c1bbd09.ngrok-free.app
 
   /// Detect emotion from image

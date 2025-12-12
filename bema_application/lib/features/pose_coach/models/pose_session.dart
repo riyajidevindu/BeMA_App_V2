@@ -8,6 +8,7 @@ class PoseSession {
   final int duration; // in seconds
   final List<String>? feedbackPoints;
   final String? videoPath; // optional local video file path
+  final String? reportPath; // optional workout report JSON path
 
   PoseSession({
     required this.userId,
@@ -18,6 +19,7 @@ class PoseSession {
     required this.duration,
     this.feedbackPoints,
     this.videoPath,
+    this.reportPath,
   });
 
   Map<String, dynamic> toJson() {
@@ -30,6 +32,7 @@ class PoseSession {
       'duration': duration,
       'feedback_points': feedbackPoints,
       'video_path': videoPath,
+      'report_path': reportPath,
     };
   }
 
@@ -45,6 +48,7 @@ class PoseSession {
           ? List<String>.from(json['feedback_points'])
           : null,
       videoPath: json['video_path'],
+      reportPath: json['report_path'],
     );
   }
 }

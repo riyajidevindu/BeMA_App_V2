@@ -31,8 +31,8 @@ import 'package:bema_application/features/navbar/bottom_navbar.dart';
 import 'package:bema_application/features/workout_plan/screens/workout_screen.dart';
 import 'package:bema_application/features/pose_coach/screens/pose_coach_screen.dart';
 import 'package:bema_application/features/pose_coach/screens/pose_session_gallery_screen.dart';
-import 'package:bema_application/features/pose_coach/screens/pose_session_player_screen.dart';
-import 'package:bema_application/features/pose_coach/models/pose_session.dart';
+import 'package:bema_application/features/pose_coach/screens/workout_report_screen.dart';
+import 'package:bema_application/features/pose_coach/models/workout_report.dart';
 import 'package:bema_application/routes/authendication_wrapper.dart';
 import 'package:bema_application/features/authentication/screens/mood_screen/mood_friend.dart';
 import 'package:bema_application/routes/route_names.dart';
@@ -293,16 +293,16 @@ final goRouter = GoRouter(initialLocation: '/${RouteNames.wrapper}', routes: [
     },
   ),
   GoRoute(
-    path: PoseSessionPlayerScreen.routePath,
-    name: RouteNames.poseSessionPlayerScreen,
+    path: WorkoutReportScreen.routePath,
+    name: 'workoutReport',
     pageBuilder: (context, state) {
-      final session = state.extra as PoseSession?;
-      if (session == null) {
+      final report = state.extra as WorkoutReport?;
+      if (report == null) {
         return const MaterialPage(
-            child: Scaffold(body: Center(child: Text('Session missing'))));
+            child: Scaffold(body: Center(child: Text('Report missing'))));
       }
       return MaterialPage(
-        child: PoseSessionPlayerScreen(session: session),
+        child: WorkoutReportScreen(report: report),
       );
     },
   ),
