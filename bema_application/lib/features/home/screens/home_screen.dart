@@ -131,14 +131,13 @@ class _HomeScreenState extends State<HomeScreen>
   void _setGreetingMessage() {
     final hour = DateTime.now().hour;
 
-    if (hour < 12) {
+    if (hour >= 5 && hour < 12) {
       greetingMessage = 'Good Morning';
-    } else if (hour < 17) {
+    } else if (hour >= 12 && hour < 17) {
       greetingMessage = 'Good Afternoon';
-    } else if (hour < 21) {
-      greetingMessage = 'Good Evening';
     } else {
-      greetingMessage = 'Good Night';
+      // Evening and night (5 PM onwards, including late night until 5 AM)
+      greetingMessage = 'Good Evening';
     }
   }
 

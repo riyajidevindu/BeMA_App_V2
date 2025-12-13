@@ -15,6 +15,7 @@ import '../services/pose_local_storage_service.dart';
 import '../services/workout_report_service.dart';
 import '../services/exercise_logic.dart';
 import '../services/exercise_logic_factory.dart';
+import '../services/voice_coaching_service.dart';
 import '../models/pose_session.dart';
 import '../models/workout_report.dart';
 import 'package:go_router/go_router.dart';
@@ -46,7 +47,10 @@ class _PoseCoachScreenState extends State<PoseCoachScreen>
   final ApiService _apiService = ApiService();
   final PoseFirebaseService _firebaseService = PoseFirebaseService();
 
-  // Voice queue management to prevent overlapping speech
+  // Voice coaching service for proper timed cues
+  final VoiceCoachingService _voiceCoachingService = VoiceCoachingService();
+
+  // Voice queue management to prevent overlapping speech (for positioning mode)
   bool _isSpeaking = false;
   List<String> _speechQueue = [];
   DateTime? _lastSpeechTime;
@@ -114,6 +118,9 @@ class _PoseCoachScreenState extends State<PoseCoachScreen>
 
     WidgetsBinding.instance.addObserver(this);
     _checkAndRequestPermissions();
+
+    // Initialize voice coaching service
+    _voiceCoachingService.initialize();
   }
 
   @override
@@ -123,6 +130,7 @@ class _PoseCoachScreenState extends State<PoseCoachScreen>
     _poseDetectionService?.dispose();
     _flutterTts?.stop();
     _speechToText?.stop();
+    _voiceCoachingService.dispose();
     super.dispose();
   }
 
@@ -532,8 +540,6 @@ class _PoseCoachScreenState extends State<PoseCoachScreen>
             _workoutReportService.processAnalysisResult(result);
           }
 
-          final now = DateTime.now();
-
           // Get orientation data (non-blocking)
           final isIdealOrientation =
               result.additionalData?['isIdealOrientation'] ?? true;
@@ -555,51 +561,26 @@ class _PoseCoachScreenState extends State<PoseCoachScreen>
             poseProvider.incrementRep();
           }
 
-          // Voice feedback for form corrections
-          final currentFeedback = poseProvider.currentFeedback;
-
-          // Get improved voice feedback from report service for real-time coaching
-          final improvedFeedback = poseProvider.isWorkoutActive
-              ? _workoutReportService.getVoiceFeedback(result)
-              : currentFeedback;
-
-          // Speak if:
-          // 1. Feedback text changed OR
-          // 2. Same form issue for 5+ seconds and haven't warned in last 8 seconds
-          //    (for form corrections like "Keep your back straight")
-          final feedbackChanged = improvedFeedback != _lastFormFeedback;
-          final timeSinceLastFormWarning = _lastFormFeedbackTime != null
-              ? now.difference(_lastFormFeedbackTime!).inSeconds
-              : 999;
-
-          final isFormIssue =
-              result.feedbackLevel == FeedbackLevel.needsImprovement;
-
-          final shouldSpeak = poseProvider.showVisualFeedback &&
-              (feedbackChanged ||
-                  (isFormIssue && timeSinceLastFormWarning >= 8));
-
-          if (shouldSpeak) {
-            _speak(improvedFeedback);
-            _lastFormFeedback = improvedFeedback;
-            _lastFormFeedbackTime = now;
-          }
-
-          // Also update lastSpokenFeedback for backward compatibility
-          if (feedbackChanged) {
-            _lastSpokenFeedback = currentFeedback;
-            _lastFeedbackTime = now;
+          // === NEW VOICE COACHING SYSTEM ===
+          // Use the dedicated voice coaching service for proper timed cues
+          // This replaces the old feedback-based voice system
+          if (poseProvider.isWorkoutActive && poseProvider.showVisualFeedback) {
+            _voiceCoachingService.processAnalysisResult(
+              result,
+              poseProvider.repCount,
+            );
           }
 
           // Optional: Provide orientation hint as a gentle reminder (not blocking)
           // Only speak orientation hint if not ideal and hasn't been warned recently
+          final now = DateTime.now();
           if (!isIdealOrientation && orientationHint.isNotEmpty) {
             final orientationChanged = currentOrientation != _lastOrientation;
             final timeSinceLastWarning = _lastOrientationWarning != null
                 ? now.difference(_lastOrientationWarning!).inSeconds
                 : 999;
 
-            if (orientationChanged || timeSinceLastWarning >= 12) {
+            if (orientationChanged || timeSinceLastWarning >= 15) {
               _speak(orientationHint);
               _lastOrientation = currentOrientation;
               _lastOrientationWarning = now;
@@ -785,7 +766,11 @@ class _PoseCoachScreenState extends State<PoseCoachScreen>
     // Start workout report tracking
     _workoutReportService.startWorkout(_currentExercise?.name ?? 'Squats');
 
-    _speak('Go! Start your exercise.');
+    // Reset and prepare voice coaching service
+    _voiceCoachingService.reset();
+
+    // Use voice coaching service for workout start announcement
+    _voiceCoachingService.speakImmediate('Go! Start your exercise.');
   }
 
   void _endWorkout() {
@@ -796,6 +781,9 @@ class _PoseCoachScreenState extends State<PoseCoachScreen>
     final poseProvider = Provider.of<PoseCoachProvider>(context, listen: false);
     final authProvider =
         Provider.of<AuthenticationProvider>(context, listen: false);
+
+    // Stop voice coaching
+    _voiceCoachingService.stop();
 
     setState(() {
       _isRecordingVideo = false;

@@ -9,6 +9,32 @@ enum FeedbackLevel {
   poor,
 }
 
+/// Exercise phases for voice coaching
+enum ExercisePhase {
+  standing, // Ready position, standing tall
+  goingDown, // Transitioning down (knee angle decreasing)
+  atBottom, // In squat position (lowest point)
+  comingUp, // Transitioning up (knee angle increasing)
+  repComplete, // Just completed a rep
+  outOfFrame, // User not visible
+  adjustPosition, // User needs to adjust (too close/far)
+}
+
+/// Voice cue types for proper timing
+enum VoiceCueType {
+  goDown, // "Go down" - when standing ready
+  keepGoing, // "Keep going" - during descent
+  holdIt, // "Hold" - at bottom
+  comeUp, // "Come up" / "Push up" - from bottom
+  goodRep, // "Good!" - rep completed well
+  excellentRep, // "Excellent!" - perfect rep
+  needsWork, // Short feedback for poor rep
+  formCorrection, // Form issue detected
+  encouragement, // "You got this!" etc
+  repCount, // "Rep 1", "Rep 2" etc
+  getReady, // "Get ready for next rep"
+}
+
 /// Result of exercise analysis
 class ExerciseAnalysisResult {
   final bool isRepCompleted;
@@ -16,6 +42,9 @@ class ExerciseAnalysisResult {
   final String feedback;
   final double accuracy;
   final Map<String, dynamic>? additionalData;
+  final ExercisePhase? currentPhase;
+  final ExercisePhase? previousPhase;
+  final VoiceCueType? suggestedVoiceCue;
 
   ExerciseAnalysisResult({
     required this.isRepCompleted,
@@ -23,6 +52,9 @@ class ExerciseAnalysisResult {
     required this.feedback,
     required this.accuracy,
     this.additionalData,
+    this.currentPhase,
+    this.previousPhase,
+    this.suggestedVoiceCue,
   });
 }
 
