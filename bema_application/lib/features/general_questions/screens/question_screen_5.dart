@@ -1,4 +1,4 @@
-import 'package:bema_application/common/widgets/tiles/option_tile.dart';
+import 'dart:ui';
 import 'package:bema_application/features/general_questions/providers/questioneer_provider.dart';
 import 'package:bema_application/routes/route_names.dart';
 import 'package:flutter/material.dart';
@@ -12,214 +12,274 @@ class QuestionScreen5 extends StatefulWidget {
   _QuestionScreen5State createState() => _QuestionScreen5State();
 }
 
-class _QuestionScreen5State extends State<QuestionScreen5> {
+class _QuestionScreen5State extends State<QuestionScreen5>
+    with SingleTickerProviderStateMixin {
   late TextEditingController _occupationController;
+  late AnimationController _animationController;
+  late Animation<Color?> _colorAnimation1;
+  late Animation<Color?> _colorAnimation2;
 
   @override
   void initState() {
     super.initState();
-    // Initialize the TextEditingController with the initial text from the provider
     _occupationController = TextEditingController(
       text: context.read<QuestionnaireProvider>().customOccupation,
     );
+
+    _animationController = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 5),
+    )..repeat(reverse: true);
+
+    _colorAnimation1 = ColorTween(
+      begin: Colors.lightBlue.shade200,
+      end: Colors.purple.shade200,
+    ).animate(_animationController);
+
+    _colorAnimation2 = ColorTween(
+      begin: Colors.purple.shade200,
+      end: Colors.lightBlue.shade200,
+    ).animate(_animationController);
   }
 
   @override
   void dispose() {
     _occupationController.dispose();
+    _animationController.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    // Access the QuestionnaireProvider
     final questionnaireProvider = Provider.of<QuestionnaireProvider>(context);
-
-    // Get the screen dimensions
-    final double screenWidth = MediaQuery.of(context).size.width;
-    final double screenHeight = MediaQuery.of(context).size.height;
-    final double emojiSize = screenWidth * 0.1;
+    final screenWidth = MediaQuery.of(context).size.width;
+    final occupations = {
+      "Doctor": "🧑‍⚕️",
+      "Teacher": "👨‍🏫",
+      "Programmer": "👨‍💻",
+      "Farmer": "👨‍🌾",
+      "Undergraduate": "🎓",
+      "Other": "✍️",
+    };
 
     return Scaffold(
-      backgroundColor: const Color(0xFFE6F0FF), // Light blue background
-      body: Column(
-        children: [
-          const SizedBox(height: 50),
-          
-          // Row for Back button and Progress bar
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20.0),
-            child: Row(
-              children: [
-                // Back button inside a transparent circle
-                GestureDetector(
-                  onTap: () {
-                    context.goNamed(RouteNames.questionScreen4);
-                  },
-                  child: Container(
-                    padding: const EdgeInsets.all(10),
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: Colors.black.withOpacity(0.2), // Transparent background
-                    ),
-                    child: const Icon(
-                      Icons.arrow_back,
-                      color: Colors.white, // White arrow color
-                    ),
-                  ),
-                ),
-
-                SizedBox(width: screenWidth * 0.025), // Space between back button and progress bar
-
-                // Progress bar with increased width
-                const Expanded(
-                  child: LinearProgressIndicator(
-                    value: 0.20, // Progress (next step)
-                    backgroundColor: Colors.grey,
-                    color: Colors.blue, // Progress bar color
-                  ),
-                ),
-              ],
+      body: AnimatedBuilder(
+        animation: _animationController,
+        builder: (context, child) {
+          return Container(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [_colorAnimation1.value!, _colorAnimation2.value!],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
             ),
-          ),
-
-          Expanded(
-            child: SingleChildScrollView(
-              child: Padding(
-                padding: const EdgeInsets.all(20.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.center,
+            child: child,
+          );
+        },
+        child: SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.all(20.0),
+            child: Column(
+              children: [
+                Row(
                   children: [
-                    const Text(
-                      "What keeps you busy during the day?",
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
+                    IconButton(
+                      icon: const Icon(Icons.arrow_back, color: Colors.white),
+                      onPressed: () =>
+                          context.goNamed(RouteNames.questionScreen4),
+                    ),
+                    Expanded(
+                      child: Container(
+                        height: 10,
+                        decoration: BoxDecoration(
+                          color: Colors.white.withOpacity(0.3),
+                          borderRadius: BorderRadius.circular(5),
+                        ),
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(5),
+                          child: const LinearProgressIndicator(
+                            value: 0.20,
+                            backgroundColor: Colors.transparent,
+                            color: Colors.white,
+                          ),
+                        ),
                       ),
                     ),
-                    SizedBox(height: screenHeight * 0.03),
-                    const Text(
-                      "We'd love to know what you do for a living!",
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        fontSize: 16,
-                        color: Colors.grey,
-                      ),
-                    ),
-                    SizedBox(height: screenHeight * 0.05),
-
-                    // Randomly placed emoji options using OptionTile
-                    Wrap(
-                      alignment: WrapAlignment.center,
-                      spacing: 20.0, // Spacing between the options
-                      runSpacing: 20.0,
-                      children: [
-                        OptionTile(
-                          emoji: "🧑‍⚕️",
-                          label: "Doctor",
-                          option: "doctor",
-                          selectedOption: questionnaireProvider.selectedOccupation,
-                          emojiSize: emojiSize,
-                          onSelect: () {
-                            questionnaireProvider.setSelectedOccupation('doctor');
-                          },
-                        ),
-                        OptionTile(
-                          emoji: "👨‍🏫",
-                          label: "Teacher",
-                          option: "teacher",
-                          selectedOption: questionnaireProvider.selectedOccupation,
-                          emojiSize: emojiSize,
-                          onSelect: () {
-                            questionnaireProvider.setSelectedOccupation('teacher');
-                          },
-                        ),
-                        OptionTile(
-                          emoji: "👨‍💻",
-                          label: "Programmer",
-                          option: "programmer",
-                          selectedOption: questionnaireProvider.selectedOccupation,
-                          emojiSize: emojiSize,
-                          onSelect: () {
-                            questionnaireProvider.setSelectedOccupation('programmer');
-                          },
-                        ),
-                        OptionTile(
-                          emoji: "👨‍🌾",
-                          label: "Farmer",
-                          option: "farmer",
-                          selectedOption: questionnaireProvider.selectedOccupation,
-                          emojiSize: emojiSize,
-                          onSelect: () {
-                            questionnaireProvider.setSelectedOccupation('farmer');
-                          },
-                        ),
-                        OptionTile(
-                          emoji: "🎓",
-                          label: "Undergraduate",
-                          option: "undergraduate",
-                          selectedOption: questionnaireProvider.selectedOccupation,
-                          emojiSize: emojiSize,
-                          onSelect: () {
-                            questionnaireProvider.setSelectedOccupation('undergraduate');
-                          },
-                        ),
-                      ],
-                    ),
-                    SizedBox(height: screenHeight * 0.05),
-
-                    const Text(
-                      "Or anything else?",
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        fontSize: 16,
-                        color: Colors.grey,
-                      ),
-                    ),
-                    SizedBox(height: screenHeight * 0.03),
-
-                    // Text input field for other occupations
-                    TextFormField(
+                  ],
+                ),
+                const SizedBox(height: 30),
+                _buildStrokedText("What keeps you busy?", screenWidth * 0.08),
+                const SizedBox(height: 10),
+                Text(
+                  "We'd love to know what you do for a living!",
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: screenWidth * 0.045,
+                    color: Colors.white70,
+                  ),
+                ),
+                const SizedBox(height: 20),
+                Expanded(
+                  child: GridView.count(
+                    crossAxisCount: 2,
+                    crossAxisSpacing: 15,
+                    mainAxisSpacing: 15,
+                    shrinkWrap: true,
+                    children: occupations.entries.map((entry) {
+                      return _buildOccupationCard(
+                        context,
+                        entry.value,
+                        entry.key,
+                        entry.key.toLowerCase(),
+                        questionnaireProvider.selectedOccupation,
+                      );
+                    }).toList(),
+                  ),
+                ),
+                if (questionnaireProvider.selectedOccupation == 'other')
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 20.0),
+                    child: TextFormField(
                       controller: _occupationController,
                       decoration: InputDecoration(
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
                         ),
                         hintText: 'Enter your occupation',
+                        filled: true,
+                        fillColor: Colors.white.withOpacity(0.9),
                       ),
                       onChanged: (value) {
                         questionnaireProvider.setCustomOccupation(value);
                       },
                     ),
-                    SizedBox(height: screenHeight * 0.04),
-
-                    // Continue button
-                    ElevatedButton(
-                      onPressed: questionnaireProvider.isContinueButtonActive
-                          ? () {
-                              context.goNamed(RouteNames.questionScreen6);
-                            }
-                          : null, // Disable button if neither emoji nor text is selected
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.blue, // Blue button color
-                        minimumSize: const Size(double.infinity, 50), // Full-width button
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
+                  ),
+                GestureDetector(
+                  onTap: questionnaireProvider.isContinueButtonActive
+                      ? () => context.goNamed(RouteNames.questionScreen6)
+                      : null,
+                  child: Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.symmetric(vertical: 15),
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [
+                          Colors.blue.withOpacity(0.8),
+                          Colors.purple.withOpacity(0.8)
+                        ],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
                       ),
-                      child: const Text(
-                        "Continue",
-                        style: TextStyle(fontSize: 18),
+                      borderRadius: BorderRadius.circular(15),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.2),
+                          spreadRadius: 1,
+                          blurRadius: 5,
+                          offset: const Offset(0, 3),
+                        ),
+                      ],
+                    ),
+                    child: const Text(
+                      'Continue',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
                       ),
                     ),
-                  ],
+                  ),
                 ),
-              ),
+              ],
             ),
           ),
-        ],
+        ),
       ),
+    );
+  }
+
+  Widget _buildOccupationCard(
+    BuildContext context,
+    String emoji,
+    String label,
+    String option,
+    String? selectedOption,
+  ) {
+    final questionnaireProvider =
+        Provider.of<QuestionnaireProvider>(context, listen: false);
+    final bool isSelected = selectedOption == option;
+
+    return GestureDetector(
+      onTap: () {
+        questionnaireProvider.setSelectedOccupation(option);
+      },
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(15),
+        child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+          child: Container(
+            decoration: BoxDecoration(
+              color: isSelected
+                  ? Colors.blue.withOpacity(0.5)
+                  : Colors.white.withOpacity(0.2),
+              borderRadius: BorderRadius.circular(15),
+              border: Border.all(
+                color: isSelected
+                    ? Colors.blue.shade700
+                    : Colors.white.withOpacity(0.3),
+                width: 3,
+              ),
+            ),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(emoji, style: const TextStyle(fontSize: 40)),
+                const SizedBox(height: 10),
+                Text(
+                  label,
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: isSelected ? Colors.white : Colors.white70,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildStrokedText(String text, double fontSize,
+      {bool isSelected = true}) {
+    return Stack(
+      children: <Widget>[
+        Text(
+          text,
+          textAlign: TextAlign.center,
+          style: TextStyle(
+            fontSize: fontSize,
+            fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+            foreground: Paint()
+              ..style = PaintingStyle.stroke
+              ..strokeWidth = 2
+              ..color = Colors.black,
+          ),
+        ),
+        Text(
+          text,
+          textAlign: TextAlign.center,
+          style: TextStyle(
+            fontSize: fontSize,
+            fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+            color: isSelected ? Colors.white : Colors.white.withOpacity(0.6),
+          ),
+        ),
+      ],
     );
   }
 }

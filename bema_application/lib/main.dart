@@ -2,6 +2,7 @@ import 'package:bema_application/common/config/colors.dart';
 import 'package:bema_application/common/widgets/connectivity_checker.dart';
 import 'package:bema_application/features/authentication/providers/authentication_provider.dart';
 import 'package:bema_application/features/general_questions/providers/questioneer_provider.dart';
+import 'package:bema_application/features/pose_coach/providers/pose_coach_provider.dart';
 import 'package:bema_application/routes/app_router.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
@@ -12,7 +13,12 @@ import 'package:bema_application/features/splash/splash_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await dotenv.load(fileName: ".env");
+  // Try to load .env but don't crash if the file is missing in release/builds
+  try {
+    await dotenv.load(fileName: ".env");
+  } catch (e) {
+    debugPrint(".env not found or failed to load: $e");
+  }
   await Firebase.initializeApp();
 
   runApp(
@@ -21,6 +27,7 @@ void main() async {
         ChangeNotifierProvider(create: (_) => AuthenticationProvider()),
         ChangeNotifierProvider(create: (_) => QuestionnaireProvider()),
         ChangeNotifierProvider(create: (_) => ChatProvider()),
+        ChangeNotifierProvider(create: (_) => PoseCoachProvider()),
       ],
       child: const MyApp(),
     ),

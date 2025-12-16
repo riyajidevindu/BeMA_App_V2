@@ -1,7 +1,8 @@
 import io
+import json
 from groq import Groq
 from gtts import gTTS
-from app.services.chat_service import answer_question
+from services.chat_service import answer_question_with_memory
 
 client = Groq()
 
@@ -46,10 +47,21 @@ async def process_audio_message(audio_data):
         transcribed_text = await transcribe_audio_data(audio_data)
         if transcribed_text:
             print(f"Transcribed text: '{transcribed_text}'")
-            response = await answer_question(question=transcribed_text)
-            response_text = response["parsed"]["answer"] if response.get("parsed") else "Sorry, I couldn't understand that."
-            print(f"Response text: '{response_text}'")
-            audio_response = await text_to_speech(response_text)
+            response = answer_question_with_memory(question=transcribed_text)
+            
+            # Extract only the "answer" part for TTS
+            answer_text = ""
+            if isinstance(response, dict):
+                answer_text = response.get("answer", "")
+            elif isinstance(response, str):
+                try:
+                    response_dict = json.loads(response)
+                    answer_text = response_dict.get("answer", response)
+                except json.JSONDecodeError:
+                    answer_text = response
+            
+            print(f"Answer text for TTS: '{answer_text}'")
+            audio_response = await text_to_speech(answer_text)
             if audio_response:
                 print(f"Audio response generated, size: {len(audio_response)} bytes")
                 return audio_response

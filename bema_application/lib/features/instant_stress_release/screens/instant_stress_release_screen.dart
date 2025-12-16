@@ -14,7 +14,8 @@ class _StressReleaseScreenState extends State<StressReleaseScreen>
   late AnimationController _inhaleController;
   late AnimationController _holdController;
   late AnimationController _exhaleController;
-  late AnimationController _heartbeatController; // Heartbeat animation controller
+  late AnimationController
+      _heartbeatController; // Heartbeat animation controller
   late Animation<double> _inhaleAnimation;
   late Animation<double> _exhaleAnimation;
   late Animation<double> _heartbeatAnimation; // Heartbeat scaling animation
@@ -71,7 +72,9 @@ class _StressReleaseScreenState extends State<StressReleaseScreen>
         setState(() {
           // Cumulative progress bar during exhale phase
           currentProgress = ((currentCycle * totalCycleDuration) +
-                  (inhaleDuration + holdDuration + (_exhaleController.value * exhaleDuration))) /
+                  (inhaleDuration +
+                      holdDuration +
+                      (_exhaleController.value * exhaleDuration))) /
               (totalCycleDuration * selectedCycleCount);
         });
       });
@@ -87,7 +90,8 @@ class _StressReleaseScreenState extends State<StressReleaseScreen>
     // Heartbeat controller for the rhythmic pulsation after relaxation
     _heartbeatController = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 2000), // 1 second for a full heartbeat cycle
+      duration: const Duration(
+          milliseconds: 2000), // 1 second for a full heartbeat cycle
     )..addStatusListener((status) {
         if (status == AnimationStatus.completed) {
           _heartbeatController.reverse();
@@ -148,7 +152,8 @@ class _StressReleaseScreenState extends State<StressReleaseScreen>
   // Increment cycle count (up to a maximum)
   void _incrementCycleCount() {
     setState(() {
-      if (selectedCycleCount < 20) { // Set a reasonable max limit
+      if (selectedCycleCount < 20) {
+        // Set a reasonable max limit
         selectedCycleCount++;
       }
     });
@@ -179,29 +184,26 @@ class _StressReleaseScreenState extends State<StressReleaseScreen>
     final screenHeight = MediaQuery.of(context).size.height;
 
     return Scaffold(
+      backgroundColor: Colors.transparent,
       appBar: AppBar(
-        backgroundColor: backgroundColor,
-        // leading: IconButton(
-        //   icon: const Icon(Icons.arrow_back, color: Color.fromARGB(255, 3, 0, 0)),
-        //   onPressed: () {
-        //     context.pop(); // Go back
-        //   },
-        // ),
+        backgroundColor: Colors.transparent,
         title: const CustomAppBar(showBackButton: true),
-        automaticallyImplyLeading: false
+        automaticallyImplyLeading: false,
+        elevation: 0,
       ),
       body: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           // Add a "Breath Relaxer" heading
           Padding(
-            padding: EdgeInsets.only(top: screenHeight * 0.02), // Reduced padding to reduce the gap
+            padding: EdgeInsets.only(
+                top: screenHeight * 0.02), // Reduced padding to reduce the gap
             child: Text(
               'Breath Relaxer',
               style: TextStyle(
                 fontSize: screenWidth * 0.08, // Responsive text size
                 fontWeight: FontWeight.bold,
-                color: Colors.blueAccent,
+                color: Colors.white,
               ),
             ),
           ),
@@ -209,7 +211,9 @@ class _StressReleaseScreenState extends State<StressReleaseScreen>
           Expanded(
             child: Center(
               child: AnimatedBuilder(
-                animation: relaxationComplete ? _heartbeatController : _inhaleController,
+                animation: relaxationComplete
+                    ? _heartbeatController
+                    : _inhaleController,
                 builder: (context, child) {
                   // Scale the circle based on the current phase (inhale, hold, exhale) or heartbeat animation
                   double circleScale;
@@ -218,26 +222,34 @@ class _StressReleaseScreenState extends State<StressReleaseScreen>
                     circleScale = _heartbeatAnimation.value;
                   } else {
                     // Normal inhale/exhale animation during the cycle
-                    circleScale = (_inhaleController.isAnimating || _holdController.isAnimating)
+                    circleScale = (_inhaleController.isAnimating ||
+                            _holdController.isAnimating)
                         ? _inhaleAnimation.value
                         : _exhaleAnimation.value;
                   }
 
                   // Ensure that the initial and final scale stays consistent
-                  double finalScale = (currentCycle < selectedCycleCount || relaxationComplete) ? circleScale : 1.0;
+                  double finalScale =
+                      (currentCycle < selectedCycleCount || relaxationComplete)
+                          ? circleScale
+                          : 1.0;
 
                   return Stack(
                     alignment: Alignment.center,
                     children: [
                       // Circular Progress Indicator wrapping the expanding circle
                       Transform.scale(
-                        scale: finalScale, // Scale the circle and progress bar together
+                        scale:
+                            finalScale, // Scale the circle and progress bar together
                         child: SizedBox(
-                          width: screenWidth * 0.5, // Responsive size for the circle
+                          width: screenWidth *
+                              0.5, // Responsive size for the circle
                           height: screenWidth * 0.5,
                           child: CircularProgressIndicator(
-                            value: currentProgress, // Continuous progress across stages
-                            strokeWidth: screenWidth * 0.03, // Responsive stroke width
+                            value:
+                                currentProgress, // Continuous progress across stages
+                            strokeWidth:
+                                screenWidth * 0.03, // Responsive stroke width
                             backgroundColor: Colors.grey[300],
                             color: Colors.blueAccent, // Visible progress color
                           ),
@@ -267,9 +279,11 @@ class _StressReleaseScreenState extends State<StressReleaseScreen>
                           child: Center(
                             child: Text(
                               statusText, // Display the status with emoji and text
-                              textAlign: TextAlign.center, // Center the text inside the circle
+                              textAlign: TextAlign
+                                  .center, // Center the text inside the circle
                               style: TextStyle(
-                                fontSize: screenWidth * 0.06, // Responsive text size
+                                fontSize:
+                                    screenWidth * 0.06, // Responsive text size
                                 color: Colors.white,
                                 fontWeight: FontWeight.bold,
                               ),
@@ -292,52 +306,67 @@ class _StressReleaseScreenState extends State<StressReleaseScreen>
                 onPressed: _decrementCycleCount,
                 style: ElevatedButton.styleFrom(
                   shape: const CircleBorder(),
-                  padding: EdgeInsets.all(screenWidth * 0.04), // Responsive padding
+                  padding:
+                      EdgeInsets.all(screenWidth * 0.04), // Responsive padding
                   backgroundColor: Colors.redAccent,
                   shadowColor: Colors.red,
                 ),
-                child: Icon(Icons.remove, color: Colors.white, size: screenWidth * 0.08),
+                child: Icon(Icons.remove,
+                    color: Colors.white, size: screenWidth * 0.08),
               ),
               Padding(
                 padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.1),
                 child: Text(
                   '$selectedCycleCount Cycles', // Display the selected cycle count
-                  style: TextStyle(fontSize: screenWidth * 0.06, fontWeight: FontWeight.bold),
+                  style: TextStyle(
+                      fontSize: screenWidth * 0.06,
+                      fontWeight: FontWeight.bold),
                 ),
               ),
               ElevatedButton(
                 onPressed: _incrementCycleCount,
                 style: ElevatedButton.styleFrom(
                   shape: const CircleBorder(),
-                  padding: EdgeInsets.all(screenWidth * 0.04), // Responsive padding
+                  padding:
+                      EdgeInsets.all(screenWidth * 0.04), // Responsive padding
                   backgroundColor: Colors.greenAccent,
                   shadowColor: Colors.green,
                 ),
-                child: Icon(Icons.add, color: Colors.white, size: screenWidth * 0.08),
+                child: Icon(Icons.add,
+                    color: Colors.white, size: screenWidth * 0.08),
               ),
             ],
           ),
 
-          SizedBox(height: screenHeight * 0.05),
+          SizedBox(height: screenHeight * 0.02), // Reduced spacing
 
           // Enhanced Start Button
-          ElevatedButton(
-            onPressed: () => _startBreathingCycle(),
-            style: ElevatedButton.styleFrom(
-              padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.25, vertical: screenHeight * 0.025),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(30),
+          Padding(
+            padding: EdgeInsets.only(
+                bottom: screenHeight *
+                    0.10), // Added bottom padding to keep it above navbar
+            child: ElevatedButton(
+              onPressed: () => _startBreathingCycle(),
+              style: ElevatedButton.styleFrom(
+                padding: EdgeInsets.symmetric(
+                    horizontal: screenWidth * 0.25,
+                    vertical: screenHeight * 0.025),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(30),
+                ),
+                backgroundColor: Colors.blueAccent, // Button background color
+                shadowColor: Colors.blue, // Shadow color for effect
+                elevation: 10, // Give the button a raised look
               ),
-              backgroundColor: Colors.blueAccent, // Button background color
-              shadowColor: Colors.blue, // Shadow color for effect
-              elevation: 10, // Give the button a raised look
-            ),
-            child: Text(
-              'Start Breathing',
-              style: TextStyle(fontSize: screenWidth * 0.05, fontWeight: FontWeight.bold, color: Colors.white),
+              child: Text(
+                'Start Breathing',
+                style: TextStyle(
+                    fontSize: screenWidth * 0.05,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white),
+              ),
             ),
           ),
-          SizedBox(height: screenHeight * 0.05),
         ],
       ),
     );

@@ -1,3 +1,4 @@
+import 'dart:ui';
 import 'package:bema_application/common/config/colors.dart';
 import 'package:bema_application/common/widgets/app_bar.dart';
 import 'package:flutter/material.dart';
@@ -62,7 +63,8 @@ class _TextGuideScreenState extends State<TextGuideScreen> {
     final steps = [
       {
         "heading": "Prepare Cold Water",
-        "content": "Fill a bowl with cold water and add ice cubes. If unavailable, grab an ice pack or wet cloth."
+        "content":
+            "Fill a bowl with cold water and add ice cubes. If unavailable, grab an ice pack or wet cloth."
       },
       {
         "heading": "Find a Calm Spot",
@@ -74,11 +76,13 @@ class _TextGuideScreenState extends State<TextGuideScreen> {
       },
       {
         "heading": "Apply the Cold",
-        "content": "Submerge your face in the cold water for 10–30 seconds. If using an ice pack, press it gently on your forehead and nose."
+        "content":
+            "Submerge your face in the cold water for 10–30 seconds. If using an ice pack, press it gently on your forehead and nose."
       },
       {
         "heading": "Breathe and Relax",
-        "content": "Focus on slow, deep breaths while applying the cold. Feel your stress melt away."
+        "content":
+            "Focus on slow, deep breaths while applying the cold. Feel your stress melt away."
       },
       {
         "heading": "Repeat if Needed",
@@ -87,10 +91,12 @@ class _TextGuideScreenState extends State<TextGuideScreen> {
     ];
 
     return Scaffold(
+      backgroundColor: Colors.transparent,
       appBar: AppBar(
-        backgroundColor: backgroundColor,
+        backgroundColor: Colors.transparent,
         title: const CustomAppBar(showBackButton: true),
         automaticallyImplyLeading: false,
+        elevation: 0,
       ),
       body: Stack(
         children: [
@@ -107,7 +113,7 @@ class _TextGuideScreenState extends State<TextGuideScreen> {
                     style: TextStyle(
                       fontSize: screenWidth * 0.07,
                       fontWeight: FontWeight.bold,
-                      color: Colors.blueAccent,
+                      color: const Color.fromARGB(255, 187, 74, 179),
                     ),
                     textAlign: TextAlign.center,
                   ),
@@ -144,42 +150,53 @@ class _TextGuideScreenState extends State<TextGuideScreen> {
                   child: Column(
                     children: steps.map((step) {
                       int index = steps.indexOf(step);
-                      return Card(
-                        margin: EdgeInsets.symmetric(vertical: screenHeight * 0.01),
-                        elevation: 4,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(15),
-                        ),
-                        child: ListTile(
-                          leading: CircleAvatar(
-                            backgroundColor: Colors.blueAccent,
-                            child: Text(
-                              "${index + 1}",
-                              style: const TextStyle(color: Colors.white),
+                      return ClipRRect(
+                        borderRadius: BorderRadius.circular(20),
+                        child: BackdropFilter(
+                          filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+                          child: Container(
+                            margin: EdgeInsets.symmetric(
+                                vertical: screenHeight * 0.01),
+                            decoration: BoxDecoration(
+                              color: Colors.white.withOpacity(0.2),
+                              borderRadius: BorderRadius.circular(20),
+                              border: Border.all(
+                                color: Colors.white.withOpacity(0.3),
+                              ),
                             ),
-                          ),
-                          title: RichText(
-                            text: TextSpan(
-                              children: [
-                                TextSpan(
-                                  text: "${step['heading']}\n", // Added extra newline for more space
-                                  style: TextStyle(
-                                    fontSize: screenWidth * 0.045,
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.black,
-                                    height: 2.0,
-                                  ),
+                            child: ListTile(
+                              leading: CircleAvatar(
+                                backgroundColor: Colors.blueAccent,
+                                child: Text(
+                                  "${index + 1}",
+                                  style: const TextStyle(color: Colors.white),
                                 ),
-                                TextSpan(
-                                  text: step['content'],
-                                  style: TextStyle(
-                                    fontSize: screenWidth * 0.04,
-                                    fontWeight: FontWeight.normal,
-                                    color: Colors.black,
-                                    height: 1.4,
-                                  ),
+                              ),
+                              title: RichText(
+                                text: TextSpan(
+                                  children: [
+                                    TextSpan(
+                                      text:
+                                          "${step['heading']}\n", // Added extra newline for more space
+                                      style: TextStyle(
+                                        fontSize: screenWidth * 0.045,
+                                        fontWeight: FontWeight.bold,
+                                        color: const Color.fromARGB(255, 3, 125, 62),
+                                        height: 2.0,
+                                      ),
+                                    ),
+                                    TextSpan(
+                                      text: step['content'],
+                                      style: TextStyle(
+                                        fontSize: screenWidth * 0.04,
+                                        fontWeight: FontWeight.normal,
+                                        color: const Color.fromARGB(179, 9, 2, 32),
+                                        height: 1.4,
+                                      ),
+                                    ),
+                                  ],
                                 ),
-                              ],
+                              ),
                             ),
                           ),
                         ),
@@ -192,7 +209,7 @@ class _TextGuideScreenState extends State<TextGuideScreen> {
           ),
           if (_showDownArrow)
             Positioned(
-              bottom: 16,
+              bottom: 76,
               right: 16,
               child: FloatingActionButton(
                 onPressed: _scrollToBottom,

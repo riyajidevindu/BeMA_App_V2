@@ -12,6 +12,7 @@ class CustomTextFieldUB extends StatefulWidget {
   final String? Function(String?) validation;
   final TextInputType inputType;
   final bool enabled;
+  final Color textColor;
 
   const CustomTextFieldUB({
     super.key,
@@ -23,6 +24,7 @@ class CustomTextFieldUB extends StatefulWidget {
     required this.validation,
     required this.inputType,
     required this.enabled,
+    this.textColor = backgroundColor,
   });
 
   @override
@@ -43,13 +45,13 @@ class _CustomTextFieldUBState extends State<CustomTextFieldUB> {
         keyboardType: widget.inputType,
         obscureText: widget.isObscureText ? obscureText : false,
         validator: widget.validation,
-        cursorColor: backgroundColor,
+        cursorColor: widget.textColor,
         decoration: InputDecoration(
           border: const UnderlineInputBorder(
             borderSide: BorderSide(color: primaryColor),
           ),
-          focusedBorder: const UnderlineInputBorder(
-            borderSide: BorderSide(color: textColor),
+          focusedBorder: UnderlineInputBorder(
+            borderSide: BorderSide(color: widget.textColor),
           ),
           enabledBorder: const UnderlineInputBorder(
             borderSide: BorderSide(color: primaryColor),
@@ -58,25 +60,25 @@ class _CustomTextFieldUBState extends State<CustomTextFieldUB> {
             borderSide: BorderSide(color: Colors.red),
           ),
           labelText: widget.labelText,
-          labelStyle: const TextStyle(color: backgroundColor),
+          labelStyle: TextStyle(color: widget.textColor),
           hintText: widget.hintText,
           hintStyle: const TextStyle(color: placeholderColor),
           prefixIcon: Icon(
             widget.prefixIcon,
-            color: backgroundColor,
+            color: widget.textColor,
           ),
           suffixIcon: widget.isObscureText
               ? Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 4),
                   child: IconButton(
                     icon: showIcon
-                        ? const Icon(
+                        ? Icon(
                             Icons.visibility_off,
-                            color: backgroundColor,
+                            color: widget.textColor,
                           )
-                        : const Icon(
+                        : Icon(
                             Icons.visibility,
-                            color: backgroundColor,
+                            color: widget.textColor,
                           ),
                     onPressed: () {
                       setState(() {
@@ -88,7 +90,7 @@ class _CustomTextFieldUBState extends State<CustomTextFieldUB> {
                 )
               : null,
         ),
-        style: const TextStyle(color: backgroundColor),
+        style: TextStyle(color: widget.textColor),
       ),
     );
   }

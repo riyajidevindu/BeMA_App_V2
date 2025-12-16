@@ -1,7 +1,7 @@
+import 'dart:ui';
 import 'package:bema_application/features/general_questions/providers/questioneer_provider.dart';
 import 'package:bema_application/routes/route_names.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
@@ -12,161 +12,241 @@ class QuestionScreen2 extends StatefulWidget {
   _QuestionScreen2State createState() => _QuestionScreen2State();
 }
 
-class _QuestionScreen2State extends State<QuestionScreen2> {
-  final FocusNode _focusNode = FocusNode();
-  final TextEditingController _ageController = TextEditingController();
+class _QuestionScreen2State extends State<QuestionScreen2>
+    with SingleTickerProviderStateMixin {
+  late int _age;
+  late FixedExtentScrollController _scrollController;
+  late AnimationController _animationController;
+  late Animation<Color?> _colorAnimation1;
+  late Animation<Color?> _colorAnimation2;
 
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      FocusScope.of(context).requestFocus(_focusNode);
-    });
+    _age = Provider.of<QuestionnaireProvider>(context, listen: false).age ?? 25;
+    _scrollController = FixedExtentScrollController(initialItem: _age - 1);
+
+    _animationController = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 5),
+    )..repeat(reverse: true);
+
+    _colorAnimation1 = ColorTween(
+      begin: Colors.lightBlue.shade200,
+      end: Colors.purple.shade200,
+    ).animate(_animationController);
+
+    _colorAnimation2 = ColorTween(
+      begin: Colors.purple.shade200,
+      end: Colors.lightBlue.shade200,
+    ).animate(_animationController);
   }
 
   @override
   void dispose() {
-    _focusNode.dispose();
-    _ageController.dispose();
+    _animationController.dispose();
+    _scrollController.dispose();
     super.dispose();
   }
 
-  // Method to update the age in the provider
-  void _updateAge(BuildContext context) {
-    final questionnaireProvider = Provider.of<QuestionnaireProvider>(context, listen: false);
-    final age = int.tryParse(_ageController.text) ?? 0;
-
-    if (age > 100) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Age cannot be greater than 100.'),
-        ),
-      );
-      _ageController.clear();
-      questionnaireProvider.setAge(null); // Reset age in provider if invalid
-    } else {
-      questionnaireProvider.setAge(age); // Update age in the provider
-    }
+  void _updateAge(int newAge) {
+    final questionnaireProvider =
+        Provider.of<QuestionnaireProvider>(context, listen: false);
+    setState(() {
+      _age = newAge;
+    });
+    questionnaireProvider.setAge(newAge);
   }
 
   @override
   Widget build(BuildContext context) {
-    // Access the provider to get the current age value (if previously entered)
-    final questionnaireProvider = Provider.of<QuestionnaireProvider>(context);
-    final age = questionnaireProvider.age;
-
-    // Pre-fill the age controller with the provider value if available
-    if (age != null) {
-      _ageController.text = age.toString();
-    }
-
     return Scaffold(
-      backgroundColor: const Color(0xFFE6F0FF), // Light blue background
-      resizeToAvoidBottomInset: true, // Ensure screen resizes for keyboard
-      body: SingleChildScrollView( // Make the entire content scrollable
-        child: Padding(
-          padding: EdgeInsets.only(
-            left: 20.0,
-            right: 20.0,
-            bottom: MediaQuery.of(context).viewInsets.bottom + 20, // Adjust bottom padding for keyboard
-            top: 20.0,
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              const SizedBox(height: 50), // Add padding to push content down
-              const LinearProgressIndicator(
-                value: 0.05, 
-                backgroundColor: Colors.grey,
-                color: Colors.blue, // Blue progress
-              ),
-              const SizedBox(height: 30), // Padding after progress bar
-              const Text(
-                "How young are you?",
-                style: TextStyle(
-                  fontSize: 24,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              const SizedBox(height: 20), // Padding after heading
-              TextFormField(
-                controller: _ageController,
-                focusNode: _focusNode,
-                decoration: InputDecoration(
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  hintText: 'Enter your age',
-                ),
-                keyboardType: TextInputType.number,
-                inputFormatters: [
-                  FilteringTextInputFormatter.digitsOnly, // Only allow digits
-                ],
-                onChanged: (value) {
-                  // Validate and update age in provider
-                  _updateAge(context);
-                },
-              ),
-              const SizedBox(height: 20), // Padding after input field
-              if (age != null) ...[
-                Text(
-                  '$age years old',
-                  style: const TextStyle(
-                    fontSize: 16,
-                    color: Colors.black,
+      body: LayoutBuilder(
+        builder: (context, constraints) {
+          final double screenHeight = constraints.maxHeight;
+          final double screenWidth = constraints.maxWidth;
+
+          return AnimatedBuilder(
+            animation: _animationController,
+            builder: (context, child) {
+              return Container(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [_colorAnimation1.value!, _colorAnimation2.value!],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
                   ),
                 ),
-                const SizedBox(height: 20), // Padding after formatted age
-              ],
-              const Text(
-                "We'd love to know your age so we can better understand your journey!",
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: 16,
-                  color: Colors.grey,
-                ),
-              ),
-              const SizedBox(height: 40), // Padding after description
-              const Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text("👶", style: TextStyle(fontSize: 40)), // Child emoji
-                  SizedBox(width: 20),
-                  Text("👨", style: TextStyle(fontSize: 40)), // Adult male emoji
-                  SizedBox(width: 20),
-                  Text("👴", style: TextStyle(fontSize: 40)), // Elderly man emoji
-                ],
-              ),
-              const SizedBox(height: 40), // Padding before button
-              ElevatedButton(
-                onPressed: () {
-                  if (age != null && age > 0) {
-                    context.goNamed(RouteNames.questionScreen3);
-                  } else {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text('Please enter a valid age.'),
+                child: child,
+              );
+            },
+            child: SafeArea(
+              child: Padding(
+                padding: const EdgeInsets.all(20.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    Row(
+                      children: [
+                        IconButton(
+                          icon: const Icon(Icons.arrow_back, color: Colors.white),
+                          onPressed: () {
+                            context.goNamed(RouteNames.userWelcomeScreen);
+                          },
+                        ),
+                        Expanded(
+                          child: Container(
+                            height: 10,
+                            decoration: BoxDecoration(
+                              color: Colors.white.withOpacity(0.3),
+                              borderRadius: BorderRadius.circular(5),
+                            ),
+                            child: ClipRRect(
+                              borderRadius: BorderRadius.circular(5),
+                              child: const LinearProgressIndicator(
+                                value: 0.05,
+                                backgroundColor: Colors.transparent,
+                                color: Colors.white,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 30),
+                    _buildStrokedText(
+                        "🎂 How young are you?", screenWidth * 0.08),
+                    const SizedBox(height: 10),
+                    Text(
+                      "This helps us tailor your journey!",
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontSize: screenWidth * 0.045,
+                        color: Colors.white70,
                       ),
-                    );
-                  }
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.blue, // Blue button color
-                  minimumSize: const Size(double.infinity, 50), // Full-width button
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                ),
-                child: const Text(
-                  "Continue",
-                  style: TextStyle(fontSize: 18),
+                    ),
+                    Expanded(
+                      flex: 10,
+                      child: Padding(
+                        padding: const EdgeInsets.only(right: 35.0),
+                        child: Image.asset(
+                          'assets/age_asking.png',
+                          fit: BoxFit.contain,
+                        ),
+                      ),
+                    ),
+                    _buildAgePicker(),
+                    const Spacer(flex: 2),
+                    GestureDetector(
+                      onTap: () {
+                        context.goNamed(RouteNames.questionScreen3);
+                      },
+                      child: Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.symmetric(vertical: 15),
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            colors: [
+                              Colors.blue.withOpacity(0.8),
+                              Colors.purple.withOpacity(0.8)
+                            ],
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                          ),
+                          borderRadius: BorderRadius.circular(15),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.2),
+                              spreadRadius: 1,
+                              blurRadius: 5,
+                              offset: const Offset(0, 3),
+                            ),
+                          ],
+                        ),
+                        child: const Text(
+                          'Continue',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ),
-              const SizedBox(height: 20), // Padding after button
-            ],
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _buildAgePicker() {
+    return SizedBox(
+      height: 150,
+      child: RotatedBox(
+        quarterTurns: -1,
+        child: ListWheelScrollView.useDelegate(
+          controller: _scrollController,
+          itemExtent: 80,
+          perspective: 0.005,
+          diameterRatio: 1.5,
+          physics: const FixedExtentScrollPhysics(),
+          onSelectedItemChanged: (index) {
+            _updateAge(index + 1);
+          },
+          childDelegate: ListWheelChildBuilderDelegate(
+            childCount: 100,
+            builder: (context, index) {
+              final isSelected = index + 1 == _age;
+              return RotatedBox(
+                quarterTurns: 1,
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 200),
+                  alignment: Alignment.center,
+                  child: _buildStrokedText(
+                    '${index + 1}',
+                    isSelected ? 60 : 42,
+                    isSelected: isSelected,
+                  ),
+                ),
+              );
+            },
           ),
         ),
       ),
+    );
+  }
+
+  Widget _buildStrokedText(String text, double fontSize,
+      {bool isSelected = true}) {
+    return Stack(
+      children: <Widget>[
+        // Stroked text as border.
+        Text(
+          text,
+          style: TextStyle(
+            fontSize: fontSize,
+            fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+            foreground: Paint()
+              ..style = PaintingStyle.stroke
+              ..strokeWidth = 2
+              ..color = Colors.black,
+          ),
+        ),
+        // Solid text as fill.
+        Text(
+          text,
+          style: TextStyle(
+            fontSize: fontSize,
+            fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+            color: isSelected ? Colors.white : Colors.white.withOpacity(0.6),
+          ),
+        ),
+      ],
     );
   }
 }

@@ -1,20 +1,31 @@
 import 'package:bema_application/features/authentication/data/models/login_result.dart';
+import 'package:bema_application/features/authentication/data/models/profile_service.dart';
+import 'package:bema_application/features/authentication/data/models/user_model.dart';
 import 'package:bema_application/features/authentication/data/service/auth_service.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
-
 class AuthenticationProvider extends ChangeNotifier {
   //String? userType;
   User? firebaseUser;
+  UserModel? user;
 
   // FirebaseAuth instance
   final FirebaseAuth _auth = FirebaseAuth.instance;
 
   final _authService = AuthService();
+  final profileService = ProfileService();
 
   AuthenticationProvider() {
-    //getType();
+    refreshUser();
+  }
+
+  Future<void> refreshUser() async {
+    firebaseUser = _auth.currentUser;
+    if (firebaseUser != null) {
+      user = await profileService.getUser(firebaseUser!.uid);
+    }
+    notifyListeners();
   }
 
   // Retrieve user type from shared preferences
@@ -43,7 +54,7 @@ class AuthenticationProvider extends ChangeNotifier {
         password: password,
       );
       firebaseUser = result.user;
-
+      await refreshUser();
       notifyListeners();
       return AuthResult(isSuccess: true, message: 'Login Successful');
     } catch (e) {
@@ -83,8 +94,18 @@ class AuthenticationProvider extends ChangeNotifier {
       );
       firebaseUser = result.user;
       if (result.user != null) {
-        await _authService.storeUser(
-            result.user!, name);
+        // Store user in Firestore and check if it succeeds
+        AuthResult storeResult =
+            await _authService.storeUser(result.user!, name);
+
+        if (!storeResult.isSuccess) {
+          // If Firestore write failed, delete the Firebase Auth user
+          await result.user!.delete();
+          notifyListeners();
+          return AuthResult(
+              isSuccess: false,
+              message: 'Registration failed: ${storeResult.message}');
+        }
       }
       notifyListeners();
       return AuthResult(isSuccess: true, message: 'User Registered');

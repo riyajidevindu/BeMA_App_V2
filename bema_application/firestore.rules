@@ -1,0 +1,23 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Allow authenticated users to read and write their own user document
+    match /AppUsers/{userId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+    
+    // Allow users to read and write their own workout sessions
+    match /users/{userId}/workoutSessions/{sessionId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+    
+    // You can add more rules for other collections here
+    // For example, if you have other collections:
+    
+    // match /otherCollection/{document=**} {
+    //   allow read, write: if request.auth != null;
+    // }
+  }
+}

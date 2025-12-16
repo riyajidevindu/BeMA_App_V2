@@ -4,12 +4,16 @@
   <uses-permission android:name="android.permission.RECORD_AUDIO"/>
   <!-- Optional: Add this permission if you want to use bluetooth telephony device like headset/earbuds -->
   <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />
-  <!-- Optional: Add this permission if you want to save your recordings in public folders -->
+  <!-- Storage permissions for saving videos to gallery -->
   <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+  <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+  <!-- For Android 13+ (API 33+) media permissions -->
+  <uses-permission android:name="android.permission.READ_MEDIA_VIDEO" />
+  <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
   <uses-permission android:name="android.permission.CAMERA" />
   <uses-feature android:name="android.hardware.camera.ar" />
     <application
-        android:label="bema_application"
+        android:label="BeMA"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher"
         android:usesCleartextTraffic="true">

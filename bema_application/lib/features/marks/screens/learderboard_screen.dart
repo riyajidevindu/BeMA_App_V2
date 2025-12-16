@@ -1,3 +1,4 @@
+import 'dart:ui';
 import 'package:bema_application/common/config/colors.dart';
 import 'package:bema_application/common/widgets/app_bar.dart';
 import 'package:bema_application/common/widgets/progress_indicator/custom_progress_indicator.dart';
@@ -19,6 +20,8 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
   double totalDailyMarks = 100; // Total marks for the day
   double totalMonthlyMarks = 100; // Total marks for the month
   List<TaskModel> dailyTasks = [];
+  List<TaskModel> filteredTasks = [];
+  String selectedFilter = 'All';
   final PageController _pageController = PageController();
   bool isLoading = true;
 
@@ -40,6 +43,7 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
         monthlyPoints = taskSummary['monthlyPoints'];
         totalMonthlyMarks = taskSummary['monthlyTotalPoints'];
         isLoading = false; // Stop loading when data is ready
+        filterTasks(); // Initial filter
       });
     } catch (error) {
       debugPrint("Error fetching task summary: $error");
@@ -47,120 +51,141 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
     }
   }
 
+  void filterTasks() {
+    if (selectedFilter == 'All') {
+      filteredTasks = dailyTasks;
+    } else if (selectedFilter == 'Completed') {
+      filteredTasks = dailyTasks.where((task) => task.completed).toList();
+    } else {
+      filteredTasks = dailyTasks.where((task) => !task.completed).toList();
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    // Define responsive text and padding sizes
-    final screenWidth = MediaQuery.of(context).size.width;
-    final fontSizeTitle = screenWidth * 0.045;
-    final fontSizePoints = screenWidth * 0.055;
-    final iconSize = screenWidth * 0.08;
-
     return Scaffold(
-      backgroundColor: backgroundColor,
+      backgroundColor: Colors.transparent,
       appBar: AppBar(
-        backgroundColor: backgroundColor,
+        backgroundColor: Colors.transparent,
         title: const CustomAppBar(),
         automaticallyImplyLeading: false,
         elevation: 0,
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          children: [
-            // Points Display (Daily and Monthly) with Arrow Indicators
-            Stack(
-              alignment: Alignment.center,
+      body: LayoutBuilder(
+        builder: (context, constraints) {
+          // Define responsive text and padding sizes
+          final screenWidth = constraints.maxWidth;
+          final fontSizeTitle = screenWidth * 0.045;
+          final fontSizePoints = screenWidth * 0.055;
+          final iconSize = screenWidth * 0.08;
+
+          return Padding(
+            padding:
+                const EdgeInsets.symmetric(horizontal: 24.0, vertical: 16.0),
+            child: Column(
               children: [
-                SizedBox(
-                  height: 100,
-                  child: PageView(
-                    controller: _pageController,
-                    scrollDirection: Axis.horizontal,
-                    children: [
-                      buildPointsBox(
-                          "Daily Points",
-                          "$dailyPoints / $totalDailyMarks",
-                          fontSizeTitle,
-                          fontSizePoints),
-                      buildPointsBox(
-                          "Monthly Points",
-                          "$monthlyPoints / $totalMonthlyMarks",
-                          fontSizeTitle,
-                          fontSizePoints),
-                    ],
-                  ),
+                // Points Display (Daily and Monthly) with Arrow Indicators
+                Stack(
+                  alignment: Alignment.center,
+                  children: [
+                    SizedBox(
+                      height: constraints.maxHeight * 0.2,
+                      child: PageView(
+                        controller: _pageController,
+                        scrollDirection: Axis.horizontal,
+                        children: [
+                          buildPointsBox(
+                              "Daily Points",
+                              "$dailyPoints / $totalDailyMarks",
+                              fontSizeTitle,
+                              fontSizePoints),
+                          buildPointsBox(
+                              "Monthly Points",
+                              "$monthlyPoints / $totalMonthlyMarks",
+                              fontSizeTitle,
+                              fontSizePoints),
+                        ],
+                      ),
+                    ),
+                    Positioned(
+                      left: 0,
+                      child: IconButton(
+                        icon: const Icon(Icons.arrow_back_ios,
+                            color: Colors.blueAccent, size: 24),
+                        onPressed: () {
+                          _pageController.previousPage(
+                            duration: const Duration(milliseconds: 300),
+                            curve: Curves.easeInOut,
+                          );
+                        },
+                      ),
+                    ),
+                    Positioned(
+                      right: 0,
+                      child: IconButton(
+                        icon: const Icon(Icons.arrow_forward_ios,
+                            color: Colors.blueAccent, size: 24),
+                        onPressed: () {
+                          _pageController.nextPage(
+                            duration: const Duration(milliseconds: 300),
+                            curve: Curves.easeInOut,
+                          );
+                        },
+                      ),
+                    ),
+                  ],
                 ),
-                Positioned(
-                  left: 0,
-                  child: IconButton(
-                    icon: const Icon(Icons.arrow_back_ios,
-                        color: Colors.blueAccent, size: 24),
-                    onPressed: () {
-                      _pageController.previousPage(
-                        duration: const Duration(milliseconds: 300),
-                        curve: Curves.easeInOut,
-                      );
-                    },
-                  ),
-                ),
-                Positioned(
-                  right: 0,
-                  child: IconButton(
-                    icon: const Icon(Icons.arrow_forward_ios,
-                        color: Colors.blueAccent, size: 24),
-                    onPressed: () {
-                      _pageController.nextPage(
-                        duration: const Duration(milliseconds: 300),
-                        curve: Curves.easeInOut,
-                      );
-                    },
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 20),
+                const SizedBox(height: 20),
 
-            // Task List
-            Expanded(
-              child: isLoading
-                  ? const Center(child: CustomProgressIndicator())
-                  : ListView.builder(
-                      itemCount: dailyTasks.length,
-                      itemBuilder: (context, index) {
-                        TaskModel task = dailyTasks[index];
-                        double progress = task.completed
-                            ? 1.0
-                            : (task.total != null && task.total! > 0)
-                                ? (task.progress / task.total!).clamp(0, 1)
-                                : 0;
+                // Filter Section
+                buildFilterSection(),
+                const SizedBox(height: 20),
 
-                        // Calculate marks for the task
-                        double taskMarks = (totalDailyMarks / dailyTasks.length)
-                                .isNaN
-                            ? 0.0
-                            : (totalDailyMarks / dailyTasks.length);
-                        double obtainedMarks = task.completed
-                            ? taskMarks
-                            : (task.progress / (task.total ?? 1) * taskMarks)
+                // Task List
+                Expanded(
+                  child: isLoading
+                      ? const Center(child: CustomProgressIndicator())
+                      : ListView.builder(
+                          itemCount: filteredTasks.length,
+                          itemBuilder: (context, index) {
+                            TaskModel task = filteredTasks[index];
+                            double progress = task.completed
+                                ? 1.0
+                                : (task.total != null && task.total! > 0)
+                                    ? (task.progress / task.total!)
+                                        .clamp(0, 1)
+                                    : 0;
+
+                            // Calculate marks for the task
+                            double taskMarks =
+                                (totalDailyMarks / dailyTasks.length).isNaN
+                                    ? 0.0
+                                    : (totalDailyMarks / dailyTasks.length);
+                            double obtainedMarks = task.completed
+                                ? taskMarks
+                                : (task.progress / (task.total ?? 1) *
+                                        taskMarks)
                                     .isNaN
                                 ? 0.0
                                 : (task.progress / (task.total ?? 1) *
                                     taskMarks);
 
-                        return buildAchievementRow(
-                          task.title,
-                          "${obtainedMarks.toStringAsFixed(1)} / ${taskMarks.toStringAsFixed(1)}",
-                          progress,
-                          task.icon,
-                          task.completed,
-                          fontSizeTitle,
-                          iconSize,
-                        );
-                      },
-                    ),
+                            return buildAchievementRow(
+                              task.title,
+                              "${obtainedMarks.toStringAsFixed(1)} / ${taskMarks.toStringAsFixed(1)}",
+                              progress,
+                              task.icon,
+                              task.completed,
+                              fontSizeTitle,
+                              iconSize,
+                            );
+                          },
+                        ),
+                ),
+              ],
             ),
-          ],
-        ),
+          );
+        },
       ),
     );
   }
@@ -168,45 +193,47 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
   /// Responsive points box with dynamic font size
   Widget buildPointsBox(String title, String pointsText, double fontSizeTitle,
       double fontSizePoints) {
-    return Container(
-      padding: const EdgeInsets.all(20.0),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [Colors.blueGrey.withOpacity(0.3), Colors.blueGrey.withOpacity(0.1)],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(20),
+      child: BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+        child: Container(
+          padding: const EdgeInsets.all(20.0),
+          decoration: BoxDecoration(
+            color: Colors.white.withOpacity(0.2),
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(
+              color: Colors.black,
+              width: 2,
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.blue.withOpacity(0.3),
+                spreadRadius: 0,
+                blurRadius: 4,
+                offset: const Offset(0, 2),
+              ),
+            ],
+          ),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              _buildStrokedText(
+                title,
+                fontSizeTitle,
+              ),
+              const SizedBox(height: 5),
+              Text(
+                pointsText,
+                style: TextStyle(
+                  fontSize: fontSizePoints,
+                  fontWeight: FontWeight.bold,
+                  color: const Color.fromARGB(255, 98, 7, 202),
+                ),
+              ),
+            ],
+          ),
         ),
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: const [
-          BoxShadow(
-            color: Colors.black12,
-            spreadRadius: 1,
-            blurRadius: 8,
-            offset: Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Text(
-            title,
-            style: TextStyle(
-              fontSize: fontSizeTitle,
-              fontWeight: FontWeight.w600,
-              color: Colors.blueGrey,
-            ),
-          ),
-          const SizedBox(height: 5),
-          Text(
-            pointsText,
-            style: TextStyle(
-              fontSize: fontSizePoints,
-              fontWeight: FontWeight.bold,
-              color: Colors.black87,
-            ),
-          ),
-        ],
       ),
     );
   }
@@ -216,84 +243,94 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
       IconData icon, bool completed, double fontSizeTitle, double iconSize) {
     int progressPercentage = (progress * 100).round();
 
-    return Container(
-      margin: const EdgeInsets.symmetric(vertical: 8.0),
-      padding: const EdgeInsets.all(16.0),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(15),
-        border: Border.all(color: completed ? Colors.green : Colors.blueGrey, width: 1.5),
-        boxShadow: const [
-          BoxShadow(
-            color: Colors.black12,
-            blurRadius: 10,
-            spreadRadius: 1,
-            offset: Offset(0, 5),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Icon(icon, color: Colors.blueAccent, size: iconSize),
-              const SizedBox(width: 10),
-              Expanded(
-                child: Text(
-                  title,
-                  style: TextStyle(
-                    color: Colors.black87,
-                    fontSize: fontSizeTitle,
-                    fontWeight: FontWeight.w600,
-                  ),
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ),
-              const SizedBox(width: 10),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                decoration: BoxDecoration(
-                  color: completed ? Colors.green : Colors.orangeAccent,
-                  borderRadius: BorderRadius.circular(6),
-                ),
-                child: Text(
-                  completed ? 'Completed' : marksText,
-                  style: const TextStyle(
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
-                  ),
-                ),
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(20),
+      child: BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+        child: Container(
+          margin: const EdgeInsets.symmetric(vertical: 12.0),
+          padding: const EdgeInsets.all(16.0),
+          decoration: BoxDecoration(
+            color: Colors.white.withOpacity(0.2),
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(
+              color: const Color.fromARGB(255, 1, 81, 146),
+              width: 2,
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.lightBlue.withOpacity(0.3),
+                spreadRadius: 0,
+                blurRadius: 4,
+                offset: const Offset(0, 2),
               ),
             ],
           ),
-          const SizedBox(height: 12),
-          LinearProgressIndicator(
-            value: progress,
-            backgroundColor: Colors.grey[200],
-            valueColor: AlwaysStoppedAnimation<Color>(getProgressColor(progress)),
-            minHeight: 8,
-          ),
-          const SizedBox(height: 8),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text(
-                '0%',
-                style: TextStyle(fontSize: 12, color: Colors.grey),
+              Row(
+                children: [
+                  Icon(icon, color: const Color.fromARGB(255, 209, 3, 99), size: iconSize),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: _buildStrokedText(
+                      title,
+                      fontSizeTitle,
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  Container(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: completed
+                          ? const Color.fromARGB(255, 35, 230, 42).withOpacity(0.5)
+                          : const Color.fromARGB(255, 255, 220, 64).withOpacity(0.5),
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                    child: Text(
+                      completed ? 'Completed' : marksText,
+                      style: const TextStyle(
+                        fontWeight: FontWeight.bold,
+                        color: Color.fromARGB(255, 23, 8, 230),
+                      ),
+                    ),
+                  ),
+                ],
               ),
-              Text(
-                '$progressPercentage%',
-                style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.black87),
+              const SizedBox(height: 12),
+              LinearProgressIndicator(
+                value: progress,
+                backgroundColor: Colors.white.withOpacity(0.3),
+                valueColor:
+                    AlwaysStoppedAnimation<Color>(getProgressColor(progress)),
+                minHeight: 8,
               ),
-              const Text(
-                '100%',
-                style: TextStyle(fontSize: 12, color: Colors.grey),
+              const SizedBox(height: 8),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Text(
+                    '0%',
+                    style: TextStyle(fontSize: 12, color: Color.fromARGB(179, 236, 15, 15)),
+                  ),
+                  Text(
+                    '$progressPercentage%',
+                    style: const TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold,
+                        color: Color.fromARGB(255, 3, 15, 180)),
+                  ),
+                  const Text(
+                    '100%',
+                    style: TextStyle(fontSize: 12, color: Color.fromARGB(179, 25, 109, 4)),
+                  ),
+                ],
               ),
             ],
           ),
-        ],
+        ),
       ),
     );
   }
@@ -301,8 +338,83 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
   /// Color based on progress for the progress bar
   Color getProgressColor(double progress) {
     if (progress >= 0.7) {
-      return Colors.green;
-    } else if (progress >= 0.3) return Colors.blue;
-    else return Colors.redAccent;
+      return const Color.fromARGB(255, 20, 133, 24);
+    } else if (progress >= 0.3) {
+      return Colors.blue;
+    } else {
+      return const Color.fromARGB(255, 170, 39, 39);
+    }
+  }
+
+  Widget buildFilterSection() {
+    return Wrap(
+      spacing: 8.0,
+      runSpacing: 4.0,
+      alignment: WrapAlignment.center,
+      children: [
+        buildFilterChip('All'),
+        buildFilterChip('Completed'),
+        buildFilterChip('Incomplete'),
+      ],
+    );
+  }
+
+  Widget buildFilterChip(String filter) {
+    bool isSelected = selectedFilter == filter;
+    return GestureDetector(
+      onTap: () {
+        setState(() {
+          selectedFilter = filter;
+          filterTasks();
+        });
+      },
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        decoration: BoxDecoration(
+          color: isSelected ? Colors.blueAccent : Colors.white.withOpacity(0.2),
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(
+            color: isSelected ? Colors.white : Colors.black,
+            width: 2,
+          ),
+        ),
+        child: Text(
+          filter,
+          style: TextStyle(
+            color: Colors.white,
+            fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildStrokedText(String text, double fontSize,
+      {bool isSelected = true}) {
+    return Stack(
+      children: <Widget>[
+        // Stroked text as border.
+        Text(
+          text,
+          style: TextStyle(
+            fontSize: fontSize,
+            fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+            foreground: Paint()
+              ..style = PaintingStyle.stroke
+              ..strokeWidth = 2
+              ..color = Colors.black,
+          ),
+        ),
+        // Solid text as fill.
+        Text(
+          text,
+          style: TextStyle(
+            fontSize: fontSize,
+            fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+            color: isSelected ? const Color.fromARGB(255, 227, 217, 243) : Colors.white.withOpacity(0.7),
+          ),
+        ),
+      ],
+    );
   }
 }

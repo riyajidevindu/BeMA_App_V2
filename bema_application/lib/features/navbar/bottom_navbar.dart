@@ -1,3 +1,5 @@
+import 'dart:ui';
+import 'package:animated_background/animated_background.dart';
 import 'package:bema_application/common/config/colors.dart';
 import 'package:bema_application/features/home/screens/home_screen.dart';
 import 'package:bema_application/features/intermediate_screens/screens/relax_section_screen.dart';
@@ -14,7 +16,8 @@ class BNavbarScreen extends StatefulWidget {
   State<BNavbarScreen> createState() => _BNavbarScreenState();
 }
 
-class _BNavbarScreenState extends State<BNavbarScreen> {
+class _BNavbarScreenState extends State<BNavbarScreen>
+    with TickerProviderStateMixin {
   late int _selectedIndex;
 
   @override
@@ -49,14 +52,45 @@ class _BNavbarScreenState extends State<BNavbarScreen> {
   }
 
   @override
+  void dispose() {
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: backgroundColor,
-      body: _widgetOptions.elementAt(_selectedIndex), // Load the selected screen dynamically
-      bottomNavigationBar: Container(
-        margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-        decoration: BoxDecoration(
-          color: Colors.white,
+      extendBody: true,
+      backgroundColor: Colors.transparent,
+      body: Stack(
+        children: [
+          Container(
+            color: Colors.lightBlue.shade100,
+          ),
+          AnimatedBackground(
+            behaviour: RandomParticleBehaviour(
+              options: const ParticleOptions(
+                baseColor: Colors.white,
+                spawnOpacity: 0.0,
+                opacityChangeRate: 0.25,
+                minOpacity: 0.1,
+                maxOpacity: 0.4,
+                spawnMinSpeed: 30.0,
+                spawnMaxSpeed: 70.0,
+                spawnMinRadius: 7.0,
+                spawnMaxRadius: 15.0,
+                particleCount: 50,
+              ),
+            ),
+            vsync: this,
+            child: _widgetOptions.elementAt(_selectedIndex),
+          ),
+        ],
+      ),
+      bottomNavigationBar: SafeArea(
+        child: Container(
+          margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+          decoration: BoxDecoration(
+            color: Colors.white,
           borderRadius: BorderRadius.circular(30),
           boxShadow: [
             BoxShadow(
@@ -106,7 +140,7 @@ class _BNavbarScreenState extends State<BNavbarScreen> {
           elevation: 10, // Add some elevation to give a floating effect
           borderRadius: const Radius.circular(30),
         ),
-      ),
+      )),
     );
   }
 }

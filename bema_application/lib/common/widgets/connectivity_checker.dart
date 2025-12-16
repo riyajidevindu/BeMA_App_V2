@@ -11,7 +11,7 @@ class ConnectivityCheck extends StatefulWidget {
 }
 
 class _ConnectivityCheckState extends State<ConnectivityCheck> {
-  late Stream<ConnectivityResult> _connectivityStream;
+  late Stream<List<ConnectivityResult>> _connectivityStream;
 
   @override
   void initState() {
@@ -21,12 +21,13 @@ class _ConnectivityCheckState extends State<ConnectivityCheck> {
 
   @override
   Widget build(BuildContext context) {
-    return StreamBuilder<ConnectivityResult>(
+    return StreamBuilder<List<ConnectivityResult>>(
       stream: _connectivityStream,
       builder: (context, snapshot) {
         // Determine connectivity status
-        final bool isConnected = snapshot.data == ConnectivityResult.mobile ||
-            snapshot.data == ConnectivityResult.wifi;
+        final bool isConnected = snapshot.hasData && 
+            (snapshot.data!.contains(ConnectivityResult.mobile) ||
+             snapshot.data!.contains(ConnectivityResult.wifi));
 
         if (snapshot.connectionState == ConnectionState.waiting) {
           // Show loading state while checking connectivity

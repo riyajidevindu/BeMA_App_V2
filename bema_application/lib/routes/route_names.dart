@@ -37,4 +37,10 @@ class RouteNames {
   static const LearderboardScreen = 'LearderboardScreen';
   static const WorkoutPlanScreen = 'WorkoutPlanScreen';
   static const diveReflexScreen = 'diveReflexScreen';
+  static const poseCoachScreen = 'poseCoachScreen';
+  static const poseSessionGalleryScreen = 'poseSessionGalleryScreen';
+  static const exerciseSelectionScreen = 'exerciseSelectionScreen';
+  static const exerciseDetailScreen = 'exerciseDetailScreen';
+  static const videoGuideScreen = 'videoGuideScreen';
+  static const stepByStepGuideScreen = 'stepByStepGuideScreen';
 }

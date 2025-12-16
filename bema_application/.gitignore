@@ -10,6 +10,7 @@
 .history
 .svn/
 migrate_working_dir/
+app/resources/images
 
 # IntelliJ related
 *.iml
@@ -45,7 +46,7 @@ app.*.map.json
 /android/app/release
 
 # venv related
-.venv
+*venv
 .env
 
 

@@ -1,3 +1,4 @@
+import 'dart:ui';
 import 'package:bema_application/common/config/colors.dart';
 import 'package:bema_application/common/widgets/app_bar.dart';
 import 'package:bema_application/common/widgets/progress_indicator/custom_progress_indicator.dart';
@@ -47,10 +48,12 @@ class _VideoGuideScreenState extends State<VideoGuideScreen> {
     final screenHeight = MediaQuery.of(context).size.height;
 
     return Scaffold(
+      backgroundColor: Colors.transparent,
       appBar: AppBar(
-        backgroundColor: backgroundColor,
+        backgroundColor: Colors.transparent,
         title: const CustomAppBar(showBackButton: true),
         automaticallyImplyLeading: false,
+        elevation: 0,
       ),
       body: SingleChildScrollView(
         padding: EdgeInsets.all(screenWidth * 0.04),
@@ -65,7 +68,7 @@ class _VideoGuideScreenState extends State<VideoGuideScreen> {
                 style: TextStyle(
                   fontSize: screenWidth * 0.07,
                   fontWeight: FontWeight.bold,
-                  color: Colors.blueAccent,
+                  color: const Color.fromARGB(255, 183, 54, 219),
                 ),
                 textAlign: TextAlign.center,
               ),
@@ -136,47 +139,48 @@ class _VideoGuideScreenState extends State<VideoGuideScreen> {
             SizedBox(height: screenHeight * 0.03),
 
             // Action Buttons Panel
-            Container(
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(screenWidth * 0.05),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.2),
-                    spreadRadius: 5,
-                    blurRadius: 7,
-                    offset: const Offset(0, 3),
+            ClipRRect(
+              borderRadius: BorderRadius.circular(screenWidth * 0.05),
+              child: BackdropFilter(
+                filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.2),
+                    borderRadius: BorderRadius.circular(screenWidth * 0.05),
+                    border: Border.all(
+                      color: Colors.white.withOpacity(0.3),
+                    ),
                   ),
-                ],
-              ),
-              padding: EdgeInsets.all(screenWidth * 0.04),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  _buildActionButton(
-                    icon: Icons.replay_10,
-                    onPressed: _rewind,
-                    size: screenWidth * 0.08,
+                  padding: EdgeInsets.all(screenWidth * 0.04),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      _buildActionButton(
+                        icon: Icons.replay_10,
+                        onPressed: _rewind,
+                        size: screenWidth * 0.08,
+                      ),
+                      _buildActionButton(
+                        icon: _controller.value.isPlaying
+                            ? Icons.pause
+                            : Icons.play_arrow,
+                        onPressed: () {
+                          setState(() {
+                            _controller.value.isPlaying
+                                ? _controller.pause()
+                                : _controller.play();
+                          });
+                        },
+                        size: screenWidth * 0.08,
+                      ),
+                      _buildActionButton(
+                        icon: Icons.forward_10,
+                        onPressed: _forward,
+                        size: screenWidth * 0.08,
+                      ),
+                    ],
                   ),
-                  _buildActionButton(
-                    icon: _controller.value.isPlaying
-                        ? Icons.pause
-                        : Icons.play_arrow,
-                    onPressed: () {
-                      setState(() {
-                        _controller.value.isPlaying
-                            ? _controller.pause()
-                            : _controller.play();
-                      });
-                    },
-                    size: screenWidth * 0.08,
-                  ),
-                  _buildActionButton(
-                    icon: Icons.forward_10,
-                    onPressed: _forward,
-                    size: screenWidth * 0.08,
-                  ),
-                ],
+                ),
               ),
             ),
           ],
@@ -188,7 +192,10 @@ class _VideoGuideScreenState extends State<VideoGuideScreen> {
     );
   }
 
-  Widget _buildActionButton({required IconData icon, required VoidCallback onPressed, required double size}) {
+  Widget _buildActionButton(
+      {required IconData icon,
+      required VoidCallback onPressed,
+      required double size}) {
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: size * 0.2),
       child: ElevatedButton(
